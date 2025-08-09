@@ -11,27 +11,27 @@ namespace Application.Interface.Persistence
 {
 	public interface ITransactionRepository
 	{
-		Task<RequestResponse<TransactionResponse>> CreateTransaction (TransactionDto createTransaction);
-		Task<RequestResponse<List<TransactionResponse>>> CreateMultipleTransaction (List<TransactionDto> createTransaction);
-		Task<RequestResponse<TransactionResponse>> UpdateTransaction (TransactionDto updateTransaction);
-		Task<RequestResponse<TransactionResponse>> DeleteTransaction (DeleteTransactionCommand deleteTransaction);
-		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByAmountPaid (decimal amountPaid, CancellationToken cancellationToken, int pageNumber, int pageSize);
-		Task<RequestResponse<TransactionResponse>> GetTransactionsById (string publicId, CancellationToken cancellationToken);
-		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByBankName (string bankName, CancellationToken cancellationToken, int pageNumber, int pageSize);
-		Task<RequestResponse<List<TransactionResponse>>> GetTransactionByBankNameAndAccountNumber (GetTransactionByBankNameAndAccountNumberQuery getTransactionByBankNameAndAccountNumberRequest);
-		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByUserId (GetTransactionByUserIdQuery getTransactionByUserId);
-		Task<RequestResponse<List<TransactionResponse>>> GetAllTransactions (bool isDeleted, CancellationToken cancellationToken, int pageNumber, int pageSize);
-		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByDate (GetTransactionsByDateQuery getTransactionsByDate);
-		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByCustomDate (string userId, DateTime fromDate, DateTime toDate, CancellationToken cancellationToken, int pageNumber, int pageSize);
-		Task<RequestResponse<List<TransactionResponse>>> GetTransactionByDate (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
-		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByWeek (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
-		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByMonth (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
-		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByYear (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
-		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByCustomDate (string userId, DateTime fromDate, DateTime toDate, CancellationToken cancellationToken);
-		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByDate (string userId, DateTime date, CancellationToken cancellationToken);
-		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByWeek (string userId, DateTime date, CancellationToken cancellationToken);
-		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByMonth (string userId, DateTime date, CancellationToken cancellationToken);
-		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByYear (string userId, DateTime date, CancellationToken cancellationToken);
-		Task<RequestResponse<TransactionResponse>> ConfirmTransaction (ConfirmTransactionCommand updateTransactionRequest);
+		Task<RequestResponse<TransactionResponse>> CreateTransactionAsync (TransactionDto createTransaction);
+		Task<RequestResponse<List<TransactionResponse>>> CreateMultipleTransactionAsync (List<TransactionDto> createTransaction);
+		Task<RequestResponse<TransactionResponse>> UpdateTransactionAsync (TransactionDto updateTransaction);
+		Task<RequestResponse<TransactionResponse>> DeleteTransactionAsync (DeleteTransactionCommand deleteTransaction);
+		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByAmountPaidAsync (decimal amountPaid, CancellationToken cancellationToken, int pageNumber, int pageSize);
+		Task<RequestResponse<TransactionResponse>> GetTransactionsByIdAsync (string publicId, CancellationToken cancellationToken);
+		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByBankNameAsync (string bankName, CancellationToken cancellationToken, int pageNumber, int pageSize);
+		Task<RequestResponse<List<TransactionResponse>>> GetTransactionByBankNameAndAccountNumberAsync (GetTransactionByBankNameAndAccountNumberQuery getTransactionByBankNameAndAccountNumberRequest);
+		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByUserIdAsync (GetTransactionByUserIdQuery getTransactionByUserId);
+		Task<RequestResponse<List<TransactionResponse>>> GetAllTransactionsAsync (bool isDeleted, CancellationToken cancellationToken, int pageNumber, int pageSize);
+		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByDateAsync (GetTransactionsByDateQuery getTransactionsByDate);
+		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByCustomDateAsync (string userId, DateTime fromDate, DateTime toDate, CancellationToken cancellationToken, int pageNumber, int pageSize);
+		Task<RequestResponse<List<TransactionResponse>>> GetTransactionByDateAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
+		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByWeekAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
+		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByMonthAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
+		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByYearAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
+		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByCustomDateAsync (string userId, DateTime fromDate, DateTime toDate, CancellationToken cancellationToken);
+		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByDateAsync (string userId, DateTime date, CancellationToken cancellationToken);
+		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByWeekAsync (string userId, DateTime date, CancellationToken cancellationToken);
+		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByMonthAsync (string userId, DateTime date, CancellationToken cancellationToken);
+		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByYearAsync (string userId, DateTime date, CancellationToken cancellationToken);
+		Task<RequestResponse<TransactionResponse>> ConfirmTransactionAsync (ConfirmTransactionCommand updateTransactionRequest);
 	}
 }

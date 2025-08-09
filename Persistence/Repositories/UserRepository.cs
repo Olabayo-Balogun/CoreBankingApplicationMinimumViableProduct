@@ -938,6 +938,7 @@ namespace Persistence.Repositories
 				user.Email = user.Email.ToLower ().Trim ();
 				user.FirstName = user.FirstName != null ? Utility.ToSentenceCase (user.FirstName.Trim ()) : null;
 				user.LastName = user.LastName != null ? Utility.ToSentenceCase (user.LastName.Trim ()) : null;
+				user.MiddleName = user.MiddleName != null ? Utility.ToSentenceCase (user.MiddleName.Trim ()) : null;
 				user.BusinessName = user.BusinessName != null ? user.BusinessName.ToUpper ().Trim () : user.BusinessName;
 				user.PhoneNumber = user.PhoneNumber?.Trim ();
 				user.ProfileImage = user.ProfileImage?.Trim ();
@@ -987,7 +988,7 @@ namespace Persistence.Repositories
 					payload.Password = HashPassword (user.Password);
 					payload.PasswordHash = payload.Password.GetHashCode ().ToString ();
 					payload.EmailVerificationToken = token.ToString ();
-					payload.PublicId = Guid.NewGuid ().ToString ();		
+					payload.PublicId = Guid.NewGuid ().ToString ();
 				}
 				else
 				{

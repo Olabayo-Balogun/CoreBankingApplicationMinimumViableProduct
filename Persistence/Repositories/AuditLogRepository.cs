@@ -1,8 +1,8 @@
 ﻿using Application.Interface.Persistence;
 using Application.Model;
-using Application.Model.AccountDetails.Command;
 using Application.Model.AuditLogs.Command;
 using Application.Model.Uploads.Queries;
+using Application.Models.Accounts.Response;
 using Application.Models.AuditLogs.Response;
 using Application.Models.Banks.Response;
 using Application.Models.Branches.Response;
@@ -70,7 +70,7 @@ namespace Persistence.Repositories
 				switch (payload.Name)
 				{
 					case "AccountDetail":
-						response.AccountLog = JsonConvert.DeserializeObject<AccountDetailResponse> (payload.Payload);
+						response.AccountLog = JsonConvert.DeserializeObject<AccountResponse> (payload.Payload);
 						break;
 					case "Bank":
 						response.BankLog = JsonConvert.DeserializeObject<BankResponse> (payload.Payload);
@@ -140,7 +140,7 @@ namespace Persistence.Repositories
 					switch (payload.Name)
 					{
 						case "AccountDetail":
-							response.AccountLogs.Add (JsonConvert.DeserializeObject<AccountDetailResponse> (payload.Payload));
+							response.AccountLogs.Add (JsonConvert.DeserializeObject<AccountResponse> (payload.Payload));
 							break;
 						case "Bank":
 							response.BankLogs.Add (JsonConvert.DeserializeObject<BankResponse> (payload.Payload));
@@ -196,7 +196,7 @@ namespace Persistence.Repositories
 				switch (response.Name)
 				{
 					case "AccountDetail":
-						payload.AccountLog = JsonConvert.DeserializeObject<AccountDetailResponse> (response.Payload);
+						payload.AccountLog = JsonConvert.DeserializeObject<AccountResponse> (response.Payload);
 						break;
 					case "Bank":
 						payload.BankLog = JsonConvert.DeserializeObject<BankResponse> (response.Payload);
@@ -316,7 +316,7 @@ namespace Persistence.Repositories
 					switch (response.Name)
 					{
 						case "AccountDetail":
-							result.AccountLogs.Add (JsonConvert.DeserializeObject<AccountDetailResponse> (response.Payload));
+							result.AccountLogs.Add (JsonConvert.DeserializeObject<AccountResponse> (response.Payload));
 							break;
 						case "Bank":
 							result.BankLogs.Add (JsonConvert.DeserializeObject<BankResponse> (response.Payload));

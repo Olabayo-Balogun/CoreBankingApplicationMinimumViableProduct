@@ -1,5 +1,4 @@
-﻿using Application.Model.AccountDetails.Command;
-using Application.Model.AuditLogs.Command;
+﻿using Application.Model.AuditLogs.Command;
 using Application.Model.Banks.Command;
 using Application.Model.EmailLogs.Command;
 using Application.Model.EmailLogs.Queries;
@@ -8,6 +7,7 @@ using Application.Model.EmailRequests.Queries;
 using Application.Model.EmailTemplates.Command;
 using Application.Model.EmailTemplates.Queries;
 using Application.Model.Uploads.Queries;
+using Application.Models.Accounts.Command;
 using Application.Models.Accounts.Response;
 using Application.Models.Banks.Response;
 using Application.Models.Branches.Command;

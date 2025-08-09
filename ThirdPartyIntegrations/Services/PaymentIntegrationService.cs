@@ -152,7 +152,7 @@ namespace ThirdPartyIntegrations.Services
 					CancellationToken = CancellationToken.None,
 				};
 
-				var reconcileTransactionRequest = await _transactionRepository.ConfirmTransaction (reconcileTransaction);
+				var reconcileTransactionRequest = await _transactionRepository.ConfirmTransactionAsync (reconcileTransaction);
 
 				if (reconcileTransactionRequest.Data == null)
 				{
@@ -164,7 +164,10 @@ namespace ThirdPartyIntegrations.Services
 
 				var response = new PaymentIntegrationResponse
 				{
-					Channel = reconcileTransactionRequest.Data.Channel
+					Channel = reconcileTransactionRequest.Data.Channel,
+					PaymentReferenceId = reconcileTransactionRequest.Data.PaymentReferenceId,
+					PaymentService = reconcileTransactionRequest.Data.PaymentService,
+					Amount = reconcileTransactionRequest.Data.Amount
 				};
 
 				var result = RequestResponse<PaymentIntegrationResponse>.Success (response, 1, "Payment request confirmed sucessfully");

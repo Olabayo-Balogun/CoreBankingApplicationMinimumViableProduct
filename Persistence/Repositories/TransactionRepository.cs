@@ -34,7 +34,7 @@ namespace Persistence.Repositories
 			_auditLogRepository = auditLogRepository;
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByBankName (string bankName, CancellationToken cancellationToken, int pageNumber, int pageSize)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByBankNameAsync (string bankName, CancellationToken cancellationToken, int pageNumber, int pageSize)
 		{
 			try
 			{
@@ -72,7 +72,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<TransactionResponse>> GetTransactionsById (string publicId, CancellationToken cancellationToken)
+		public async Task<RequestResponse<TransactionResponse>> GetTransactionsByIdAsync (string publicId, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -103,7 +103,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionByBankNameAndAccountNumber (GetTransactionByBankNameAndAccountNumberQuery getTransactionByBankNameAndAccountNumberRequest)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionByBankNameAndAccountNumberAsync (GetTransactionByBankNameAndAccountNumberQuery getTransactionByBankNameAndAccountNumberRequest)
 		{
 			try
 			{
@@ -151,7 +151,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<TransactionResponse>> CreateTransaction (TransactionDto createTransaction)
+		public async Task<RequestResponse<TransactionResponse>> CreateTransactionAsync (TransactionDto createTransaction)
 		{
 			try
 			{
@@ -196,7 +196,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> CreateMultipleTransaction (List<TransactionDto> createTransaction)
+		public async Task<RequestResponse<List<TransactionResponse>>> CreateMultipleTransactionAsync (List<TransactionDto> createTransaction)
 		{
 			try
 			{
@@ -236,7 +236,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<TransactionResponse>> UpdateTransaction (TransactionDto updateTransactionRequest)
+		public async Task<RequestResponse<TransactionResponse>> UpdateTransactionAsync (TransactionDto updateTransactionRequest)
 		{
 			try
 			{
@@ -302,7 +302,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<TransactionResponse>> ConfirmTransaction (ConfirmTransactionCommand updateTransactionRequest)
+		public async Task<RequestResponse<TransactionResponse>> ConfirmTransactionAsync (ConfirmTransactionCommand updateTransactionRequest)
 		{
 			try
 			{
@@ -345,17 +345,17 @@ namespace Persistence.Repositories
 				updateTransaction.LastModifiedBy = "SYSTEM";
 				updateTransaction.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 
-				var updateSenderAccountDetails = await _context.Accounts.Where (x => x.AccountNumber == updateTransaction.RecipientAccountNumber && x.IsDeleted == false).FirstOrDefaultAsync (updateTransactionRequest.CancellationToken);
-
-				if (updateSenderAccountDetails == null && updateTransaction.TransactionType.Equals (TransactionType.Credit, StringComparison.OrdinalIgnoreCase))
-				{
-					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Sender Bank account details");
-					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for amount: {updateTransactionRequest.Amount}");
-					return badRequest;
-				}
-
 				if (updateTransaction.TransactionType.Equals (TransactionType.Credit, StringComparison.OrdinalIgnoreCase))
 				{
+					var updateSenderAccountDetails = await _context.Accounts.Where (x => x.AccountNumber == updateTransaction.RecipientAccountNumber && x.IsDeleted == false).FirstOrDefaultAsync (updateTransactionRequest.CancellationToken);
+
+					if (updateSenderAccountDetails == null)
+					{
+						var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Recipient Bank account details");
+						_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for amount: {updateTransactionRequest.Amount}");
+						return badRequest;
+					}
+
 					updateSenderAccountDetails.Balance += updateTransactionRequest.Amount;
 					updateSenderAccountDetails.LastModifiedBy = "SYSTEM";
 					updateSenderAccountDetails.LastModifiedDate = DateTime.UtcNow.AddHours (1);
@@ -368,7 +368,7 @@ namespace Persistence.Repositories
 
 					if (updateAccountDetails == null)
 					{
-						var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Bank account details");
+						var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Sender bank account details");
 						_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for amount: {updateTransactionRequest.Amount}");
 						return badRequest;
 					}
@@ -379,7 +379,6 @@ namespace Persistence.Repositories
 
 					_context.Accounts.Update (updateAccountDetails);
 				}
-
 
 				_context.Transactions.Update (updateTransaction);
 				await _context.SaveChangesAsync (updateTransactionRequest.CancellationToken);
@@ -396,7 +395,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<TransactionResponse>> DeleteTransaction (DeleteTransactionCommand deleteTransaction)
+		public async Task<RequestResponse<TransactionResponse>> DeleteTransactionAsync (DeleteTransactionCommand deleteTransaction)
 		{
 			try
 			{
@@ -451,7 +450,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByAmountPaid (decimal amountPaid, CancellationToken cancellationToken, int pageNumber, int pageSize)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByAmountPaidAsync (decimal amountPaid, CancellationToken cancellationToken, int pageNumber, int pageSize)
 		{
 			try
 			{
@@ -488,7 +487,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByUserId (GetTransactionByUserIdQuery getTransactionByUserId)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByUserIdAsync (GetTransactionByUserIdQuery getTransactionByUserId)
 		{
 			try
 			{
@@ -497,23 +496,23 @@ namespace Persistence.Repositories
 				var result = RequestResponse<List<TransactionResponse>>.NullPayload (null);
 				if (getTransactionByUserId.Date != null && getTransactionByUserId.UserId != null)
 				{
-					result = await GetTransactionByDate (getTransactionByUserId.UserId, getTransactionByUserId.Date.GetValueOrDefault (), getTransactionByUserId.CancellationToken, getTransactionByUserId.PageNumber, getTransactionByUserId.PageSize);
+					result = await GetTransactionByDateAsync (getTransactionByUserId.UserId, getTransactionByUserId.Date.GetValueOrDefault (), getTransactionByUserId.CancellationToken, getTransactionByUserId.PageNumber, getTransactionByUserId.PageSize);
 				}
 				else if (getTransactionByUserId.Date != null && getTransactionByUserId.Period != null && getTransactionByUserId.UserId != null && getTransactionByUserId.Period.ToLower () == "week" && getTransactionByUserId.Date != null)
 				{
-					result = await GetTransactionsByWeek (getTransactionByUserId.UserId, getTransactionByUserId.Date.GetValueOrDefault (), getTransactionByUserId.CancellationToken, getTransactionByUserId.PageNumber, getTransactionByUserId.PageSize);
+					result = await GetTransactionsByWeekAsync (getTransactionByUserId.UserId, getTransactionByUserId.Date.GetValueOrDefault (), getTransactionByUserId.CancellationToken, getTransactionByUserId.PageNumber, getTransactionByUserId.PageSize);
 				}
 				else if (getTransactionByUserId.Date != null && getTransactionByUserId.Period != null && getTransactionByUserId.UserId != null && getTransactionByUserId.Period.ToLower () == "month" && getTransactionByUserId.Date != null)
 				{
-					result = await GetTransactionsByMonth (getTransactionByUserId.UserId, getTransactionByUserId.Date.GetValueOrDefault (), getTransactionByUserId.CancellationToken, getTransactionByUserId.PageNumber, getTransactionByUserId.PageSize);
+					result = await GetTransactionsByMonthAsync (getTransactionByUserId.UserId, getTransactionByUserId.Date.GetValueOrDefault (), getTransactionByUserId.CancellationToken, getTransactionByUserId.PageNumber, getTransactionByUserId.PageSize);
 				}
 				else if (getTransactionByUserId.Date != null && getTransactionByUserId.Period != null && getTransactionByUserId.UserId != null && getTransactionByUserId.Period.ToLower () == "year" && getTransactionByUserId.Date != null)
 				{
-					result = await GetTransactionsByYear (getTransactionByUserId.UserId, getTransactionByUserId.Date.GetValueOrDefault (), getTransactionByUserId.CancellationToken, getTransactionByUserId.PageNumber, getTransactionByUserId.PageSize);
+					result = await GetTransactionsByYearAsync (getTransactionByUserId.UserId, getTransactionByUserId.Date.GetValueOrDefault (), getTransactionByUserId.CancellationToken, getTransactionByUserId.PageNumber, getTransactionByUserId.PageSize);
 				}
 				else if (getTransactionByUserId.Date != null && getTransactionByUserId.Period != null && getTransactionByUserId.UserId != null && getTransactionByUserId.FromDate != null && getTransactionByUserId.ToDate != null)
 				{
-					result = await GetTransactionsByCustomDate (getTransactionByUserId.UserId, getTransactionByUserId.FromDate.GetValueOrDefault (), getTransactionByUserId.ToDate.GetValueOrDefault (), getTransactionByUserId.CancellationToken, getTransactionByUserId.PageNumber, getTransactionByUserId.PageSize);
+					result = await GetTransactionsByCustomDateAsync (getTransactionByUserId.UserId, getTransactionByUserId.FromDate.GetValueOrDefault (), getTransactionByUserId.ToDate.GetValueOrDefault (), getTransactionByUserId.CancellationToken, getTransactionByUserId.PageNumber, getTransactionByUserId.PageSize);
 				}
 				else
 				{
@@ -548,7 +547,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetAllTransactions (bool isDeleted, CancellationToken cancellationToken, int pageNumber, int pageSize)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetAllTransactionsAsync (bool isDeleted, CancellationToken cancellationToken, int pageNumber, int pageSize)
 		{
 			try
 			{
@@ -585,7 +584,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByDate (GetTransactionsByDateQuery getTransactionsByDate)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByDateAsync (GetTransactionsByDateQuery getTransactionsByDate)
 		{
 			try
 			{
@@ -625,7 +624,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<TransactionResponse>> GetTransactionsCountByCustomDate (string userId, DateTime fromDate, DateTime toDate, CancellationToken cancellationToken)
+		public async Task<RequestResponse<TransactionResponse>> GetTransactionsCountByCustomDateAsync (string userId, DateTime fromDate, DateTime toDate, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -647,7 +646,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<TransactionResponse>> GetTransactionsCountByDate (string userId, DateTime date, CancellationToken cancellationToken)
+		public async Task<RequestResponse<TransactionResponse>> GetTransactionsCountByDateAsync (string userId, DateTime date, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -670,7 +669,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<TransactionResponse>> GetTransactionsCountByWeek (string userId, DateTime date, CancellationToken cancellationToken)
+		public async Task<RequestResponse<TransactionResponse>> GetTransactionsCountByWeekAsync (string userId, DateTime date, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -695,7 +694,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<TransactionResponse>> GetTransactionsCountByMonth (string userId, DateTime date, CancellationToken cancellationToken)
+		public async Task<RequestResponse<TransactionResponse>> GetTransactionsCountByMonthAsync (string userId, DateTime date, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -717,7 +716,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<TransactionResponse>> GetTransactionsCountByYear (string userId, DateTime date, CancellationToken cancellationToken)
+		public async Task<RequestResponse<TransactionResponse>> GetTransactionsCountByYearAsync (string userId, DateTime date, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -739,7 +738,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByCustomDate (string userId, DateTime fromDate, DateTime toDate, CancellationToken cancellationToken, int pageNumber, int pageSize)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByCustomDateAsync (string userId, DateTime fromDate, DateTime toDate, CancellationToken cancellationToken, int pageNumber, int pageSize)
 		{
 			try
 			{
@@ -777,7 +776,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionByDate (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionByDateAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize)
 		{
 			try
 			{
@@ -815,7 +814,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByWeek (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByWeekAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize)
 		{
 			try
 			{
@@ -856,7 +855,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByMonth (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByMonthAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize)
 		{
 			try
 			{
@@ -894,7 +893,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByYear (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByYearAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize)
 		{
 			try
 			{

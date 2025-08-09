@@ -25,18 +25,6 @@ namespace ThirdPartyIntegrations.Models.PaymentIntegration.Paystack.Response
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string PaymentService { get; set; }
 		/// <summary>
-		/// The type of payment, maybe for doing a search, or for email reminder to debtors, or for advance payment, etc.
-		/// </summary>
-		[Required (ErrorMessage = "Payment type is required")]
-		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string PaymentType { get; set; }
-		/// <summary>
-		/// The publicUserId of the user making the payment
-		/// </summary>
-		[Required (ErrorMessage = "Guid publicId of the paying user is required")]
-		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string CreatedBy { get; set; }
-		/// <summary>
 		/// The payment reference Id gotten from the payment channel.
 		/// </summary>
 		[Required (ErrorMessage = "Payment reference unique ID is required")]
