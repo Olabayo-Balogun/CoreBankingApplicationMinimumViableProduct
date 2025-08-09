@@ -7,13 +7,11 @@ using Application.Model.EmailRequests.Command;
 using Application.Model.EmailRequests.Queries;
 using Application.Model.EmailTemplates.Command;
 using Application.Model.EmailTemplates.Queries;
-using Application.Model.Payments.Command;
 using Application.Model.Uploads.Queries;
 using Application.Models.Accounts.Response;
 using Application.Models.Banks.Response;
 using Application.Models.Branches.Command;
 using Application.Models.Branches.Response;
-using Application.Models.Payments.Response;
 using Application.Models.Transactions.Command;
 using Application.Models.Transactions.Response;
 using Application.Models.Uploads.Command;
@@ -65,11 +63,6 @@ namespace Application
 			CreateMap<CreateEmailTemplateCommand, EmailTemplateDto> ().ReverseMap ();
 			CreateMap<EmailTemplateResponse, EmailTemplateDto> ().ReverseMap ();
 			CreateMap<EmailTemplate, EmailTemplateResponse> ().ReverseMap ();
-
-			CreateMap<CreatePaymentCommand, PaymentDto> ().ReverseMap ();
-			CreateMap<PaymentResponse, PaymentDto> ().ReverseMap ();
-			CreateMap<PaymentDto, Payment> ().ReverseMap ();
-			CreateMap<Payment, PaymentResponse> ().ReverseMap ();
 
 			CreateMap<CreateTransactionCommand, TransactionDto> ().ReverseMap ();
 			CreateMap<UpdateTransactionCommand, TransactionDto> ().ReverseMap ();

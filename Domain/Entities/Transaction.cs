@@ -19,15 +19,12 @@ namespace Domain.Entities
 		[Required]
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string SenderAccountName { get; set; } = string.Empty;
-		[Required]
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string SenderBankName { get; set; } = string.Empty;
-		[Required]
+		public string? SenderBankName { get; set; } = string.Empty;
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string RecipientAccountNumber { get; set; } = string.Empty;
-		[Required]
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string RecipientAccountName { get; set; } = string.Empty;
+		public string? RecipientAccountName { get; set; } = string.Empty;
 		[Required]
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string RecipientBankName { get; set; } = string.Empty;
@@ -41,5 +38,23 @@ namespace Domain.Entities
 		[Required]
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string TransactionType { get; set; } = string.Empty;
+		[Required (ErrorMessage = "Transaction Currency is required")]
+		[StringLength (500, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string Currency { get; set; }
+		[Required (ErrorMessage = "Payment Reference ID is required")]
+		[StringLength (500, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string PaymentReferenceId { get; set; }
+		/// <summary>
+		/// The name of the mode used eg Card Payments, Bank Account Payments, Bank Transfer etc.
+		/// </summary>
+		[Required (ErrorMessage = "Channel is required")]
+		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string Channel { get; set; }
+		/// <summary>
+		/// The payment platform used eg flutterwave, paystack, etc.
+		/// </summary>
+		[Required (ErrorMessage = "PaymentService is required")]
+		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string PaymentService { get; set; }
 	}
 }

@@ -41,5 +41,20 @@ namespace Application.Models.Transactions.Response
 		[Required]
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string TransactionType { get; set; } = string.Empty;
+		[Required (ErrorMessage = "Transaction Currency is required")]
+		[StringLength (500, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string Currency { get; set; }
+		public string PaymentReferenceId { get; set; }
+		/// <summary>
+		/// The name of the mode used eg Card Payments, Bank Account Payments, Bank Transfer etc.
+		/// </summary>
+		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string Channel { get; set; }
+		/// <summary>
+		/// The payment platform used eg flutterwave, paystack, etc.
+		/// </summary>
+		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string PaymentService { get; set; }
+
 	}
 }

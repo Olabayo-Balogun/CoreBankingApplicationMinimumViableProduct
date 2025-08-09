@@ -1,6 +1,7 @@
 ﻿using Application.Model;
 using Application.Model.Transactions.Command;
 using Application.Model.Transactions.Queries;
+using Application.Models.Transactions.Command;
 using Application.Models.Transactions.Queries;
 using Application.Models.Transactions.Response;
 
@@ -31,5 +32,6 @@ namespace Application.Interface.Persistence
 		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByWeek (string userId, DateTime date, CancellationToken cancellationToken);
 		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByMonth (string userId, DateTime date, CancellationToken cancellationToken);
 		Task<RequestResponse<TransactionResponse>> GetTransactionsCountByYear (string userId, DateTime date, CancellationToken cancellationToken);
+		Task<RequestResponse<TransactionResponse>> ConfirmTransaction (ConfirmTransactionCommand updateTransactionRequest);
 	}
 }

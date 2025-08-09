@@ -40,6 +40,9 @@ namespace Application.Models.Transactions.Command
 		[Required]
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string TransactionType { get; set; } = string.Empty;
+		[Required (ErrorMessage = "Transaction Currency is required")]
+		[StringLength (500, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string Currency { get; set; }
 		public CancellationToken CancellationToken { get; set; }
 	}
 }

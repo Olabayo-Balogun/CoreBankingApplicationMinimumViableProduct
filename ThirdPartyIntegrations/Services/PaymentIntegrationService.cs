@@ -1,9 +1,8 @@
 ﻿using Application.Interface.Persistence;
 using Application.Model;
-using Application.Model.AuditLogs.Command;
 using Application.Model.PaymentIntegration.Command;
 using Application.Models;
-using Application.Models.AuditLogs.Response;
+using Application.Models.Transactions.Command;
 
 using AutoMapper;
 
@@ -29,15 +28,15 @@ namespace ThirdPartyIntegrations.Services
 		private readonly AppSettings _appSettings;
 		private readonly ApplicationDbContext _context;
 		private readonly ILogger<PaymentIntegrationService> _logger;
-		private readonly IAuditLogRepository _auditLogRepository;
+		private readonly ITransactionRepository _transactionRepository;
 		private readonly IMapper _mapper;
 
-		public PaymentIntegrationService (IOptions<AppSettings> appSettings, ApplicationDbContext context, ILogger<PaymentIntegrationService> logger, IAuditLogRepository auditLogRepository, IMapper mapper)
+		public PaymentIntegrationService (IOptions<AppSettings> appSettings, ApplicationDbContext context, ILogger<PaymentIntegrationService> logger, ITransactionRepository transactionRepository, IMapper mapper)
 		{
 			_appSettings = appSettings.Value;
 			_context = context;
 			_logger = logger;
-			_auditLogRepository = auditLogRepository;
+			_transactionRepository = transactionRepository;
 			_mapper = mapper;
 		}
 
@@ -107,7 +106,7 @@ namespace ThirdPartyIntegrations.Services
 			{
 				_logger.LogInformation ($"PaystackPaymentWebhookRequest begins at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount}");
 
-				var check = await _context.Payments.Where (x => x.PaymentReferenceId == request.Data.offline_reference).FirstOrDefaultAsync ();
+				var check = await _context.Transactions.Where (x => x.PaymentReferenceId == request.Data.offline_reference).FirstOrDefaultAsync ();
 				if (check == null)
 				{
 					var badRequest = RequestResponse<PaymentIntegrationResponse>.NotFound (null, "Payment");
@@ -115,7 +114,7 @@ namespace ThirdPartyIntegrations.Services
 					return badRequest;
 				}
 
-				if (check.IsConfirmed == true)
+				if (check.IsReconciled == true)
 				{
 					var badRequest = RequestResponse<PaymentIntegrationResponse>.Failed (null, 200, "Payment already confirmed");
 					_logger.LogInformation ($"PaystackPaymentWebhookRequest ends at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount} with remark: {badRequest.Remark}");
@@ -145,31 +144,29 @@ namespace ThirdPartyIntegrations.Services
 					return badRequest;
 				}
 
-				CreateAuditLogCommand createAuditLogRequestViewModel = new ()
+				var reconcileTransaction = new ConfirmTransactionCommand
 				{
+					Amount = paymentVerification.data.Amount / 100,
+					PaymentReferenceId = request.Data.offline_reference,
+					LastModifiedBy = "Paystack",
 					CancellationToken = CancellationToken.None,
-					CreatedBy = check.CreatedBy,
-					Name = "Payment",
-					Payload = JsonConvert.SerializeObject (check)
 				};
 
-				RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequestViewModel);
+				var reconcileTransactionRequest = await _transactionRepository.ConfirmTransaction (reconcileTransaction);
 
-				if (createAuditLog.IsSuccessful == false)
+				if (reconcileTransactionRequest.Data == null)
 				{
-					var badRequest = RequestResponse<PaymentIntegrationResponse>.AuditLogFailed (null);
+					var badRequest = RequestResponse<PaymentIntegrationResponse>.Failed (null, 400, "Payment not confirmed");
 					_logger.LogInformation ($"PaystackPaymentWebhookRequest ends at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount} with remark: {badRequest.Remark}");
 					return badRequest;
+
 				}
 
-				check.IsConfirmed = true;
-				check.LastModifiedBy = "Paystack";
-				check.LastModifiedDate = DateTime.UtcNow.AddHours (1);
+				var response = new PaymentIntegrationResponse
+				{
+					Channel = reconcileTransactionRequest.Data.Channel
+				};
 
-				_context.Update (check);
-				await _context.SaveChangesAsync ();
-
-				var response = _mapper.Map<PaymentIntegrationResponse> (check);
 				var result = RequestResponse<PaymentIntegrationResponse>.Success (response, 1, "Payment request confirmed sucessfully");
 				_logger.LogInformation ($"PaystackPaymentWebhookRequest ends at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount} with remark: {result.Remark}");
 				return result;

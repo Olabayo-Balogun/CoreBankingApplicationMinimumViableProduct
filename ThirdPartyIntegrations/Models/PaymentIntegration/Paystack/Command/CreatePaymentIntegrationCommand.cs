@@ -2,12 +2,12 @@
 
 using Microsoft.EntityFrameworkCore;
 
-namespace ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegration.Request
+namespace ThirdPartyIntegrations.Models.PaymentIntegration.Paystack.Command
 {
 	public class CreatePaymentIntegrationCommand
 	{
 		/// <summary>
-		/// The payment platform used eg flutterwave, paystack, etc.
+		/// The name of the product being paid for eg Card Payments, Bank Account Payments, Bank Transfer (NGN) etc.
 		/// </summary>
 		[Required (ErrorMessage = "Channel is required")]
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
@@ -21,8 +21,9 @@ namespace ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegrat
 		public int? Cvv { get; set; }
 		public string? PAN { get; set; }
 		public string? CustomerName { get; set; }
+
 		/// <summary>
-		/// The name of the product being paid for eg Card Payments, Bank Account Payments, Bank Transfer (NGN) etc.
+		/// The payment platform used eg flutterwave, paystack, etc.
 		/// </summary>
 		[Required (ErrorMessage = "PaymentService is required")]
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
@@ -33,27 +34,16 @@ namespace ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegrat
 		[Required (ErrorMessage = "publicId of the paying user is required")]
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string CreatedBy { get; set; }
-		/// <summary>
-		/// The type of payment, maybe for doing a search, or for email reminder to debtors, or for advance payment, etc.
-		/// </summary>
 		[Required (ErrorMessage = "Payment type is required")]
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string PaymentType { get; set; }
 
 		public DateTime? ExpiryDate { get; set; }
-		/// <summary>
-		/// The type of payment, maybe for doing a search, or for email reminder to debtors, or for advance payment, etc.
-		/// </summary>
+
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string? BankName { get; set; }
-		/// <summary>
-		/// The type of payment, maybe for doing a search, or for email reminder to debtors, or for advance payment, etc.
-		/// </summary>
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string? CardIssuer { get; set; }
-		/// <summary>
-		/// The type of payment, maybe for doing a search, or for email reminder to debtors, or for advance payment, etc.
-		/// </summary>
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string? CardType { get; set; }
 	}

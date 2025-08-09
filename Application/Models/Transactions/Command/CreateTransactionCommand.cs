@@ -46,5 +46,8 @@ namespace Application.Models.Transactions.Command
 		[Required (ErrorMessage = "CreatedBy is required")]
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string? CreatedBy { get; set; }
+		[Required (ErrorMessage = "Transaction Currency is required")]
+		[StringLength (500, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string Currency { get; set; }
 	}
 }

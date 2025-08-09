@@ -4,12 +4,14 @@ using Application.Model.AuditLogs.Command;
 using Application.Model.Transactions.Command;
 using Application.Model.Transactions.Queries;
 using Application.Models.AuditLogs.Response;
+using Application.Models.Transactions.Command;
 using Application.Models.Transactions.Queries;
 using Application.Models.Transactions.Response;
 
 using AutoMapper;
 
 using Domain.DTO;
+using Domain.Enums;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -42,7 +44,7 @@ namespace Persistence.Repositories
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && x.RecipientBankName == bankName)
 					.OrderByDescending (x => x.DateCreated)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.Skip ((pageNumber - 1) * pageSize)
 					.Take (pageSize)
 					.ToListAsync (cancellationToken);
@@ -80,7 +82,7 @@ namespace Persistence.Repositories
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && x.PublicId == publicId)
 					.OrderBy (x => x.RecipientBankName)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.FirstOrDefaultAsync (cancellationToken);
 
 				if (result == null)
@@ -112,7 +114,7 @@ namespace Persistence.Repositories
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == getTransactionByBankNameAndAccountNumberRequest.IsDeleted && x.SenderBankName == getTransactionByBankNameAndAccountNumberRequest.BankName && x.SenderAccountNumber == getTransactionByBankNameAndAccountNumberRequest.AccountNumber)
 					.OrderBy (x => x.DateCreated)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.Skip ((getTransactionByBankNameAndAccountNumberRequest.PageNumber - 1) * getTransactionByBankNameAndAccountNumberRequest.PageSize)
 					.Take (getTransactionByBankNameAndAccountNumberRequest.PageSize)
 					.ToListAsync (getTransactionByBankNameAndAccountNumberRequest.CancellationToken)
@@ -120,7 +122,7 @@ namespace Persistence.Repositories
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == getTransactionByBankNameAndAccountNumberRequest.IsDeleted && x.RecipientBankName == getTransactionByBankNameAndAccountNumberRequest.BankName && x.RecipientAccountNumber == getTransactionByBankNameAndAccountNumberRequest.AccountNumber)
 					.OrderBy (x => x.DateCreated)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.Skip ((getTransactionByBankNameAndAccountNumberRequest.PageNumber - 1) * getTransactionByBankNameAndAccountNumberRequest.PageSize)
 					.Take (getTransactionByBankNameAndAccountNumberRequest.PageSize)
 					.ToListAsync (getTransactionByBankNameAndAccountNumberRequest.CancellationToken);
@@ -160,6 +162,12 @@ namespace Persistence.Repositories
 					return badRequest;
 				}
 
+				if (!createTransaction.TransactionType.Equals (TransactionType.Credit, StringComparison.OrdinalIgnoreCase) && !createTransaction.TransactionType.Equals (TransactionType.Debit, StringComparison.OrdinalIgnoreCase))
+				{
+					var badRequest = RequestResponse<TransactionResponse>.Failed (null, 400, "Specify transaction type as either debit or credit");
+					return badRequest;
+				}
+
 				var payload = _mapper.Map<Domain.Entities.Transaction> (createTransaction);
 
 				payload.IsDeleted = false;
@@ -172,6 +180,7 @@ namespace Persistence.Repositories
 				payload.PublicId = Guid.NewGuid ().ToString ();
 
 				await _context.Transactions.AddAsync (payload, createTransaction.CancellationToken);
+
 				await _context.SaveChangesAsync (createTransaction.CancellationToken);
 
 				var response = _mapper.Map<TransactionResponse> (payload);
@@ -244,7 +253,7 @@ namespace Persistence.Repositories
 
 				if (updateTransaction == null)
 				{
-					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Cart");
+					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Transaction");
 					_logger.LogInformation ($"UpdateTransaction ends at {DateTime.UtcNow.AddHours (1)} by User PublicId: {updateTransactionRequest.LastModifiedBy} for amount: {updateTransactionRequest.Amount}");
 					return badRequest;
 				}
@@ -289,6 +298,100 @@ namespace Persistence.Repositories
 			catch (Exception ex)
 			{
 				_logger.LogError ($"UpdateTransaction by User PublicId: {updateTransactionRequest.LastModifiedBy} for amount: {updateTransactionRequest.Amount} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task<RequestResponse<TransactionResponse>> ConfirmTransaction (ConfirmTransactionCommand updateTransactionRequest)
+		{
+			try
+			{
+				_logger.LogInformation ($"ConfirmTransaction begins at {DateTime.UtcNow.AddHours (1)} by System for amount: {updateTransactionRequest.Amount}");
+				if (updateTransactionRequest == null)
+				{
+					var badRequest = RequestResponse<TransactionResponse>.NullPayload (null);
+					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)}");
+
+					return badRequest;
+				}
+
+				var updateTransaction = await _context.Transactions.Where (x => x.PaymentReferenceId == updateTransactionRequest.PaymentReferenceId && x.IsDeleted == false).FirstOrDefaultAsync (updateTransactionRequest.CancellationToken);
+
+				if (updateTransaction == null)
+				{
+					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Transaction");
+					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for amount: {updateTransactionRequest.Amount}");
+					return badRequest;
+				}
+
+				CreateAuditLogCommand createAuditLogRequest = new ()
+				{
+					CancellationToken = updateTransactionRequest.CancellationToken,
+					CreatedBy = updateTransaction.CreatedBy,
+					Name = "Transaction",
+					Payload = JsonConvert.SerializeObject (updateTransaction)
+				};
+
+				RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
+
+				if (!createAuditLog.IsSuccessful)
+				{
+					var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
+					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by System for amount: {updateTransactionRequest.Amount}");
+					return badRequest;
+				}
+
+				updateTransaction.IsReconciled = true;
+				updateTransaction.LastModifiedBy = "SYSTEM";
+				updateTransaction.LastModifiedDate = DateTime.UtcNow.AddHours (1);
+
+				var updateSenderAccountDetails = await _context.Accounts.Where (x => x.AccountNumber == updateTransaction.RecipientAccountNumber && x.IsDeleted == false).FirstOrDefaultAsync (updateTransactionRequest.CancellationToken);
+
+				if (updateSenderAccountDetails == null && updateTransaction.TransactionType.Equals (TransactionType.Credit, StringComparison.OrdinalIgnoreCase))
+				{
+					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Sender Bank account details");
+					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for amount: {updateTransactionRequest.Amount}");
+					return badRequest;
+				}
+
+				if (updateTransaction.TransactionType.Equals (TransactionType.Credit, StringComparison.OrdinalIgnoreCase))
+				{
+					updateSenderAccountDetails.Balance += updateTransactionRequest.Amount;
+					updateSenderAccountDetails.LastModifiedBy = "SYSTEM";
+					updateSenderAccountDetails.LastModifiedDate = DateTime.UtcNow.AddHours (1);
+
+					_context.Accounts.Update (updateSenderAccountDetails);
+				}
+				else if (updateTransaction.TransactionType.Equals (TransactionType.Debit, StringComparison.OrdinalIgnoreCase))
+				{
+					var updateAccountDetails = await _context.Accounts.Where (x => x.AccountNumber == updateTransaction.SenderAccountNumber && x.IsDeleted == false).FirstOrDefaultAsync (updateTransactionRequest.CancellationToken);
+
+					if (updateAccountDetails == null)
+					{
+						var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Bank account details");
+						_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for amount: {updateTransactionRequest.Amount}");
+						return badRequest;
+					}
+
+					updateAccountDetails.Balance -= updateTransactionRequest.Amount;
+					updateAccountDetails.LastModifiedBy = "SYSTEM";
+					updateAccountDetails.LastModifiedDate = DateTime.UtcNow.AddHours (1);
+
+					_context.Accounts.Update (updateAccountDetails);
+				}
+
+
+				_context.Transactions.Update (updateTransaction);
+				await _context.SaveChangesAsync (updateTransactionRequest.CancellationToken);
+
+				var result = _mapper.Map<TransactionResponse> (updateTransaction);
+				var response = RequestResponse<TransactionResponse>.Updated (result, 1, "Transaction");
+				_logger.LogInformation ($"ConfirmTransaction at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} by System for amount: {updateTransactionRequest.Amount}");
+				return response;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError ($"ConfirmTransaction by System for amount: {updateTransactionRequest.Amount} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
 				throw;
 			}
 		}
@@ -358,7 +461,7 @@ namespace Persistence.Repositories
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && x.Amount == amountPaid)
 					.OrderByDescending (x => x.DateCreated)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.Skip ((pageNumber - 1) * pageSize)
 					.Take (pageSize)
 					.ToListAsync (cancellationToken);
@@ -418,7 +521,7 @@ namespace Persistence.Repositories
 						.AsNoTracking ()
 						.Where (x => x.IsDeleted == getTransactionByUserId.IsDeleted && x.CreatedBy == getTransactionByUserId.UserId)
 						.OrderByDescending (x => x.DateCreated)
-						.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+						.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 						.ToListAsync (getTransactionByUserId.CancellationToken);
 				}
 
@@ -455,7 +558,7 @@ namespace Persistence.Repositories
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == isDeleted)
 					.OrderByDescending (x => x.DateCreated)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.Skip ((pageNumber - 1) * pageSize)
 					.Take (pageSize)
 					.ToListAsync (cancellationToken);
@@ -492,7 +595,7 @@ namespace Persistence.Repositories
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && x.DateCreated == getTransactionsByDate.Date.Date)
 					.OrderBy (x => x.DateCreated)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.Skip ((getTransactionsByDate.PageNumber - 1) * getTransactionsByDate.PageSize)
 					.Take (getTransactionsByDate.PageSize)
 					.ToListAsync (getTransactionsByDate.CancellationToken);
@@ -646,7 +749,7 @@ namespace Persistence.Repositories
 					.AsNoTracking ()
 					.Where (x => x.CreatedBy == userId && x.DateCreated.Date >= fromDate.Date && x.DateCreated.Date <= toDate.Date && x.IsDeleted == false)
 					.OrderByDescending (x => x.CreatedBy)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.Skip ((pageNumber - 1) * pageSize)
 					.Take (pageSize)
 					.ToListAsync (cancellationToken);
@@ -684,7 +787,7 @@ namespace Persistence.Repositories
 					.AsNoTracking ()
 					.Where (x => x.CreatedBy == userId && x.DateCreated.Date == date.Date && x.IsDeleted == false)
 					.OrderByDescending (x => x.DateCreated)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.Skip ((pageNumber - 1) * pageSize)
 					.Take (pageSize)
 					.ToListAsync (cancellationToken);
@@ -725,7 +828,7 @@ namespace Persistence.Repositories
 					.AsNoTracking ()
 					.Where (x => x.CreatedBy == userId && x.DateCreated.Date >= startOfWeek.Date && x.DateCreated.Date <= endOfWeek.Date && x.IsDeleted == false)
 					.OrderByDescending (x => x.CreatedBy)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.Skip ((pageNumber - 1) * pageSize)
 					.Take (pageSize)
 					.ToListAsync (cancellationToken);
@@ -763,7 +866,7 @@ namespace Persistence.Repositories
 					.AsNoTracking ()
 					.Where (x => x.CreatedBy == userId && x.DateCreated.Month == date.Month && x.IsDeleted == false && x.DateCreated.Year == date.Year)
 					.OrderByDescending (x => x.CreatedBy)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.Skip ((pageNumber - 1) * pageSize)
 					.Take (pageSize)
 					.ToListAsync (cancellationToken);
@@ -801,7 +904,7 @@ namespace Persistence.Repositories
 					.AsNoTracking ()
 					.Where (x => x.CreatedBy == userId && x.DateCreated.Year == date.Year && x.IsDeleted == false)
 					.OrderByDescending (x => x.CreatedBy)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType })
+					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.Skip ((pageNumber - 1) * pageSize)
 					.Take (pageSize)
 					.ToListAsync (cancellationToken);

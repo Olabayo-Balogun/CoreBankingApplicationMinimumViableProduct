@@ -6,7 +6,6 @@ using Application.Model.Uploads.Queries;
 using Application.Models.AuditLogs.Response;
 using Application.Models.Banks.Response;
 using Application.Models.Branches.Response;
-using Application.Models.Payments.Response;
 using Application.Models.Transactions.Response;
 using Application.Models.Users.Response;
 
@@ -79,9 +78,6 @@ namespace Persistence.Repositories
 					case "Branch":
 						response.BranchLog = JsonConvert.DeserializeObject<BranchResponse> (payload.Payload);
 						break;
-					case "Payment":
-						response.PaymentLog = JsonConvert.DeserializeObject<PaymentResponse> (payload.Payload);
-						break;
 					case "Transaction":
 						response.TransactionLog = JsonConvert.DeserializeObject<TransactionResponse> (payload.Payload);
 						break;
@@ -134,7 +130,6 @@ namespace Persistence.Repositories
 					AccountLogs = [],
 					BankLogs = [],
 					BranchLogs = [],
-					PaymentLogs = [],
 					TransactionLogs = [],
 					UploadLogs = [],
 					UserLogs = []
@@ -152,9 +147,6 @@ namespace Persistence.Repositories
 							break;
 						case "Branch":
 							response.BranchLogs.Add (JsonConvert.DeserializeObject<BranchResponse> (payload.Payload));
-							break;
-						case "Payment":
-							response.PaymentLogs.Add (JsonConvert.DeserializeObject<PaymentResponse> (payload.Payload));
 							break;
 						case "Transaction":
 							response.TransactionLogs.Add (JsonConvert.DeserializeObject<TransactionResponse> (payload.Payload));
@@ -246,7 +238,6 @@ namespace Persistence.Repositories
 					AccountLogs = [],
 					BankLogs = [],
 					BranchLogs = [],
-					PaymentLogs = [],
 					TransactionLogs = [],
 					UploadLogs = [],
 					UserLogs = []
@@ -332,9 +323,6 @@ namespace Persistence.Repositories
 							break;
 						case "Branch":
 							result.BranchLogs.Add (JsonConvert.DeserializeObject<BranchResponse> (response.Payload));
-							break;
-						case "Payment":
-							result.PaymentLogs.Add (JsonConvert.DeserializeObject<PaymentResponse> (response.Payload));
 							break;
 						case "Transaction":
 							result.TransactionLogs.Add (JsonConvert.DeserializeObject<TransactionResponse> (response.Payload));
