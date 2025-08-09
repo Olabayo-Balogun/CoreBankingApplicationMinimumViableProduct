@@ -1,7 +1,7 @@
 ﻿using System.Net;
 
 using Application.Interface.Infrastructure;
-using Application.Model;
+using Application.Models;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;

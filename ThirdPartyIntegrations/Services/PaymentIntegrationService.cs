@@ -2,6 +2,7 @@
 using Application.Model;
 using Application.Model.AuditLogs.Command;
 using Application.Model.PaymentIntegration.Command;
+using Application.Models;
 using Application.Models.AuditLogs.Response;
 
 using AutoMapper;

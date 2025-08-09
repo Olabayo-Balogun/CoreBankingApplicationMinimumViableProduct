@@ -10,7 +10,7 @@ namespace Application.Models.AuditLogs.Response
 {
 	public class AuditLogsQueryResponse
 	{
-		public List<AccountDetailResponse>? AccountDetailLogs { get; set; }
+		public List<AccountDetailResponse>? AccountLogs { get; set; }
 		public List<BankResponse>? BankLogs { get; set; }
 		public List<BranchResponse>? BranchLogs { get; set; }
 		public List<PaymentResponse>? PaymentLogs { get; set; }

@@ -2,9 +2,9 @@
 
 using Microsoft.EntityFrameworkCore;
 
-namespace Domain.DTO
+namespace Application.Models.Accounts.Response
 {
-	public class AccountDto : AuditableEntityDto
+	public class AccountResponse
 	{
 		/// <summary>
 		/// The publicId is a unique GUID that's used to point directly to the account detail on the DB
@@ -42,13 +42,11 @@ namespace Domain.DTO
 		/// <summary>
 		/// This should contain information on how much a business or user has with us
 		/// </summary>
-		[Range (0.01, double.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]
 		public decimal Balance { get; set; }
 
 		[Required]
 		[Range (0.01, double.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]
 		[Precision (18, 2)]
 		public decimal MaximumDailyWithdrawalLimitAmount { get; set; }
-		public CancellationToken CancellationToken { get; set; }
 	}
 }

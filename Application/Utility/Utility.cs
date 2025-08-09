@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 
 using Application.Model;
+using Application.Models;
 
 using Microsoft.AspNetCore.Http;
 
@@ -462,6 +463,54 @@ namespace Application.Utility
 			result.DecodedString2 = query2Response.DecodedString;
 
 			return result;
+		}
+
+		public static string GenerateNUBAN (string bankCode, string serialNumber)
+		{
+			if (serialNumber.Length != 6)
+			{
+				throw new ArgumentException ("Serial number must be 6 digits.");
+			}
+
+			string baseNumber = bankCode + serialNumber;
+			int[] weights = { 3, 7, 3, 3, 7, 3, 3, 7, 3 };
+			int sum = 0;
+
+			for (int i = 0; i < 9; i++)
+			{
+				int digit = int.Parse (baseNumber[i].ToString ());
+				sum += digit * weights[i];
+			}
+
+			int checkDigit = (10 - (sum % 10)) % 10;
+			return serialNumber + checkDigit.ToString (); // Final 10-digit NUBAN
+		}
+
+		public static string GenerateLedgerNumber (string branchCode, string customerNumber, string accountType)
+		{
+
+			return $"{branchCode}/{accountType}/{customerNumber}";
+		}
+
+		public static string PadToSixDigits (int number)
+		{
+			return number < 0 || number > 999999
+				? throw new ArgumentOutOfRangeException ("Number must be between 0 and 999999.")
+				: number.ToString ("D6");
+		}
+
+		public static string PadToThreeDigits (int number)
+		{
+			return number < 0 || number > 999
+				? throw new ArgumentOutOfRangeException ("Number must be between 0 and 999.")
+				: number.ToString ("D3");
+		}
+
+		public static string PadToTwoDigits (int number)
+		{
+			return number < 0 || number > 99
+				? throw new ArgumentOutOfRangeException ("Number must be between 0 and 99.")
+				: number.ToString ("D2");
 		}
 	}
 }

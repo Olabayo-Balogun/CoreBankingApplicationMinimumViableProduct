@@ -1,4 +1,8 @@
-﻿using Application.Interface.Persistence;
+﻿using System.Reflection;
+
+using Application.Interface.Persistence;
+
+using MediatR;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +36,9 @@ namespace Persistence
 				options.User.RequireUniqueEmail = true;
 			});
 
+			services.AddAutoMapper (Assembly.GetExecutingAssembly ());
+			services.AddMediatR (Assembly.GetExecutingAssembly ());
+
 			services.AddScoped<IAccountRepository, AccountRepository> ();
 			services.AddScoped<IAuditLogRepository, AuditLogRepository> ();
 			services.AddScoped<IBankRepository, BankRepository> ();
@@ -40,6 +47,7 @@ namespace Persistence
 			services.AddScoped<IEmailRequestRepository, EmailRequestRepository> ();
 			services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository> ();
 			services.AddScoped<IPaymentRepository, PaymentRepository> ();
+			services.AddScoped<ITransactionRepository, TransactionRepository> ();
 			services.AddScoped<IUploadRepository, UploadRepository> ();
 			services.AddScoped<IUserRepository, UserRepository> ();
 			return services;

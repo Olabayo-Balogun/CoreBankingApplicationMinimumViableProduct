@@ -42,12 +42,16 @@ namespace Domain.Entities
 		/// <summary>
 		/// This should contain information on how much a business or user has with us
 		/// </summary>
-		[Range (0.01, double.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]
 		public decimal Balance { get; set; }
 
 		[Required]
 		[Range (0.01, double.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]
 		[Precision (18, 2)]
 		public decimal MaximumDailyWithdrawalLimitAmount { get; set; }
+
+		[Required]
+		[Range (0.01, double.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]
+		[Precision (18, 2)]
+		public decimal MaximumDailyTransferLimitAmount { get; set; }
 	}
 }

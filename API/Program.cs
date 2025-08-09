@@ -5,11 +5,14 @@ using System.Threading.RateLimiting;
 using API.Middleware;
 
 using Application;
-using Application.Model;
+using Application.Models;
+
+using Asp.Versioning;
 
 using AutoMapper;
 
 using Hangfire;
+using Hangfire.SqlServer;
 
 using Infrastructure;
 
@@ -34,6 +37,19 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using ThirdPartyIntegrations;
 
 var builder = WebApplication.CreateBuilder (args);
+
+builder.Services.AddHangfire (configuration => configuration
+		.SetDataCompatibilityLevel (CompatibilityLevel.Version_180)
+		.UseSimpleAssemblyNameTypeSerializer ()
+		.UseRecommendedSerializerSettings ()
+		.UseSqlServerStorage (builder.Configuration.GetConnectionString ("DefaultConnection"),
+		new SqlServerStorageOptions
+		{
+			JobExpirationCheckInterval = TimeSpan.FromDays (2)
+		}));
+
+builder.Services.AddHangfireServer ();
+
 builder.Configuration
 	.AddJsonFile ("appsettings.json", optional: false, reloadOnChange: true)
 	.SetBasePath (builder.Environment.ContentRootPath)
@@ -107,6 +123,7 @@ builder.Services.AddControllers (options =>
 });
 
 builder.Services.AddControllersWithViews ();
+builder.Services.AddHangfireServer ();
 
 // For Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext> (options => options.UseSqlServer (builder.Configuration.GetConnectionString ("DefaultConnection"), b => b.MigrationsAssembly ("Persistence")));
@@ -145,6 +162,10 @@ builder.Services.AddApiVersioning (options =>
 	options.DefaultApiVersion = new Asp.Versioning.ApiVersion (1, 0);
 	options.AssumeDefaultVersionWhenUnspecified = true;
 	options.ReportApiVersions = true;
+	options.ApiVersionReader = ApiVersionReader.Combine (
+			new QueryStringApiVersionReader ("api-version"),
+			new HeaderApiVersionReader ("X-API-Version")
+		);
 })
 
 .AddApiExplorer (options =>

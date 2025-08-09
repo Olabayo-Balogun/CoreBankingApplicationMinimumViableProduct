@@ -71,7 +71,7 @@ namespace Persistence.Repositories
 				switch (payload.Name)
 				{
 					case "AccountDetail":
-						response.AccountDetailLog = JsonConvert.DeserializeObject<AccountDetailResponse> (payload.Payload);
+						response.AccountLog = JsonConvert.DeserializeObject<AccountDetailResponse> (payload.Payload);
 						break;
 					case "Bank":
 						response.BankLog = JsonConvert.DeserializeObject<BankResponse> (payload.Payload);
@@ -131,7 +131,7 @@ namespace Persistence.Repositories
 
 				var response = new AuditLogsQueryResponse
 				{
-					AccountDetailLogs = [],
+					AccountLogs = [],
 					BankLogs = [],
 					BranchLogs = [],
 					PaymentLogs = [],
@@ -145,7 +145,7 @@ namespace Persistence.Repositories
 					switch (payload.Name)
 					{
 						case "AccountDetail":
-							response.AccountDetailLogs.Add (JsonConvert.DeserializeObject<AccountDetailResponse> (payload.Payload));
+							response.AccountLogs.Add (JsonConvert.DeserializeObject<AccountDetailResponse> (payload.Payload));
 							break;
 						case "Bank":
 							response.BankLogs.Add (JsonConvert.DeserializeObject<BankResponse> (payload.Payload));
@@ -204,7 +204,7 @@ namespace Persistence.Repositories
 				switch (response.Name)
 				{
 					case "AccountDetail":
-						payload.AccountDetailLog = JsonConvert.DeserializeObject<AccountDetailResponse> (response.Payload);
+						payload.AccountLog = JsonConvert.DeserializeObject<AccountDetailResponse> (response.Payload);
 						break;
 					case "Bank":
 						payload.BankLog = JsonConvert.DeserializeObject<BankResponse> (response.Payload);
@@ -243,7 +243,7 @@ namespace Persistence.Repositories
 				_logger.LogInformation ($"GetAuditLogs begins at {DateTime.UtcNow.AddHours (1)} for userId: {userId}");
 				AuditLogsQueryResponse result = new ()
 				{
-					AccountDetailLogs = [],
+					AccountLogs = [],
 					BankLogs = [],
 					BranchLogs = [],
 					PaymentLogs = [],
@@ -325,7 +325,7 @@ namespace Persistence.Repositories
 					switch (response.Name)
 					{
 						case "AccountDetail":
-							result.AccountDetailLogs.Add (JsonConvert.DeserializeObject<AccountDetailResponse> (response.Payload));
+							result.AccountLogs.Add (JsonConvert.DeserializeObject<AccountDetailResponse> (response.Payload));
 							break;
 						case "Bank":
 							result.BankLogs.Add (JsonConvert.DeserializeObject<BankResponse> (response.Payload));

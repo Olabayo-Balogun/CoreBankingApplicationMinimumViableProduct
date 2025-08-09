@@ -10,6 +10,7 @@ namespace Domain.Entities
 		[Required (ErrorMessage = "Name is required")]
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string Name { get; set; }
+		[Range (1, 999)]
 		public int Code { get; set; }
 		[Required (ErrorMessage = "Address is required")]
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]

@@ -2,6 +2,7 @@
 using Application.Model;
 using Application.Model.EmailLogs.Command;
 using Application.Model.EmailLogs.Queries;
+using Application.Models;
 
 using AutoMapper;
 

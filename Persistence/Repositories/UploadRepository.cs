@@ -3,6 +3,7 @@ using Application.Model;
 using Application.Model.AuditLogs.Command;
 using Application.Model.Uploads.Command;
 using Application.Model.Uploads.Queries;
+using Application.Models;
 using Application.Models.AuditLogs.Response;
 using Application.Utility;
 

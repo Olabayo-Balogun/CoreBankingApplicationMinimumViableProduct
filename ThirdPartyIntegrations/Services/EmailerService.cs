@@ -2,8 +2,8 @@
 
 using Application.Interface.Infrastructure;
 using Application.Interface.Persistence;
-using Application.Model;
 using Application.Model.EmailLogs.Command;
+using Application.Models;
 using Application.Utility;
 
 using Microsoft.Extensions.Logging;

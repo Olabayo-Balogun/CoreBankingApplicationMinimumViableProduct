@@ -1,4 +1,4 @@
-﻿namespace Application.Model.Transactions.Queries
+﻿namespace Application.Models.Transactions.Queries
 {
 	public class GetTransactionByUserIdQuery
 	{
@@ -6,7 +6,6 @@
 		public int PageSize { get; set; }
 		public int PageNumber { get; set; }
 		public bool IsDeleted { get; set; }
-		public bool IsRecipient { get; set; }
 		public CancellationToken CancellationToken { get; set; }
 		public DateTime? Date { get; set; }
 		public DateTime? FromDate { get; set; }

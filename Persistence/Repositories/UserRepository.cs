@@ -10,6 +10,7 @@ using Application.Model.AuditLogs.Command;
 using Application.Model.EmailRequests.Command;
 using Application.Model.Users.Command;
 using Application.Model.Users.Response;
+using Application.Models;
 using Application.Models.AuditLogs.Response;
 using Application.Models.Users.Response;
 
@@ -971,9 +972,6 @@ namespace Persistence.Repositories
 					payload.PublicId = Guid.NewGuid ().ToString ();
 					payload.EmailVerificationToken = token.ToString ();
 					payload.PublicId = Guid.NewGuid ().ToString ();
-
-					await _context.Users.AddAsync (payload);
-					await _context.SaveChangesAsync ();
 				}
 				else if (user.Email.EndsWith ("@cbamvp.com", StringComparison.OrdinalIgnoreCase))
 				{
@@ -989,10 +987,7 @@ namespace Persistence.Repositories
 					payload.Password = HashPassword (user.Password);
 					payload.PasswordHash = payload.Password.GetHashCode ().ToString ();
 					payload.EmailVerificationToken = token.ToString ();
-					payload.PublicId = Guid.NewGuid ().ToString ();
-
-					await _context.Users.AddAsync (payload, user.CancellationToken);
-					await _context.SaveChangesAsync (user.CancellationToken);
+					payload.PublicId = Guid.NewGuid ().ToString ();		
 				}
 				else
 				{
@@ -1009,10 +1004,10 @@ namespace Persistence.Repositories
 					payload.UserRole = UserRoles.User;
 					payload.EmailVerificationToken = token.ToString ();
 					payload.PublicId = Guid.NewGuid ().ToString ();
-
-					await _context.Users.AddAsync (payload, user.CancellationToken);
-					await _context.SaveChangesAsync (user.CancellationToken);
 				}
+
+				await _context.Users.AddAsync (payload, user.CancellationToken);
+				await _context.SaveChangesAsync (user.CancellationToken);
 
 				_logger.LogInformation ($"Fetching email verification template begins at {DateTime.UtcNow.AddHours (1)} for user with email: {user.Email}");
 				var template = await _emailTemplateService.GetEmailTemplateByTemplateNameAsync ("Registration", user.CancellationToken);
