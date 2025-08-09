@@ -14,7 +14,7 @@ namespace Persistence
 			base.OnModelCreating (builder);
 		}
 
-		public DbSet<AccountDetail> AccountDetails { get; set; }
+		public DbSet<Account> Accounts { get; set; }
 		public DbSet<AuditLog> AuditLogs { get; set; }
 		public DbSet<Bank> Banks { get; set; }
 		public DbSet<Branch> Branches { get; set; }
@@ -25,7 +25,6 @@ namespace Persistence
 		public DbSet<Transaction> Transactions { get; set; }
 		public DbSet<Upload> Uploads { get; set; }
 		public DbSet<User> Users { get; set; }
-		public DbSet<Wallet> Wallets { get; set; }
 
 	}
 }

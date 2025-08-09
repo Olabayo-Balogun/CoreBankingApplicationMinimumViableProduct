@@ -4,9 +4,14 @@ using System.Threading.RateLimiting;
 
 using API.Middleware;
 
-using Application.Models;
+using Application;
+using Application.Model;
+
+using AutoMapper;
 
 using Hangfire;
+
+using Infrastructure;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -26,8 +31,9 @@ using Serilog;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
 
-var builder = WebApplication.CreateBuilder (args);
+using ThirdPartyIntegrations;
 
+var builder = WebApplication.CreateBuilder (args);
 builder.Configuration
 	.AddJsonFile ("appsettings.json", optional: false, reloadOnChange: true)
 	.SetBasePath (builder.Environment.ContentRootPath)
@@ -49,6 +55,10 @@ Log.Logger = new LoggerConfiguration ()
 builder.Host.UseSerilog (Log.Logger);
 
 // Add services to the container.
+builder.Services.AddApplicationServices ();
+builder.Services.AddInfrastructureServices ();
+builder.Services.AddThirdPartyIntegrationServices ();
+builder.Services.AddPersistenceServices (builder.Configuration);
 builder.Services.Configure<AppSettings> (builder.Configuration.GetSection ("AppSettings"));
 
 builder.Services.AddRateLimiter (x => x
@@ -74,6 +84,16 @@ builder.Services.AddRateLimiter (x => x
 		options.QueueLimit = 0;
 	})
 );
+
+// Auto Mapper Configurations
+var mapperConfig = new MapperConfiguration (mc =>
+{
+	mc.AddProfile (new MappingProfiles ());
+});
+
+IMapper mapper = mapperConfig.CreateMapper ();
+builder.Services.AddSingleton (mapper);
+
 
 builder.Services.AddControllers (options =>
 {
@@ -126,6 +146,7 @@ builder.Services.AddApiVersioning (options =>
 	options.AssumeDefaultVersionWhenUnspecified = true;
 	options.ReportApiVersions = true;
 })
+
 .AddApiExplorer (options =>
 {
 	options.GroupNameFormat = "'v'VVV";

@@ -1,4 +1,4 @@
-﻿namespace Application.Models
+﻿namespace Application.Model
 {
 	public class RequestResponse<T>
 	{

@@ -1,0 +1,45 @@
+﻿using ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegration.Request;
+
+namespace Application.Model.PaymentIntegration.Command
+{
+	public class PaystackWebhookCommand
+	{
+		public string Event { get; set; }
+		public PaystackWebhookDataCommand Data { get; set; }
+	}
+}
+
+//{
+//    "event": "paymentrequest.success",
+//  "data": {
+//        "id": 1089700,
+//    "domain": "test",
+//    "amount": 10000000,
+//    "currency": "NGN",
+//    "due_date": null,
+//    "has_invoice": false,
+//    "invoice_number": null,
+//    "description": "Pay up now",
+//    "pdf_url": null,
+//    "line_items": [],
+//    "tax": [],
+//    "request_code": "PRQ_y0paeo93jh99mho",
+//    "status": "success",
+//    "paid": true,
+//    "paid_at": "2019-06-21T15:26:10.000Z",
+//    "metadata": null,
+//    "notifications": [
+
+
+//      {
+//            "sent_at": "2019-06-21T15:25:42.452Z",
+//        "channel": "email"
+
+
+//      }
+//    ],
+//    "offline_reference": "3365451089700",
+//    "customer": 7454223,
+//    "created_at": "2019-06-21T15:25:42.000Z"
+//  }
+//}

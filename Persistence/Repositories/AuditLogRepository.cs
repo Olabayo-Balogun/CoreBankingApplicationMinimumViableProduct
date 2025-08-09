@@ -1,0 +1,365 @@
+﻿using Application.Interface.Persistence;
+using Application.Model;
+using Application.Model.AccountDetails.Command;
+using Application.Model.AuditLogs.Command;
+using Application.Model.Uploads.Queries;
+using Application.Models.AuditLogs.Response;
+using Application.Models.Banks.Response;
+using Application.Models.Branches.Response;
+using Application.Models.Payments.Response;
+using Application.Models.Transactions.Response;
+using Application.Models.Users.Response;
+
+using AutoMapper;
+
+using Domain.Entities;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json;
+
+namespace Persistence.Repositories
+{
+	public class AuditLogRepository : IAuditLogRepository
+	{
+		private readonly ILogger<AuditLogRepository> _logger;
+		private readonly ApplicationDbContext _context;
+		private readonly IMapper _mapper;
+		public AuditLogRepository (ILogger<AuditLogRepository> logger, ApplicationDbContext context, IMapper mapper)
+		{
+			_logger = logger;
+			_context = context;
+			_mapper = mapper;
+		}
+
+		public async Task<RequestResponse<AuditLogResponse>> CreateAuditLogAsync (CreateAuditLogCommand request)
+		{
+			try
+			{
+				_logger.LogInformation ($"CreateAuditLog begins at {DateTime.UtcNow.AddHours (1)} for Class Name: {request.Name} by userPublicId: {request.CreatedBy}");
+				if (request == null)
+				{
+					var badRequest = RequestResponse<AuditLogResponse>.NullPayload (null);
+					_logger.LogInformation ($"CreateAuditLog ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+
+					return badRequest;
+				}
+
+				var payload = new AuditLog
+				{
+					Name = request.Name,
+					Payload = request.Payload,
+					CreatedBy = request.CreatedBy,
+					IsDeleted = false,
+					DateDeleted = null,
+					LastModifiedBy = null,
+					LastModifiedDate = null,
+					DeletedBy = null,
+					DateCreated = DateTime.UtcNow.AddHours (1)
+				};
+
+				payload.CreatedBy = request.CreatedBy;
+				payload.Name = request.Name.Trim ();
+				payload.Payload = request.Payload;
+				payload.PublicId = Guid.NewGuid ().ToString ();
+
+				await _context.AuditLogs.AddAsync (payload, request.CancellationToken);
+				await _context.SaveChangesAsync (request.CancellationToken);
+
+				var response = new AuditLogResponse ();
+				switch (payload.Name)
+				{
+					case "AccountDetail":
+						response.AccountDetailLog = JsonConvert.DeserializeObject<AccountDetailResponse> (payload.Payload);
+						break;
+					case "Bank":
+						response.BankLog = JsonConvert.DeserializeObject<BankResponse> (payload.Payload);
+						break;
+					case "Branch":
+						response.BranchLog = JsonConvert.DeserializeObject<BranchResponse> (payload.Payload);
+						break;
+					case "Payment":
+						response.PaymentLog = JsonConvert.DeserializeObject<PaymentResponse> (payload.Payload);
+						break;
+					case "Transaction":
+						response.TransactionLog = JsonConvert.DeserializeObject<TransactionResponse> (payload.Payload);
+						break;
+					case "Upload":
+						response.UploadLog = JsonConvert.DeserializeObject<UploadResponse> (payload.Payload);
+						break;
+					case "User":
+						response.UserLog = JsonConvert.DeserializeObject<UserResponse> (payload.Payload);
+						break;
+					default:
+						break;
+				}
+				var result = RequestResponse<AuditLogResponse>.Created (response, 1, "Audit log");
+
+				_logger.LogInformation ($"CreateAuditLog ends at {DateTime.UtcNow.AddHours (1)} with remark: {result.Remark} for Class Name: {request.Name} by userPublicId: {request.CreatedBy}");
+				return result;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError ($"CreateAuditLog for Class Name: {request.Name} by userPublicId: {request.CreatedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task<RequestResponse<AuditLogsQueryResponse>> CreateMultipleAuditLogAsync (List<CreateAuditLogCommand> requests)
+		{
+			try
+			{
+				_logger.LogInformation ($"CreateAuditLog begins at {DateTime.UtcNow.AddHours (1)} by userPublicId: {requests.First ().CreatedBy}");
+				if (requests == null)
+				{
+					var badRequest = RequestResponse<AuditLogsQueryResponse>.NullPayload (null);
+					_logger.LogInformation ($"CreateAuditLog ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+
+					return badRequest;
+				}
+
+				var payloads = _mapper.Map<List<AuditLog>> (requests);
+				foreach (var payload in payloads)
+				{
+					payload.PublicId = Guid.NewGuid ().ToString ();
+					payload.DateCreated = DateTime.UtcNow.AddHours (1);
+				}
+
+				await _context.AuditLogs.AddRangeAsync (payloads, requests.First ().CancellationToken);
+				await _context.SaveChangesAsync (requests.First ().CancellationToken);
+
+				var response = new AuditLogsQueryResponse
+				{
+					AccountDetailLogs = [],
+					BankLogs = [],
+					BranchLogs = [],
+					PaymentLogs = [],
+					TransactionLogs = [],
+					UploadLogs = [],
+					UserLogs = []
+				};
+
+				foreach (var payload in payloads)
+				{
+					switch (payload.Name)
+					{
+						case "AccountDetail":
+							response.AccountDetailLogs.Add (JsonConvert.DeserializeObject<AccountDetailResponse> (payload.Payload));
+							break;
+						case "Bank":
+							response.BankLogs.Add (JsonConvert.DeserializeObject<BankResponse> (payload.Payload));
+							break;
+						case "Branch":
+							response.BranchLogs.Add (JsonConvert.DeserializeObject<BranchResponse> (payload.Payload));
+							break;
+						case "Payment":
+							response.PaymentLogs.Add (JsonConvert.DeserializeObject<PaymentResponse> (payload.Payload));
+							break;
+						case "Transaction":
+							response.TransactionLogs.Add (JsonConvert.DeserializeObject<TransactionResponse> (payload.Payload));
+							break;
+						case "Upload":
+							response.UploadLogs.Add (JsonConvert.DeserializeObject<UploadResponse> (payload.Payload));
+							break;
+						case "User":
+							response.UserLogs.Add (JsonConvert.DeserializeObject<UserResponse> (payload.Payload));
+							break;
+						default:
+							break;
+					}
+				}
+
+				var result = RequestResponse<AuditLogsQueryResponse>.Created (response, payloads.LongCount (), "Audit logs");
+
+				_logger.LogInformation ($"CreateAuditLog ends at {DateTime.UtcNow.AddHours (1)} with remark: {result.Remark} by userPublicId: {requests.First ().CreatedBy}");
+				return result;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError ($"CreateAuditLog by userPublicId: {requests.First ().CreatedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task<RequestResponse<AuditLogResponse>> GetAuditLogByIdAsync (string id, CancellationToken cancellationToken)
+		{
+			try
+			{
+				_logger.LogInformation ($"GetAuditLogById begins at {DateTime.UtcNow.AddHours (1)} for audit log ID: {id}");
+				var response = await _context.AuditLogs
+					.AsNoTracking ()
+					.Where (x => x.IsDeleted == false && x.PublicId == id)
+					.FirstOrDefaultAsync (cancellationToken);
+				if (response == null)
+				{
+					var badRequest = RequestResponse<AuditLogResponse>.NotFound (null, "Audit log");
+
+					_logger.LogInformation ($"GetAuditLogById ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for audit log ID: {id}");
+
+					return badRequest;
+				}
+
+				var payload = new AuditLogResponse ();
+				switch (response.Name)
+				{
+					case "AccountDetail":
+						payload.AccountDetailLog = JsonConvert.DeserializeObject<AccountDetailResponse> (response.Payload);
+						break;
+					case "Bank":
+						payload.BankLog = JsonConvert.DeserializeObject<BankResponse> (response.Payload);
+						break;
+					case "Branch":
+						payload.BranchLog = JsonConvert.DeserializeObject<BranchResponse> (response.Payload);
+						break;
+					case "Transaction":
+						payload.TransactionLog = JsonConvert.DeserializeObject<TransactionResponse> (response.Payload);
+						break;
+					case "Upload":
+						payload.UploadLog = JsonConvert.DeserializeObject<UploadResponse> (response.Payload);
+						break;
+					case "User":
+						payload.UserLog = JsonConvert.DeserializeObject<UserResponse> (response.Payload);
+						break;
+					default:
+						break;
+				}
+
+				var result = RequestResponse<AuditLogResponse>.SearchSuccessful (payload, 1, "Audit log");
+				_logger.LogInformation ($"GetAuditLogById ends at {DateTime.UtcNow.AddHours (1)} with remark: {result.Remark} for audit log ID: {id}");
+				return result;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError ($"GetAuditLogById exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message} for audit log ID: {id}");
+				throw;
+			}
+		}
+
+		public async Task<RequestResponse<AuditLogsQueryResponse>> GetAuditLogsAsync (string? userId, string? logName, CancellationToken cancellationToken, int pageNumber, int pageSize)
+		{
+			try
+			{
+				_logger.LogInformation ($"GetAuditLogs begins at {DateTime.UtcNow.AddHours (1)} for userId: {userId}");
+				AuditLogsQueryResponse result = new ()
+				{
+					AccountDetailLogs = [],
+					BankLogs = [],
+					BranchLogs = [],
+					PaymentLogs = [],
+					TransactionLogs = [],
+					UploadLogs = [],
+					UserLogs = []
+				};
+
+				List<AuditLog>? responses = [];
+
+				long count = 0;
+				if (userId != null && logName == null)
+				{
+					responses = await _context.AuditLogs
+						.AsNoTracking ()
+						.Where (x => x.IsDeleted == false && x.CreatedBy == userId)
+						.OrderByDescending (x => x.DateCreated)
+						.Skip ((pageNumber - 1) * pageSize)
+						.Take (pageSize)
+						.ToListAsync (cancellationToken);
+
+					count = await _context.AuditLogs
+						.AsNoTracking ()
+						.Where (x => x.IsDeleted == false && x.CreatedBy == userId)
+						.LongCountAsync (cancellationToken);
+				}
+				else if (userId == null && logName != null)
+				{
+					responses = await _context.AuditLogs.AsNoTracking ()
+						.Where (x => x.IsDeleted == false && x.Name == logName.Trim ())
+						.OrderByDescending (x => x.DateCreated)
+						.Skip ((pageNumber - 1) * pageSize)
+						.Take (pageSize)
+						.ToListAsync (cancellationToken);
+
+					count = await _context.AuditLogs
+						.AsNoTracking ()
+						.Where (x => x.IsDeleted == false && x.Name == logName.Trim ())
+						.LongCountAsync (cancellationToken);
+				}
+				else if (userId != null && logName != null)
+				{
+					responses = await _context.AuditLogs.AsNoTracking ()
+						.Where (x => x.IsDeleted == false && x.Name == logName.Trim () && x.CreatedBy == userId)
+						.OrderByDescending (x => x.DateCreated)
+						.Skip ((pageNumber - 1) * pageSize)
+						.Take (pageSize)
+						.ToListAsync (cancellationToken);
+
+					count = await _context.AuditLogs
+						.AsNoTracking ()
+						.Where (x => x.IsDeleted == false && x.Name == logName.Trim () && x.CreatedBy == userId)
+						.LongCountAsync (cancellationToken);
+				}
+				else
+				{
+					responses = await _context.AuditLogs.AsNoTracking ()
+						.Where (x => x.IsDeleted == false)
+						.OrderByDescending (x => x.DateCreated)
+						.Skip ((pageNumber - 1) * pageSize)
+						.Take (pageSize)
+						.ToListAsync (cancellationToken);
+					count = await _context.AuditLogs
+						.AsNoTracking ()
+						.Where (x => x.IsDeleted == false)
+						.LongCountAsync (cancellationToken);
+				}
+
+
+				if (responses == null)
+				{
+					var badResult = RequestResponse<AuditLogsQueryResponse>.NotFound (null, "Audit logs");
+					_logger.LogInformation ($"GetAuditLogs ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResult.Remark} with count: {badResult.TotalCount}");
+					return badResult;
+				}
+
+				foreach (var response in responses)
+				{
+					switch (response.Name)
+					{
+						case "AccountDetail":
+							result.AccountDetailLogs.Add (JsonConvert.DeserializeObject<AccountDetailResponse> (response.Payload));
+							break;
+						case "Bank":
+							result.BankLogs.Add (JsonConvert.DeserializeObject<BankResponse> (response.Payload));
+							break;
+						case "Branch":
+							result.BranchLogs.Add (JsonConvert.DeserializeObject<BranchResponse> (response.Payload));
+							break;
+						case "Payment":
+							result.PaymentLogs.Add (JsonConvert.DeserializeObject<PaymentResponse> (response.Payload));
+							break;
+						case "Transaction":
+							result.TransactionLogs.Add (JsonConvert.DeserializeObject<TransactionResponse> (response.Payload));
+							break;
+						case "Upload":
+							result.UploadLogs.Add (JsonConvert.DeserializeObject<UploadResponse> (response.Payload));
+							break;
+						case "User":
+							result.UserLogs.Add (JsonConvert.DeserializeObject<UserResponse> (response.Payload));
+							break;
+						default:
+							break;
+					}
+
+				}
+
+				var auditLogResponse = RequestResponse<AuditLogsQueryResponse>.SearchSuccessful (result, count, "Audit logs");
+				_logger.LogInformation ($"GetAuditLogs ends at {DateTime.UtcNow.AddHours (1)} with remark: {auditLogResponse.Remark} with count: {auditLogResponse.TotalCount}");
+				return auditLogResponse;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError ($"GetAuditLogs exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message} for userId: {userId}");
+				throw;
+			}
+		}
+	}
+}

@@ -83,12 +83,12 @@ namespace Domain.Entities
 		/// <summary>
 		/// This should helps with information regarding whether the user is a staff of a registered business on our platform
 		/// </summary>
-		public bool IsStaff { get; set; }
+		public bool IsStaff { get; set; } = false;
 
 		/// <summary>
 		/// This should helps with information regarding whether the user's company account is suspended
 		/// </summary>
-		public bool IsAccountSuspended { get; set; }
+		public bool IsAccountSuspended { get; set; } = false;
 
 		/// <summary>
 		/// This should helps with information of their BVN for reconciliation purposes if they want to see any information of their lending history on the platform, it's not compulsory though

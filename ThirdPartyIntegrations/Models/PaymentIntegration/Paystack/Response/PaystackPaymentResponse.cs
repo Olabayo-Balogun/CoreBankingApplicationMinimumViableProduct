@@ -1,0 +1,19 @@
+﻿namespace ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegration.Response
+{
+	public class PaystackPaymentResponse
+	{
+		public bool Status { get; set; }
+		public string Message { get; set; }
+		public PaystackPaymentDataResponse? Data { get; set; }
+	}
+}
+
+//{
+//	"status": true,
+//  "message": "Authorization URL created",
+//  "data": {
+//		"authorization_url": "https://checkout.paystack.com/3ni8kdavz62431k",
+//    "access_code": "3ni8kdavz62431k",
+//    "reference": "re4lyvq3s3"
+//  }
+//}
