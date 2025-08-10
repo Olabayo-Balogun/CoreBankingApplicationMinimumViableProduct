@@ -9,6 +9,7 @@ using Application.Models.AuditLogs.Response;
 using AutoMapper;
 
 using Domain.DTO;
+using Domain.Enums;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -96,6 +97,7 @@ namespace Persistence.Repositories
 				payload.LastModifiedBy = null;
 				payload.LastModifiedDate = null;
 				payload.AccountNumber = nuban;
+				payload.AccountStatus = AccountStatus.ActiveTier1;
 				payload.LedgerNumber = ledgerNumber;
 				payload.MaximumDailyTransferLimitAmount = _appSettings.MaximumDailyTransferLimitAmount;
 				payload.MaximumDailyWithdrawalLimitAmount = _appSettings.MaximumDailyWithdrawalLimitAmount;
@@ -250,6 +252,70 @@ namespace Persistence.Repositories
 			catch (Exception ex)
 			{
 				_logger.LogError ($"GetAccountByPublicId for account with publicId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task<RequestResponse<AccountResponse>> GetAccountByAccountNumberAsync (string accountNumber, CancellationToken cancellationToken)
+		{
+			try
+			{
+				_logger.LogInformation ($"GetAccountByAccountNumber begins at {DateTime.UtcNow.AddHours (1)} for account number: {accountNumber}");
+
+				var result = await _context.Accounts
+					.AsNoTracking ()
+					.Where (account => account.AccountNumber == accountNumber)
+					.Select (x => new AccountResponse { PublicId = x.PublicId, AccountNumber = x.AccountNumber, LedgerNumber = x.LedgerNumber, AccountStatus = x.AccountStatus, AccountType = x.AccountType, Balance = x.Balance, MaximumDailyWithdrawalLimitAmount = x.MaximumDailyWithdrawalLimitAmount })
+					.FirstOrDefaultAsync (cancellationToken);
+
+				if (result == null)
+				{
+					var badRequest = RequestResponse<AccountResponse>.NotFound (null, "Account");
+
+					_logger.LogInformation ($"GetAccountByAccountNumber ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for account number: {accountNumber}");
+
+					return badRequest;
+				}
+
+				var response = RequestResponse<AccountResponse>.SearchSuccessful (result, 1, "Account");
+				_logger.LogInformation ($"GetAccountByAccountNumber ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for account number: {accountNumber}");
+				return response;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError ($"GetAccountByAccountNumber for account with account number: {accountNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task<RequestResponse<AccountResponse>> GetAccountByLedgerNumberAsync (string ledgerNumber, CancellationToken cancellationToken)
+		{
+			try
+			{
+				_logger.LogInformation ($"GetAccountByLedgerNumber begins at {DateTime.UtcNow.AddHours (1)} for ledger number: {ledgerNumber}");
+
+				var result = await _context.Accounts
+					.AsNoTracking ()
+					.Where (account => account.LedgerNumber == ledgerNumber)
+					.Select (x => new AccountResponse { PublicId = x.PublicId, AccountNumber = x.AccountNumber, LedgerNumber = x.LedgerNumber, AccountStatus = x.AccountStatus, AccountType = x.AccountType, Balance = x.Balance, MaximumDailyWithdrawalLimitAmount = x.MaximumDailyWithdrawalLimitAmount })
+					.FirstOrDefaultAsync (cancellationToken);
+
+				if (result == null)
+				{
+					var badRequest = RequestResponse<AccountResponse>.NotFound (null, "Account");
+
+					_logger.LogInformation ($"GetAccountByLedgerNumber ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for ledger number: {ledgerNumber}");
+
+					return badRequest;
+				}
+
+				var response = RequestResponse<AccountResponse>.SearchSuccessful (result, 1, "Account");
+				_logger.LogInformation ($"GetAccountByLedgerNumber ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for ledger number: {ledgerNumber}");
+				return response;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError ($"GetAccountByLedgerNumber for account with ledger number: {ledgerNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
 				throw;
 			}
 		}

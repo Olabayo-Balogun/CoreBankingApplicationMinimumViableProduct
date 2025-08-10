@@ -13,21 +13,18 @@ namespace Domain.Entities
 		public string? Description { get; set; } = string.Empty;
 		[Precision (18, 2)]
 		public decimal Amount { get; set; }
-		[Required]
+		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string? SenderAccountNumber { get; set; }
+		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string? SenderAccountName { get; set; }
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string SenderAccountNumber { get; set; } = string.Empty;
-		[Required]
+		public string? SenderBankName { get; set; }
+		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string RecipientAccountNumber { get; set; }
+		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+		public string? RecipientAccountName { get; set; }
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string SenderAccountName { get; set; } = string.Empty;
-		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string? SenderBankName { get; set; } = string.Empty;
-		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string RecipientAccountNumber { get; set; } = string.Empty;
-		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string? RecipientAccountName { get; set; } = string.Empty;
-		[Required]
-		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string RecipientBankName { get; set; } = string.Empty;
+		public string? RecipientBankName { get; set; }
 		public bool IsReconciled { get; set; } = false;
 		public bool IsFlagged { get; set; } = false;
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
@@ -37,7 +34,7 @@ namespace Domain.Entities
 		/// </summary>
 		[Required]
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string TransactionType { get; set; } = string.Empty;
+		public string TransactionType { get; set; }
 		[Required (ErrorMessage = "Transaction Currency is required")]
 		[StringLength (500, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string Currency { get; set; }

@@ -23,7 +23,7 @@ using AutoMapper;
 using Domain.DTO;
 using Domain.Entities;
 
-namespace Application
+namespace Application.Profiles
 {
 	public class MappingProfiles : Profile
 	{
@@ -64,7 +64,7 @@ namespace Application
 			CreateMap<EmailTemplateResponse, EmailTemplateDto> ().ReverseMap ();
 			CreateMap<EmailTemplate, EmailTemplateResponse> ().ReverseMap ();
 
-			CreateMap<CreateTransactionCommand, TransactionDto> ().ReverseMap ();
+			CreateMap<DepositCommand, TransactionDto> ().ReverseMap ();
 			CreateMap<UpdateTransactionCommand, TransactionDto> ().ReverseMap ();
 			CreateMap<Transaction, TransactionResponse> ().ReverseMap ();
 

@@ -15,5 +15,7 @@ namespace Application.Interface.Persistence
 		Task<RequestResponse<AccountResponse>> GetAccountCountAsync (CancellationToken cancellationToken);
 		Task<RequestResponse<AccountResponse>> GetAccountCountByUserIdAsync (string id, CancellationToken cancellationToken);
 		Task<RequestResponse<AccountResponse>> UpdateAccountAsync (AccountDto account);
+		Task<RequestResponse<AccountResponse>> GetAccountByAccountNumberAsync (string accountNumber, CancellationToken cancellationToken);
+		Task<RequestResponse<AccountResponse>> GetAccountByLedgerNumberAsync (string ledgerNumber, CancellationToken cancellationToken);
 	}
 }

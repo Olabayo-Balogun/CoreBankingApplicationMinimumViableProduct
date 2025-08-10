@@ -78,7 +78,7 @@ namespace Domain.Entities
 		/// This should helps with information regarding whether the user is an individual or not
 		/// </summary>
 		[Required (ErrorMessage = "IsIndividual is required")]
-		public bool IsIndividual { get; set; }
+		public bool IsIndividual { get; set; } = true;
 
 		/// <summary>
 		/// This should helps with information regarding whether the user is a staff of a registered business on our platform
@@ -177,7 +177,7 @@ namespace Domain.Entities
 		/// This should contain information on if the user has been deleted or not
 		/// </summary>
 		[Required (ErrorMessage = "IsDeleted is required")]
-		public bool IsDeleted { get; set; }
+		public bool IsDeleted { get; set; } = false;
 
 		/// <summary>
 		/// This should contain information on the date the user was created

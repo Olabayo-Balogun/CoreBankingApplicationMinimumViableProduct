@@ -957,7 +957,7 @@ namespace Persistence.Repositories
 				Guid token = Guid.NewGuid ();
 				string verificationLink = $"{_appSettings.BaseUrl}VerifyEmail?Email={user.Email}&Token={token}";
 
-				if (user.Email.Equals ("admin@cbamvp.com", StringComparison.OrdinalIgnoreCase))
+				if (user.Email.Equals ("admin@cbamvp.runasp.net", StringComparison.OrdinalIgnoreCase))
 				{
 					payload.IsDeleted = false;
 					payload.DateDeleted = null;
@@ -974,7 +974,7 @@ namespace Persistence.Repositories
 					payload.EmailVerificationToken = token.ToString ();
 					payload.PublicId = Guid.NewGuid ().ToString ();
 				}
-				else if (user.Email.EndsWith ("@cbamvp.com", StringComparison.OrdinalIgnoreCase))
+				else if (user.Email.EndsWith ("@cbamvp.runasp.net", StringComparison.OrdinalIgnoreCase))
 				{
 					payload.IsDeleted = false;
 					payload.DateDeleted = null;

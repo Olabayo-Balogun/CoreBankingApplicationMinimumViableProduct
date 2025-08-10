@@ -1,10 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using Application.Model;
+using Application.Models.Accounts.Response;
+
+using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Models.Accounts.Command
 {
-	public class UpdateAccountCommand
+	public class UpdateAccountCommand : IRequest<RequestResponse<AccountResponse>>
 	{
 		/// <summary>
 		/// The publicId is a unique GUID that's used to point directly to the account detail on the DB

@@ -4,8 +4,6 @@ using Application.Model.PaymentIntegration.Command;
 using Application.Models;
 using Application.Models.Transactions.Command;
 
-using AutoMapper;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -29,15 +27,13 @@ namespace ThirdPartyIntegrations.Services
 		private readonly ApplicationDbContext _context;
 		private readonly ILogger<PaymentIntegrationService> _logger;
 		private readonly ITransactionRepository _transactionRepository;
-		private readonly IMapper _mapper;
 
-		public PaymentIntegrationService (IOptions<AppSettings> appSettings, ApplicationDbContext context, ILogger<PaymentIntegrationService> logger, ITransactionRepository transactionRepository, IMapper mapper)
+		public PaymentIntegrationService (IOptions<AppSettings> appSettings, ApplicationDbContext context, ILogger<PaymentIntegrationService> logger, ITransactionRepository transactionRepository)
 		{
 			_appSettings = appSettings.Value;
 			_context = context;
 			_logger = logger;
 			_transactionRepository = transactionRepository;
-			_mapper = mapper;
 		}
 
 		public async Task<PaystackPaymentResponse> CreatePaystackPaymentRequestAsync (PaystackPaymentCommand request)

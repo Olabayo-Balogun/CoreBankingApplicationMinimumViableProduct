@@ -1,8 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using Application.Model;
+using Application.Models.Accounts.Response;
+
+using MediatR;
+
 namespace Application.Models.Accounts.Command
 {
-	public class DeleteAccountCommand
+	public class DeleteAccountCommand : IRequest<RequestResponse<AccountResponse>>
 	{
 		/// <summary>
 		/// Id of the account

@@ -6,8 +6,7 @@ using API.Middleware;
 
 using Application;
 using Application.Models;
-
-using Asp.Versioning;
+using Application.Profiles;
 
 using AutoMapper;
 
@@ -162,10 +161,7 @@ builder.Services.AddApiVersioning (options =>
 	options.DefaultApiVersion = new Asp.Versioning.ApiVersion (1, 0);
 	options.AssumeDefaultVersionWhenUnspecified = true;
 	options.ReportApiVersions = true;
-	options.ApiVersionReader = ApiVersionReader.Combine (
-			new QueryStringApiVersionReader ("api-version"),
-			new HeaderApiVersionReader ("X-API-Version")
-		);
+
 })
 
 .AddApiExplorer (options =>

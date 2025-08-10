@@ -75,7 +75,7 @@ namespace Test.Repositories
 			using var context = new ApplicationDbContext (options);
 
 			// Seed user
-			context.Users.Add (new User { PublicId = "user123", Id = 1, Email = "user@gmail.com", Password = "Password1!", UserRole = UserRoles.Staff });
+			context.Users.Add (new User { PublicId = "user123", Id = 1, Email = "user@gmail.com", Password = "Password1!", UserRole = UserRoles.Staff, DateCreated = DateTime.UtcNow });
 			await context.SaveChangesAsync ();
 
 			var repo = new AccountRepository (
@@ -237,7 +237,14 @@ namespace Test.Repositories
 		public async Task GetAccountByPublicIdAsync_ValidId_ReturnsAccount ()
 		{
 			using var context = CreateDbContext ();
-			context.Accounts.Add (new Account { PublicId = "acc123", AccountNumber = "1234567890", LedgerNumber = "LED001" });
+			context.Accounts.Add (new Account
+			{
+				PublicId = "acc123",
+				AccountNumber = "1234567890",
+				LedgerNumber = "LED001",
+				AccountStatus = AccountStatus.ActiveTier1,
+				AccountType = AccountType.NairaSaving,
+			});
 			await context.SaveChangesAsync ();
 
 			var repo = new AccountRepository (context, _mapper, _logger, _auditLogRepo, Options.Create (_appSettings));
@@ -246,6 +253,80 @@ namespace Test.Repositories
 			Assert.True (result.IsSuccessful);
 			Assert.Equal ("Account", result.Remark);
 			Assert.Equal ("acc123", result.Data.PublicId);
+		}
+
+		[Fact]
+		public async Task GetAccountByAccountNumberAsync_ValidAccountNumber_ReturnsAccount ()
+		{
+			using var context = CreateDbContext ();
+			context.Accounts.Add (new Account
+			{
+				PublicId = "acc001",
+				AccountNumber = "1234567890",
+				LedgerNumber = "LED001",
+				AccountStatus = AccountStatus.ActiveTier1,
+				AccountType = AccountType.NairaSaving,
+				Balance = 1500,
+				MaximumDailyWithdrawalLimitAmount = 500
+			});
+			await context.SaveChangesAsync ();
+
+			var repo = new AccountRepository (context, _mapper, _logger, _auditLogRepo, Options.Create (_appSettings));
+			var result = await repo.GetAccountByAccountNumberAsync ("1234567890", CancellationToken.None);
+
+			Assert.True (result.IsSuccessful);
+			Assert.Equal ("Account", result.Remark);
+			Assert.Equal ("1234567890", result.Data.AccountNumber);
+		}
+
+		[Fact]
+		public async Task GetAccountByLedgerNumberAsync_ValidLedgerNumber_ReturnsAccount ()
+		{
+			using var context = CreateDbContext ();
+			context.Accounts.Add (new Account
+			{
+				PublicId = "acc002",
+				AccountNumber = "9876543210",
+				LedgerNumber = "LED002",
+				AccountStatus = AccountStatus.ActiveTier1,
+				AccountType = AccountType.NairaSaving,
+				Balance = 3000,
+				MaximumDailyWithdrawalLimitAmount = 1000
+			});
+			await context.SaveChangesAsync ();
+
+			var repo = new AccountRepository (context, _mapper, _logger, _auditLogRepo, Options.Create (_appSettings));
+			var result = await repo.GetAccountByLedgerNumberAsync ("LED002", CancellationToken.None);
+
+			Assert.True (result.IsSuccessful);
+			Assert.Equal ("Account", result.Remark);
+			Assert.Equal ("LED002", result.Data.LedgerNumber);
+		}
+
+		[Fact]
+		public async Task GetAccountByLedgerNumberAsync_InvalidLedgerNumber_ReturnsNotFound ()
+		{
+			using var context = CreateDbContext ();
+
+			var repo = new AccountRepository (context, _mapper, _logger, _auditLogRepo, Options.Create (_appSettings));
+			var result = await repo.GetAccountByLedgerNumberAsync ("UNKNOWN_LEDGER", CancellationToken.None);
+
+			Assert.False (result.IsSuccessful);
+			Assert.Equal ("Account", result.Remark);
+			Assert.Null (result.Data);
+		}
+
+		[Fact]
+		public async Task GetAccountByAccountNumberAsync_InvalidAccountNumber_ReturnsNotFound ()
+		{
+			using var context = CreateDbContext ();
+
+			var repo = new AccountRepository (context, _mapper, _logger, _auditLogRepo, Options.Create (_appSettings));
+			var result = await repo.GetAccountByAccountNumberAsync ("9999999999", CancellationToken.None);
+
+			Assert.False (result.IsSuccessful);
+			Assert.Equal ("Account", result.Remark);
+			Assert.Null (result.Data);
 		}
 
 		[Fact]
