@@ -1,6 +1,11 @@
-﻿namespace Application.Model.Users.Command
+﻿using Application.Model;
+using Application.Models.Users.Response;
+
+using MediatR;
+
+namespace Application.Models.Users.Command
 {
-	public class DeleteUsersCommand
+	public class DeleteUsersCommand : IRequest<RequestResponse<UserResponse>>
 	{
 		public List<string> UserIds { get; set; }
 		public string DeletedBy { get; set; }

@@ -1,8 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Model.Users.Command
+using Application.Model;
+using Application.Models.Users.Response;
+
+using MediatR;
+
+namespace Application.Models.Users.Command
 {
-	public class ChangePasswordCommand
+	public class ChangePasswordCommand : IRequest<RequestResponse<UserResponse>>
 	{
 		/// <summary>
 		/// Email of the user

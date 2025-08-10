@@ -78,8 +78,6 @@ namespace Application.Profiles
 			CreateMap<UserResponse, UserDto> ().ReverseMap ();
 			CreateMap<User, UserResponse> ().ReverseMap ();
 			CreateMap<User, LoginResponse> ().ReverseMap ();
-			CreateMap<User, RegistrationResponse> ().ReverseMap ();
-			CreateMap<User, UpdateUserProfileResponse> ().ReverseMap ();
 		}
 	}
 }

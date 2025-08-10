@@ -1,8 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using Application.Model;
+using Application.Models.Users.Response;
+
+using MediatR;
+
 namespace Application.Models.Users.Command
 {
-	public class RegistrationCommand
+	public class RegistrationCommand : IRequest<RequestResponse<UserResponse>>
 	{
 		/// <summary>
 		/// The first name of the recipient if the recipient is an individual, it's not compulsory though

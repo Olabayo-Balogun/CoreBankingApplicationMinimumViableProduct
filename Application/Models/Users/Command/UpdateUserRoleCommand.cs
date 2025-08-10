@@ -1,6 +1,11 @@
-﻿namespace Application.Model.Users.Command
+﻿using Application.Model;
+using Application.Models.Users.Response;
+
+using MediatR;
+
+namespace Application.Models.Users.Command
 {
-	public class UpdateUserRoleCommand
+	public class UpdateUserRoleCommand : IRequest<RequestResponse<UserResponse>>
 	{
 		public string UserRole { get; set; }
 		public string UserId { get; set; }

@@ -1,12 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Model.Users.Command
+using Application.Model;
+using Application.Models.Users.Response;
+
+using MediatR;
+
+namespace Application.Models.Users.Command
 {
-	public class EmailVerificationCommand
+	public class EmailVerificationCommand : IRequest<RequestResponse<UserResponse>>
 	{
 		/// <summary>
 		/// Email address of the user
 		/// </summary>
+		[Required]
 		[EmailAddress (ErrorMessage = "Please input user email")]
 		public string Email { get; set; }
 		/// <summary>

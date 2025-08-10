@@ -1,8 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Model.Users.Command
+using Application.Model;
+using Application.Models.Users.Response;
+
+using MediatR;
+
+namespace Application.Models.Users.Command
 {
-	public class LoginCommand
+	public class LoginCommand : IRequest<RequestResponse<LoginResponse>>
 	{
 		/// <summary>
 		/// The user's email

@@ -8,10 +8,10 @@ using Application.Interface.Persistence;
 using Application.Model;
 using Application.Model.AuditLogs.Command;
 using Application.Model.EmailRequests.Command;
-using Application.Model.Users.Command;
 using Application.Model.Users.Response;
 using Application.Models;
 using Application.Models.AuditLogs.Response;
+using Application.Models.Users.Command;
 using Application.Models.Users.Response;
 
 using AutoMapper;
@@ -114,7 +114,7 @@ namespace Persistence.Repositories
 				_context.UpdateRange (users);
 				await _context.SaveChangesAsync (request.CancellationToken);
 
-				var result = RequestResponse<UserResponse>.Deleted (null, 1, "Users");
+				var result = RequestResponse<UserResponse>.Deleted (null, users.Count, "Users");
 				_logger.LogInformation ($"DeleteMultipleUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy} with remark: {result.Remark}");
 				return result;
 			}
@@ -303,7 +303,7 @@ namespace Persistence.Repositories
 				_logger.LogInformation ($"GetAllUserByCountry begins at {DateTime.UtcNow.AddHours (1)} for Country: {name}");
 				var result = await _context.Users
 					.AsNoTracking ()
-					.Where (x => x.IsDeleted == false && x.CountryOfOrigin == name)
+					.Where (x => x.IsDeleted == false && x.CountryOfOrigin == name || x.CountryOfResidence == name)
 					.OrderByDescending (x => x.DateDeleted)
 					.Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
 					.Skip ((page - 1) * pageSize)
@@ -319,7 +319,7 @@ namespace Persistence.Repositories
 
 				var count = await _context.Users
 				.AsNoTracking ()
-				.Where (x => x.IsDeleted == false && x.CountryOfOrigin == name).LongCountAsync (cancellation);
+				.Where (x => x.IsDeleted == false && x.CountryOfOrigin == name || x.CountryOfResidence == name).LongCountAsync (cancellation);
 
 				var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
 				_logger.LogInformation ($"GetAllUserByState for Country: {name} ends at {DateTime.UtcNow.AddHours (1)} with {response.TotalCount} users retrieved and remark: {response.Remark}");

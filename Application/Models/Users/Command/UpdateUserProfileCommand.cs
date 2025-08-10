@@ -1,8 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using Application.Model;
+using Application.Models.Users.Response;
+
+using MediatR;
+
 namespace Application.Models.Users.Command
 {
-	public class UpdateUserProfileCommand
+	public class UpdateUserProfileCommand : IRequest<RequestResponse<UserResponse>>
 	{
 		[Required (ErrorMessage = "PublicId is required")]
 		[StringLength (500, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]

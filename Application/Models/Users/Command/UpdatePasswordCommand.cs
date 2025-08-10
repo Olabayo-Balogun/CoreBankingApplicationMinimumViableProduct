@@ -1,8 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Application.Model.Users.Command
+using Application.Model;
+using Application.Models.Users.Response;
+
+using MediatR;
+
+namespace Application.Models.Users.Command
 {
-	public class UpdatePasswordCommand
+	public class UpdatePasswordCommand : IRequest<RequestResponse<UserResponse>>
 	{
 		/// <summary>
 		/// The user's new password

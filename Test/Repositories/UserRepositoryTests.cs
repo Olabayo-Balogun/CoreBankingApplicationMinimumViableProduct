@@ -7,9 +7,9 @@ using Application.Model.AuditLogs.Command;
 using Application.Model.EmailRequests.Command;
 using Application.Model.EmailRequests.Queries;
 using Application.Model.EmailTemplates.Queries;
-using Application.Model.Users.Command;
 using Application.Models;
 using Application.Models.AuditLogs.Response;
+using Application.Models.Users.Command;
 
 using AutoMapper;
 
