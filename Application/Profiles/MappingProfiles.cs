@@ -65,7 +65,7 @@ namespace Application.Profiles
 			CreateMap<EmailTemplate, EmailTemplateResponse> ().ReverseMap ();
 
 			CreateMap<DepositCommand, TransactionDto> ().ReverseMap ();
-			CreateMap<UpdateTransactionCommand, TransactionDto> ().ReverseMap ();
+			CreateMap<WithdrawCommand, TransactionDto> ().ReverseMap ();
 			CreateMap<Transaction, TransactionResponse> ().ReverseMap ();
 
 			CreateMap<UploadDto, Upload> ().ReverseMap ();

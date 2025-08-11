@@ -790,7 +790,7 @@ namespace Persistence.Repositories
 				var result = await _context.Users
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && x.PublicId == id)
-					.Select (x => new UserResponse { FirstName = x.FirstName, LastName = x.LastName })
+					.Select (x => new UserResponse { FirstName = x.FirstName, LastName = x.LastName, BusinessName = x.BusinessName })
 					.FirstOrDefaultAsync (cancellation);
 
 				if (result == null)

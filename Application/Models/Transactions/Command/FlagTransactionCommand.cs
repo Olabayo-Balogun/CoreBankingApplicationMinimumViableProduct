@@ -7,14 +7,14 @@ using MediatR;
 
 namespace Application.Models.Transactions.Command
 {
-	public class DeleteTransactionCommand : IRequest<RequestResponse<TransactionResponse>>
+	public class FlagTransactionCommand : IRequest<RequestResponse<TransactionResponse>>
 	{
 		[Required]
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string PublicId { get; set; }
 		[Required]
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string DeletedBy { get; set; }
+		public string LastModifiedBy { get; set; }
 		public CancellationToken CancellationToken { get; set; }
 	}
 }

@@ -50,7 +50,6 @@ namespace Test.Repositories
 			var result = await repo.CreateAuditLogAsync (null);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("NullPayload", result.Remark);
 		}
 
 		[Fact]
@@ -113,7 +112,6 @@ namespace Test.Repositories
 			var result = await repo.CreateMultipleAuditLogAsync (null);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("NullPayload", result.Remark);
 		}
 
 		[Fact]

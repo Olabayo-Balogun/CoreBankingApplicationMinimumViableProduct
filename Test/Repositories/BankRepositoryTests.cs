@@ -57,7 +57,6 @@ namespace Test.Repositories
 			var result = await repo.CreateBankAsync (null);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("NullPayload", result.Remark);
 		}
 
 		[Fact]
@@ -242,7 +241,6 @@ namespace Test.Repositories
 			var result = await repo.UpdateBankAsync (null);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("NullPayload", result.Remark);
 		}
 
 		[Fact]

@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Models\Email\" />
-    <Folder Include="Models\PaymentIntegration\Paystack\Query\" />
   </ItemGroup>
 
   <ItemGroup>

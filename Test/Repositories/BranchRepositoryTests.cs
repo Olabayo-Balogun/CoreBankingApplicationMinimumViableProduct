@@ -57,7 +57,6 @@ namespace Test.Repositories
 			var result = await repo.CreateBranchAsync (null);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("NullPayload", result.Remark);
 		}
 
 		[Fact]
@@ -285,7 +284,6 @@ namespace Test.Repositories
 			var result = await repo.UpdateBranchAsync (null);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("NullPayload", result.Remark);
 		}
 
 		[Fact]

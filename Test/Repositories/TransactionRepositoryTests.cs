@@ -1,7 +1,6 @@
 ﻿using Application.Interface.Persistence;
 using Application.Model;
 using Application.Model.AuditLogs.Command;
-using Application.Model.Transactions.Command;
 using Application.Model.Transactions.Queries;
 using Application.Models.AuditLogs.Response;
 using Application.Models.Transactions.Command;
@@ -175,37 +174,6 @@ namespace Test.Repositories
 			Assert.True (result.IsSuccessful);
 			Assert.Equal ("Transaction", result.Remark);
 			Assert.Equal (1, result.TotalCount);
-		}
-
-		[Fact]
-		public async Task CreateMultipleTransactionAsync_NullPayload_ReturnsNullPayload ()
-		{
-			using var context = CreateDbContext ();
-			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.CreateMultipleTransactionAsync (null);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Payload is null", result.Remark);
-		}
-
-		[Fact]
-		public async Task CreateMultipleTransactionAsync_ValidTransactions_ReturnsCreated ()
-		{
-			using var context = CreateDbContext ();
-			var dtoList = new List<TransactionDto>
-			{
-				new () { TransactionType = "Debit", CreatedBy = "user123", Amount = 1000, CancellationToken = CancellationToken.None },
-				new () { TransactionType = "Credit", CreatedBy = "user123", Amount = 2000, CancellationToken = CancellationToken.None }
-			};
-
-			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.CreateMultipleTransactionAsync (dtoList);
-
-			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Transactions", result.Remark);
-			Assert.Equal (2, result.TotalCount);
 		}
 
 		[Fact]
@@ -657,6 +625,376 @@ namespace Test.Repositories
 
 			Assert.True (result.IsSuccessful);
 			Assert.Equal (2, result.Data.Count);
+		}
+
+		[Fact]
+		public async Task FlagTransactionAsync_ValidTransaction_FlagsSuccessfully ()
+		{
+			// Arrange
+			using var context = CreateDbContext ();
+			var transaction = new Transaction
+			{
+				PublicId = "txn123",
+				CreatedBy = "user1",
+				IsDeleted = false
+			};
+			context.Transactions.Add (transaction);
+			await context.SaveChangesAsync ();
+
+			var command = new FlagTransactionCommand
+			{
+				PublicId = "txn123",
+				LastModifiedBy = "admin",
+				CancellationToken = CancellationToken.None
+			};
+
+			_auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
+				.ReturnsAsync (RequestResponse<AuditLogResponse>.Success (new AuditLogResponse (), 1, ""));
+
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
+
+			// Act
+			var result = await repo.FlagTransactionAsync (command);
+
+			// Assert
+			Assert.True (result.IsSuccessful);
+			var updatedTransaction = context.Transactions.First (t => t.PublicId == "txn123");
+			Assert.True (updatedTransaction.IsFlagged);
+			Assert.Equal ("admin", updatedTransaction.LastModifiedBy);
+		}
+
+		[Fact]
+		public async Task FlagTransactionAsync_NullCommand_ReturnsNullPayload ()
+		{
+			// Arrange
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
+
+			// Act
+			var result = await repo.FlagTransactionAsync (null);
+
+			// Assert
+			Assert.False (result.IsSuccessful);
+		}
+
+		[Fact]
+		public async Task FlagTransactionAsync_TransactionNotFound_ReturnsNotFound ()
+		{
+			// Arrange
+			using var context = CreateDbContext ();
+			var command = new FlagTransactionCommand
+			{
+				PublicId = "nonexistent",
+				LastModifiedBy = "admin",
+				CancellationToken = CancellationToken.None
+			};
+
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
+
+			// Act
+			var result = await repo.FlagTransactionAsync (command);
+
+			// Assert
+			Assert.False (result.IsSuccessful);
+		}
+
+		[Fact]
+		public async Task FlagTransactionAsync_AuditLogFails_ReturnsAuditLogFailed ()
+		{
+			// Arrange
+			using var context = CreateDbContext ();
+			var transaction = new Transaction
+			{
+				PublicId = "txn123",
+				CreatedBy = "user1",
+				IsDeleted = false
+			};
+			context.Transactions.Add (transaction);
+			await context.SaveChangesAsync ();
+
+			var command = new FlagTransactionCommand
+			{
+				PublicId = "txn123",
+				LastModifiedBy = "admin",
+				CancellationToken = CancellationToken.None
+			};
+
+			_auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
+				.ReturnsAsync (RequestResponse<AuditLogResponse>.AuditLogFailed (null));
+
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
+
+			// Act
+			var result = await repo.FlagTransactionAsync (command);
+
+			// Assert
+			Assert.False (result.IsSuccessful);
+		}
+
+		[Fact]
+		public async Task GetTransactionsCountByAccountNumberAndDateAsync_ReturnsCorrectTotalCount ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var account = "ACC123";
+			var fromDate = DateTime.UtcNow.Date.AddDays (-2);
+			var toDate = DateTime.UtcNow.Date;
+
+			context.Transactions.AddRange (
+				new Transaction { RecipientAccountNumber = account, DateCreated = fromDate, IsDeleted = false },
+				new Transaction { RecipientAccountNumber = account, DateCreated = toDate, IsDeleted = false },
+				new Transaction { RecipientAccountNumber = account, DateCreated = toDate.AddDays (1), IsDeleted = false } // outside range
+			);
+			await context.SaveChangesAsync ();
+
+			var result = await repo.GetTransactionsCountByAccountNumberAndDateAsync (account, fromDate, toDate, CancellationToken.None);
+
+			Assert.True (result.IsSuccessful);
+			Assert.Equal (2, result.TotalCount);
+		}
+
+		[Fact]
+		public async Task GetTransactionsCountByAccountNumberAndDateAsync_SingleDate_ReturnsCorrectTotalCount ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var account = "ACC123";
+			var date = DateTime.UtcNow.Date;
+
+			context.Transactions.AddRange (
+				new Transaction { RecipientAccountNumber = account, DateCreated = date, IsDeleted = false },
+				new Transaction { RecipientAccountNumber = account, DateCreated = date.AddDays (-1), IsDeleted = false }
+			);
+			await context.SaveChangesAsync ();
+
+			var result = await repo.GetTransactionsCountByAccountNumberAndDateAsync (account, date, CancellationToken.None);
+
+			Assert.True (result.IsSuccessful);
+			Assert.Equal (1, result.TotalCount);
+		}
+
+		[Fact]
+		public async Task GetTransactionsCountByAccountNumberAndWeekAsync_ReturnsCorrectTotalCount ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var account = "ACC123";
+			var referenceDate = new DateTime (2024, 8, 7); // Wednesday
+
+			var startOfWeek = referenceDate.AddDays (-1 * (int)referenceDate.DayOfWeek);
+			var endOfWeek = startOfWeek.AddDays (7);
+
+			context.Transactions.AddRange (
+				new Transaction { RecipientAccountNumber = account, DateCreated = startOfWeek.AddDays (1), IsDeleted = false },
+				new Transaction { RecipientAccountNumber = account, DateCreated = endOfWeek.AddDays (1), IsDeleted = false } // outside week
+			);
+			await context.SaveChangesAsync ();
+
+			var result = await repo.GetTransactionsCountByAccountNumberAndWeekAsync (account, referenceDate, CancellationToken.None);
+
+			Assert.True (result.IsSuccessful);
+			Assert.Equal (1, result.TotalCount);
+		}
+
+		[Fact]
+		public async Task GetTransactionsCountByAccountNumberAndMonthAsync_ReturnsCorrectTotalCount ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var account = "ACC123";
+			var date = new DateTime (2024, 8, 15);
+
+			context.Transactions.AddRange (
+				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2024, 8, 1), IsDeleted = false },
+				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2024, 7, 31), IsDeleted = false }
+			);
+			await context.SaveChangesAsync ();
+
+			var result = await repo.GetTransactionsCountByAccountNumberAndMonthAsync (account, date, CancellationToken.None);
+
+			Assert.True (result.IsSuccessful);
+			Assert.Equal (1, result.TotalCount);
+		}
+
+		[Fact]
+		public async Task GetTransactionsCountByAccountNumberAndYearAsync_ReturnsCorrectTotalCount ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var account = "ACC123";
+			var date = new DateTime (2024, 5, 10);
+
+			context.Transactions.AddRange (
+				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2024, 1, 1), IsDeleted = false },
+				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2023, 12, 31), IsDeleted = false }
+			);
+			await context.SaveChangesAsync ();
+
+			var result = await repo.GetTransactionsCountByAccountNumberAndYearAsync (account, date, CancellationToken.None);
+
+			Assert.True (result.IsSuccessful);
+			Assert.Equal (1, result.TotalCount);
+		}
+
+		[Fact]
+		public async Task GetTransactionsByAccountNumberAndCustomDateAsync_ReturnsCorrectResults ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var account = "ACC123";
+			var fromDate = DateTime.UtcNow.Date.AddDays (-2);
+			var toDate = DateTime.UtcNow.Date;
+
+			context.Transactions.AddRange (
+				new Transaction { RecipientAccountNumber = account, DateCreated = fromDate, IsDeleted = false, Amount = 100 },
+				new Transaction { RecipientAccountNumber = account, DateCreated = toDate, IsDeleted = false, Amount = 200 },
+				new Transaction { RecipientAccountNumber = account, DateCreated = toDate.AddDays (1), IsDeleted = false, Amount = 300 } // outside range
+			);
+			await context.SaveChangesAsync ();
+
+			var result = await repo.GetTransactionsByAccountNumberAndCustomDateAsync (account, fromDate, toDate, CancellationToken.None, 1, 10);
+
+			Assert.True (result.IsSuccessful);
+			Assert.Equal (2, result.TotalCount);
+			Assert.Equal (2, result.Data.Count);
+		}
+
+		[Fact]
+		public async Task GetTransactionByAccountNumberAndDateAsync_ReturnsCorrectResults ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var account = "ACC456";
+			var date = DateTime.UtcNow.Date;
+
+			context.Transactions.AddRange (
+				new Transaction { RecipientAccountNumber = account, DateCreated = date, IsDeleted = false, Amount = 150 },
+				new Transaction { RecipientAccountNumber = account, DateCreated = date.AddDays (-1), IsDeleted = false, Amount = 250 }
+			);
+			await context.SaveChangesAsync ();
+
+			var result = await repo.GetTransactionByAccountNumberAndDateAsync (account, date, CancellationToken.None, 1, 10);
+
+			Assert.True (result.IsSuccessful);
+			Assert.Single (result.Data);
+			Assert.Equal (1, result.TotalCount);
+		}
+
+		[Fact]
+		public async Task GetTransactionsByAccountNumberAndWeekAsync_ReturnsCorrectResults ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var account = "ACC789";
+			var referenceDate = new DateTime (2024, 8, 7); // Wednesday
+			var startOfWeek = referenceDate.AddDays (-1 * (int)referenceDate.DayOfWeek);
+			var endOfWeek = startOfWeek.AddDays (7);
+
+			context.Transactions.AddRange (
+				new Transaction { RecipientAccountNumber = account, DateCreated = startOfWeek.AddDays (1), IsDeleted = false, Amount = 300 },
+				new Transaction { RecipientAccountNumber = account, DateCreated = endOfWeek.AddDays (1), IsDeleted = false, Amount = 400 } // outside week
+			);
+			await context.SaveChangesAsync ();
+
+			var result = await repo.GetTransactionsByAccountNumberAndWeekAsync (account, referenceDate, CancellationToken.None, 1, 10);
+
+			Assert.True (result.IsSuccessful);
+			Assert.Single (result.Data);
+			Assert.Equal (1, result.TotalCount);
+		}
+
+		[Fact]
+		public async Task GetTransactionsByAccountNumberAndCustomDateAsync_ReturnsNotFound_WhenNoTransactionsExist ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var result = await repo.GetTransactionsByAccountNumberAndCustomDateAsync ("NON_EXISTENT", DateTime.UtcNow.AddDays (-5), DateTime.UtcNow, CancellationToken.None, 1, 10);
+
+			Assert.False (result.IsSuccessful);
+			Assert.Equal ("Transactions", result.Remark);
+			Assert.Equal (0, result.TotalCount);
+			Assert.Null (result.Data);
+		}
+
+		[Fact]
+		public async Task GetTransactionsByAccountNumberAndMonthAsync_ReturnsCorrectResults ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var account = "ACC321";
+			var targetDate = new DateTime (2024, 8, 15);
+
+			context.Transactions.AddRange (
+				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2024, 8, 1), IsDeleted = false, Amount = 100 },
+				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2024, 7, 31), IsDeleted = false, Amount = 200 } // outside month
+			);
+			await context.SaveChangesAsync ();
+
+			var result = await repo.GetTransactionsByAccountNumberAndMonthAsync (account, targetDate, CancellationToken.None, 1, 10);
+
+			Assert.True (result.IsSuccessful);
+			Assert.Single (result.Data);
+			Assert.Equal (1, result.TotalCount);
+		}
+
+		[Fact]
+		public async Task GetTransactionsByAccountNumberAndYearAsync_ReturnsCorrectResults ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var account = "ACC654";
+			var targetDate = new DateTime (2024, 5, 10);
+
+			context.Transactions.AddRange (
+				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2024, 1, 1), IsDeleted = false, Amount = 300 },
+				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2023, 12, 31), IsDeleted = false, Amount = 400 } // outside year
+			);
+			await context.SaveChangesAsync ();
+
+			var result = await repo.GetTransactionsByAccountNumberAndYearAsync (account, targetDate, CancellationToken.None, 1, 10);
+
+			Assert.True (result.IsSuccessful);
+			Assert.Single (result.Data);
+			Assert.Equal (1, result.TotalCount);
+		}
+
+		[Fact]
+		public async Task GetTransactionsByAccountNumberAndMonthAsync_ReturnsNotFound_WhenNoTransactionsExist ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var result = await repo.GetTransactionsByAccountNumberAndMonthAsync ("NO_MATCH", new DateTime (2024, 8, 1), CancellationToken.None, 1, 10);
+
+			Assert.False (result.IsSuccessful);
+			Assert.Equal ("Transactions", result.Remark);
+			Assert.Equal (0, result.TotalCount);
+			Assert.Null (result.Data);
+		}
+
+		[Fact]
+		public async Task GetTransactionsByAccountNumberAndYearAsync_ReturnsNotFound_WhenNoTransactionsExist ()
+		{
+			using var context = CreateDbContext ();
+			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, null);
+
+			var result = await repo.GetTransactionsByAccountNumberAndYearAsync ("NO_MATCH", new DateTime (2024, 1, 1), CancellationToken.None, 1, 10);
+
+			Assert.False (result.IsSuccessful);
+			Assert.Equal ("Transactions", result.Remark);
+			Assert.Equal (0, result.TotalCount);
+			Assert.Null (result.Data);
 		}
 	}
 }

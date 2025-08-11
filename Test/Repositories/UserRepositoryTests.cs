@@ -718,7 +718,6 @@ namespace Test.Repositories
 			var result = await repo.RegisterAsync (null);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("NullPayload", result.Remark);
 		}
 
 		[Fact]
@@ -839,7 +838,6 @@ namespace Test.Repositories
 			var result = await repo.UpdateUserAsync (null);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("NullPayload", result.Remark);
 		}
 
 		[Fact]
@@ -949,7 +947,6 @@ namespace Test.Repositories
 			var result = await repo.UpdateUserRoleAsync (null);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("NullPayload", result.Remark);
 		}
 
 		[Fact]

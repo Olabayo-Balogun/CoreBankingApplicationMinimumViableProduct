@@ -12,6 +12,9 @@
 		public decimal MaximumDailyWithdrawalLimitAmount { get; set; }
 		public int BankCode { get; set; }
 		public int DefaultBranchCode { get; set; }
+		public string BankName { get; set; }
+		public string DefaultPaymentService { get; set; }
+		public string DefaultPaymentChannel { get; set; }
 
 		//Authentication And Authorization
 		public string Secret { get; set; }

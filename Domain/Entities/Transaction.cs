@@ -12,6 +12,7 @@ namespace Domain.Entities
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string? Description { get; set; } = string.Empty;
 		[Precision (18, 2)]
+		[Range (0.01, double.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]
 		public decimal Amount { get; set; }
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string? SenderAccountNumber { get; set; }
