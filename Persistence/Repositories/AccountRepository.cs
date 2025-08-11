@@ -99,7 +99,7 @@ namespace Persistence.Repositories
 				payload.AccountNumber = nuban;
 				payload.AccountStatus = AccountStatus.ActiveTier1;
 				payload.LedgerNumber = ledgerNumber;
-				payload.MaximumDailyTransferLimitAmount = _appSettings.MaximumDailyTransferLimitAmount;
+				payload.MaximumDailyDepositLimitAmount = _appSettings.MaximumDailyDepositLimitAmount;
 				payload.MaximumDailyWithdrawalLimitAmount = _appSettings.MaximumDailyWithdrawalLimitAmount;
 				payload.DeletedBy = null;
 				payload.DateCreated = DateTime.UtcNow.AddHours (1);

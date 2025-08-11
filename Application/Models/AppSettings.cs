@@ -8,7 +8,7 @@
 		public int EmailBatchSizeLimit { get; set; }
 
 		// Bank-specific constants
-		public decimal MaximumDailyTransferLimitAmount { get; set; }
+		public decimal MaximumDailyDepositLimitAmount { get; set; }
 		public decimal MaximumDailyWithdrawalLimitAmount { get; set; }
 		public int BankCode { get; set; }
 		public int DefaultBranchCode { get; set; }

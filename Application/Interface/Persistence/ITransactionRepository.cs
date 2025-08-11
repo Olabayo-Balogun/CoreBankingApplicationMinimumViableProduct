@@ -36,5 +36,7 @@ namespace Application.Interface.Persistence
 		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByAccountNumberAndWeekAsync (string accountNumber, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
 		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByAccountNumberAndMonthAsync (string accountNumber, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
 		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByAccountNumberAndYearAsync (string accountNumber, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
+		Task<RequestResponse<TransactionResponse>> GetTotalTransactionWithdrawalByAccountNumberAsync (string accountNumber, CancellationToken cancellationToken);
+		Task<RequestResponse<TransactionResponse>> GetTotalTransactionDepositByAccountNumberAsync (string accountNumber, CancellationToken cancellationToken);
 	}
 }

@@ -229,7 +229,7 @@ namespace API.Controllers
 		[HttpGet ("verify/{id}")]
 		[EnableRateLimiting ("GetRequestRateLimit")]
 		[ProducesResponseType (type: typeof (RequestResponse<TransactionResponse>), StatusCodes.Status200OK)]
-		public async Task<ActionResult<RequestResponse<TransactionResponse>>> GetTransaction ([FromRoute] string id, CancellationToken cancellationToken)
+		public async Task<ActionResult<RequestResponse<TransactionResponse>>> VerifyTransaction ([FromRoute] string id, CancellationToken cancellationToken)
 		{
 			var token = HttpContext.Items["JwtToken"] as string;
 			var tokenResponse = Utility.ValidateToken (token);

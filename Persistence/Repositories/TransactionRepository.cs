@@ -1102,5 +1102,55 @@ namespace Persistence.Repositories
 				throw;
 			}
 		}
+
+		public async Task<RequestResponse<TransactionResponse>> GetTotalTransactionWithdrawalByAccountNumberAsync (string accountNumber, CancellationToken cancellationToken)
+		{
+			try
+			{
+				_logger.LogInformation ($"GetTotalTransactionWithdrawalByAccountNumber for account number: {accountNumber} begins at {DateTime.UtcNow.AddHours (1)}");
+
+				var sum = await _context.Transactions
+					.AsNoTracking ()
+					.Where (x => x.RecipientAccountNumber == accountNumber && x.DateCreated.Date == DateTime.Now.Date && x.IsDeleted == false && x.TransactionType == TransactionType.Debit)
+					.Select (x => x.Amount)
+					.SumAsync (cancellationToken);
+
+				var result = new TransactionResponse { Amount = sum };
+
+				var response = RequestResponse<TransactionResponse>.SearchSuccessful (result, 1, "Transactions");
+				_logger.LogInformation ($"GetTotalTransactionWithdrawalByAccountNumber for account number: {accountNumber} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+				return response;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError ($"GetTotalTransactionWithdrawalByAccountNumber for account number: {accountNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task<RequestResponse<TransactionResponse>> GetTotalTransactionDepositByAccountNumberAsync (string accountNumber, CancellationToken cancellationToken)
+		{
+			try
+			{
+				_logger.LogInformation ($"GetTotalTransactionDepositByAccountNumber for account number: {accountNumber} begins at {DateTime.UtcNow.AddHours (1)}");
+
+				var sum = await _context.Transactions
+					.AsNoTracking ()
+					.Where (x => x.RecipientAccountNumber == accountNumber && x.DateCreated.Date == DateTime.Now.Date && x.IsDeleted == false && x.TransactionType == TransactionType.Credit)
+					.Select (x => x.Amount)
+					.SumAsync (cancellationToken);
+
+				var result = new TransactionResponse { Amount = sum };
+
+				var response = RequestResponse<TransactionResponse>.SearchSuccessful (result, 1, "Transactions");
+				_logger.LogInformation ($"GetTotalTransactionDepositByAccountNumber for account number: {accountNumber} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+				return response;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError ($"GetTotalTransactionDepositByAccountNumber for account number: {accountNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
+				throw;
+			}
+		}
 	}
 }

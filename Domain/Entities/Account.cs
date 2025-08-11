@@ -52,6 +52,6 @@ namespace Domain.Entities
 		[Required]
 		[Range (0.01, double.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]
 		[Precision (18, 2)]
-		public decimal MaximumDailyTransferLimitAmount { get; set; }
+		public decimal MaximumDailyDepositLimitAmount { get; set; }
 	}
 }

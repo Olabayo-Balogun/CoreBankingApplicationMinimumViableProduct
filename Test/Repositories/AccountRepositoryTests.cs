@@ -49,7 +49,7 @@ namespace Test.Repositories
 			{
 				DefaultBranchCode = 001,
 				BankCode = 123,
-				MaximumDailyTransferLimitAmount = 100000,
+				MaximumDailyDepositLimitAmount = 100000,
 				MaximumDailyWithdrawalLimitAmount = 50000
 			};
 		}

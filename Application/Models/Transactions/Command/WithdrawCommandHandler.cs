@@ -93,6 +93,24 @@ namespace Application.Models.Transactions.Command
 
 			var payload = _mapper.Map<TransactionDto> (request);
 
+
+			var withdrawalAmount = await _transactionRepository.GetTotalTransactionWithdrawalByAccountNumberAsync (request.AccountNumber, request.CancellationToken);
+
+			if (withdrawalAmount.Data == null)
+			{
+				return RequestResponse<TransactionResponse>.Failed (null, 404, "Unable to validate account details, please try again later");
+			}
+
+			decimal transactionTally = withdrawalAmount.Data.Amount + request.Amount;
+			if (request.Amount > _appSettings.MaximumDailyWithdrawalLimitAmount)
+			{
+				return RequestResponse<TransactionResponse>.Failed (null, 400, $"You're unauthorized to initiate a transfer above {_appSettings.MaximumDailyWithdrawalLimitAmount} daily on this account, please reach out to customer service to increase your limit");
+			}
+			else if (transactionTally > _appSettings.MaximumDailyWithdrawalLimitAmount)
+			{
+				return RequestResponse<TransactionResponse>.Failed (null, 400, $"You're unauthorized to initiate a transfer above {_appSettings.MaximumDailyWithdrawalLimitAmount} daily on this account, your remaining transfer sum for today is {_appSettings.MaximumDailyWithdrawalLimitAmount - withdrawalAmount.Data.Amount}. Please reach out to customer service to increase your limit");
+			}
+
 			payload.RecipientAccountNumber = accountDetails.Data.AccountNumber;
 			payload.TransactionType = TransactionType.Debit;
 			payload.RecipientBankName = _appSettings.BankName;

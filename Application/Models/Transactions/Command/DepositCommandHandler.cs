@@ -88,6 +88,13 @@ namespace Application.Models.Transactions.Command
 
 			var payload = _mapper.Map<TransactionDto> (request);
 
+			var depositAmount = await _transactionRepository.GetTotalTransactionDepositByAccountNumberAsync (request.RecipientAccountNumber, request.CancellationToken);
+
+			if (depositAmount.Data != null && depositAmount.Data.Amount > _appSettings.MaximumDailyDepositLimitAmount)
+			{
+				payload.IsFlagged = true;
+			}
+
 			payload.TransactionType = TransactionType.Credit;
 			payload.RecipientBankName = _appSettings.BankName;
 			payload.RecipientAccountName = userDetails.Data.BusinessName ?? $"{userDetails.Data.FirstName} {userDetails.Data.LastName}";

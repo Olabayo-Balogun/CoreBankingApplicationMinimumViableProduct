@@ -48,5 +48,9 @@ namespace Application.Models.Accounts.Response
 		[Range (0.01, double.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]
 		[Precision (18, 2)]
 		public decimal MaximumDailyWithdrawalLimitAmount { get; set; }
+		[Required]
+		[Range (0.01, double.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]
+		[Precision (18, 2)]
+		public decimal MaximumDailyDepositLimitAmount { get; set; }
 	}
 }
