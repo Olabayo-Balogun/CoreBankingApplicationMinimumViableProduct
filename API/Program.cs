@@ -59,6 +59,8 @@ builder.Configuration
 AppSettings appSettings = new ();
 builder.Configuration.GetSection (nameof (AppSettings)).Bind (appSettings);
 
+Application.Utility.Utility.Initialize (appSettings);
+
 Log.Logger = new LoggerConfiguration ()
 	.MinimumLevel.Information ()
 	.WriteTo.File ($"{AppDomain.CurrentDomain.BaseDirectory}\\Logs\\CoreBankApplicationMinimumViableProduct.txt", rollingInterval: RollingInterval.Day,
@@ -275,13 +277,6 @@ app.UseAuthorization ();
 
 //Adding Response Caching Middleware Components
 app.UseResponseCaching ();
-
-// Add X-Frame-Options header
-app.Use (async (context, next) =>
-{
-	context.Response.Headers.Append ("X-Frame-Options", "DENY");
-	await next ();
-});
 
 app.MapControllers ();
 

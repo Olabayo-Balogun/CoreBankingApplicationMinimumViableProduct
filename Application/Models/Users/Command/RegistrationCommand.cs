@@ -137,13 +137,6 @@ namespace Application.Models.Users.Command
 		/// </summary>
 		[StringLength (500, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string? ProofOfIdentification { get; set; }
-
-
-		/// <summary>
-		/// This should helps with information regarding whether the user's company account is suspended
-		/// </summary>
-		public bool IsAccountSuspended { get; set; }
-
 		/// <summary>
 		/// This should helps with information of their Nin for reconciliation purposes if they want to see any information of their lending history on the platform, it's not compulsory though
 		/// </summary>

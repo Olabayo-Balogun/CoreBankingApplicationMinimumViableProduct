@@ -12,7 +12,7 @@ namespace Application.Utility
 {
 	public static class Utility
 	{
-		public static AppSettings _appSettings { get; private set; }
+		public static AppSettings _appSettings { get; set; }
 
 		public static void Initialize (AppSettings appSettings)
 		{
@@ -483,7 +483,7 @@ namespace Application.Utility
 			}
 
 			int checkDigit = (10 - (sum % 10)) % 10;
-			return serialNumber + checkDigit.ToString (); // Final 10-digit NUBAN
+			return bankCode + serialNumber + checkDigit.ToString ();
 		}
 
 		public static string GenerateLedgerNumber (string branchCode, string customerNumber, string accountType)

@@ -103,6 +103,7 @@ namespace Persistence.Repositories
 				payload.MaximumDailyWithdrawalLimitAmount = _appSettings.MaximumDailyWithdrawalLimitAmount;
 				payload.DeletedBy = null;
 				payload.DateCreated = DateTime.UtcNow.AddHours (1);
+				payload.PublicId = Guid.NewGuid ().ToString ();
 
 				await _context.Accounts.AddAsync (payload, account.CancellationToken);
 				await _context.SaveChangesAsync (account.CancellationToken);

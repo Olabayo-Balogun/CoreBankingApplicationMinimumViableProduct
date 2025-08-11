@@ -964,8 +964,9 @@ namespace Persistence.Repositories
 					payload.LastModifiedBy = null;
 					payload.LastModifiedDate = null;
 					payload.DeletedBy = null;
+					payload.IsIndividual = true;
 					payload.CreatedBy = null;
-					payload.EmailConfirmed = false;
+					payload.EmailConfirmed = !_appSettings.IsProduction;
 					payload.DateCreated = DateTime.UtcNow.AddHours (1);
 					payload.UserRole = UserRoles.Admin;
 					payload.Password = HashPassword (user.Password);
@@ -981,8 +982,9 @@ namespace Persistence.Repositories
 					payload.LastModifiedBy = null;
 					payload.LastModifiedDate = null;
 					payload.DeletedBy = null;
+					payload.IsIndividual = true;
 					payload.CreatedBy = null;
-					payload.EmailConfirmed = false;
+					payload.EmailConfirmed = !_appSettings.IsProduction;
 					payload.DateCreated = DateTime.UtcNow.AddHours (1);
 					payload.UserRole = UserRoles.Staff;
 					payload.Password = HashPassword (user.Password);
@@ -998,7 +1000,8 @@ namespace Persistence.Repositories
 					payload.LastModifiedDate = null;
 					payload.DeletedBy = null;
 					payload.CreatedBy = null;
-					payload.EmailConfirmed = false;
+					payload.IsIndividual = payload.BusinessName == null;
+					payload.EmailConfirmed = !_appSettings.IsProduction;
 					payload.Password = HashPassword (user.Password);
 					payload.PasswordHash = payload.Password.GetHashCode ().ToString ();
 					payload.DateCreated = DateTime.UtcNow.AddHours (1);

@@ -16,7 +16,7 @@ namespace Application.Models.Accounts.Command
 		[Range (1, 10, ErrorMessage = "{0} must be a valid account type.")]
 		public int AccountType { get; set; }
 
-		public string CreatedBy { get; set; }
+		public string? CreatedBy { get; set; }
 		public CancellationToken CancellationToken { get; set; }
 	}
 }
