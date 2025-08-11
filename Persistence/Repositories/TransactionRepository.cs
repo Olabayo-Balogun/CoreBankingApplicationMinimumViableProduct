@@ -145,6 +145,84 @@ namespace Persistence.Repositories
 			}
 		}
 
+		public async Task<RequestResponse<TransactionResponse>> CreateWithdrawalTransactionAsync (TransactionDto createTransaction)
+		{
+			try
+			{
+				_logger.LogInformation ($"CreateWithdrawalTransaction begins at {DateTime.UtcNow.AddHours (1)} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
+				if (createTransaction == null)
+				{
+					var badRequest = RequestResponse<TransactionResponse>.NullPayload (null);
+					return badRequest;
+				}
+
+				if (!createTransaction.TransactionType.Equals (TransactionType.Credit, StringComparison.OrdinalIgnoreCase) && !createTransaction.TransactionType.Equals (TransactionType.Debit, StringComparison.OrdinalIgnoreCase))
+				{
+					var badRequest = RequestResponse<TransactionResponse>.Failed (null, 400, "Specify transaction type as either debit or credit");
+					return badRequest;
+				}
+
+				var payload = _mapper.Map<Domain.Entities.Transaction> (createTransaction);
+
+				payload.IsDeleted = false;
+				payload.DateDeleted = null;
+				payload.LastModifiedBy = null;
+				payload.LastModifiedDate = null;
+				payload.DeletedBy = null;
+				payload.IsReconciled = true;
+				payload.DateCreated = DateTime.UtcNow.AddHours (1);
+				payload.CreatedBy = createTransaction.CreatedBy;
+				payload.PublicId = Guid.NewGuid ().ToString ();
+
+				await _context.Transactions.AddAsync (payload, createTransaction.CancellationToken);
+
+				var updateAccountDetails = await _context.Accounts.Where (x => x.AccountNumber == createTransaction.SenderAccountNumber && x.IsDeleted == false).FirstOrDefaultAsync (createTransaction.CancellationToken);
+
+				CreateAuditLogCommand createAuditLogRequest = new ()
+				{
+					CancellationToken = createTransaction.CancellationToken,
+					CreatedBy = updateAccountDetails.CreatedBy,
+					Name = "Account",
+					Payload = JsonConvert.SerializeObject (updateAccountDetails)
+				};
+
+				RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
+
+				if (!createAuditLog.IsSuccessful)
+				{
+					var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
+					_logger.LogInformation ($"CreateWithdrawalTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
+					return badRequest;
+				}
+
+				if (updateAccountDetails == null)
+				{
+					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Sender bank account details");
+					_logger.LogInformation ($"CreateWithdrawalTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
+					return badRequest;
+				}
+
+				updateAccountDetails.Balance -= createTransaction.Amount;
+				updateAccountDetails.LastModifiedBy = "SYSTEM";
+				updateAccountDetails.LastModifiedDate = DateTime.UtcNow.AddHours (1);
+
+				_context.Accounts.Update (updateAccountDetails);
+
+				await _context.SaveChangesAsync (createTransaction.CancellationToken);
+
+				var response = _mapper.Map<TransactionResponse> (payload);
+				var result = RequestResponse<TransactionResponse>.Created (response, 1, "Transaction");
+
+				_logger.LogInformation ($"CreateWithdrawalTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {result.Remark} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
+				return result;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError ($"CreateWithdrawalTransaction by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
+				throw;
+			}
+		}
+
 		public async Task<RequestResponse<TransactionResponse>> UpdateTransactionAsync (TransactionDto updateTransactionRequest)
 		{
 			try
@@ -215,7 +293,7 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"ConfirmTransaction begins at {DateTime.UtcNow.AddHours (1)} by System for amount: {updateTransactionRequest.Amount}");
+				_logger.LogInformation ($"ConfirmTransaction begins at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
 				if (updateTransactionRequest == null)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.NullPayload (null);
@@ -229,7 +307,7 @@ namespace Persistence.Repositories
 				if (updateTransaction == null)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Transaction");
-					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for amount: {updateTransactionRequest.Amount}");
+					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
 					return badRequest;
 				}
 
@@ -246,7 +324,7 @@ namespace Persistence.Repositories
 				if (!createAuditLog.IsSuccessful)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
-					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by System for amount: {updateTransactionRequest.Amount}");
+					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
 					return badRequest;
 				}
 
@@ -261,7 +339,24 @@ namespace Persistence.Repositories
 					if (updateSenderAccountDetails == null)
 					{
 						var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Recipient Bank account details");
-						_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for amount: {updateTransactionRequest.Amount}");
+						_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
+						return badRequest;
+					}
+
+					CreateAuditLogCommand createAuditLogRequestForAccount = new ()
+					{
+						CancellationToken = updateTransactionRequest.CancellationToken,
+						CreatedBy = updateSenderAccountDetails.CreatedBy,
+						Name = "Account",
+						Payload = JsonConvert.SerializeObject (updateSenderAccountDetails)
+					};
+
+					RequestResponse<AuditLogResponse> createAuditLogForAccount = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
+
+					if (!createAuditLog.IsSuccessful)
+					{
+						var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
+						_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
 						return badRequest;
 					}
 
@@ -278,7 +373,7 @@ namespace Persistence.Repositories
 					if (updateAccountDetails == null)
 					{
 						var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Sender bank account details");
-						_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for amount: {updateTransactionRequest.Amount}");
+						_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
 						return badRequest;
 					}
 
@@ -294,12 +389,12 @@ namespace Persistence.Repositories
 
 				var result = _mapper.Map<TransactionResponse> (updateTransaction);
 				var response = RequestResponse<TransactionResponse>.Updated (result, 1, "Transaction");
-				_logger.LogInformation ($"ConfirmTransaction at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} by System for amount: {updateTransactionRequest.Amount}");
+				_logger.LogInformation ($"ConfirmTransaction at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"ConfirmTransaction by System for amount: {updateTransactionRequest.Amount} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
+				_logger.LogError ($"ConfirmTransaction by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
 				throw;
 			}
 		}

@@ -144,41 +144,16 @@ namespace API.Controllers
 				return BadRequest (tokenResponse.Remark);
 			}
 
-			if (tokenResponse.Email == null)
-			{
-				return BadRequest (tokenResponse.Remark);
-			}
-
 			if (!request.Currency.Equals ("NGN", StringComparison.OrdinalIgnoreCase))
 			{
 				return BadRequest ("Only 'NGN' currency is supported at the moment.");
 			}
 
-			var paymentReferenceId = Guid.NewGuid ().ToString ();
-			string? checkoutUrl = null;
-			if (_appSettings.DefaultPaymentService.Equals ("Paystack", StringComparison.OrdinalIgnoreCase))
-			{
-				PaystackPaymentCommand paystackPaymentCommand = new ()
-				{
-					Amount = (request.Amount * 100).ToString (),
-					Email = tokenResponse.Email,
-					Reference = paymentReferenceId,
-					Currency = "NGN",
-				};
 
-				var paymentResult = await _paymentIntegrationService.CreatePaystackPaymentRequestAsync (paystackPaymentCommand);
-				checkoutUrl = paymentResult != null && paymentResult.Data != null ? paymentResult.Data.authorization_url : null;
-			}
-
-			request.PaymentReferenceId = paymentReferenceId;
 			request.CreatedBy = tokenResponse.UserId;
 			request.CancellationToken = cancellationToken;
 			RequestResponse<TransactionResponse> result = await _mediator.Send (request);
 
-			if (result.Data != null)
-			{
-				result.Data.CheckoutUrl = checkoutUrl;
-			}
 
 			return StatusCode (result.StatusCode, result);
 		}
@@ -251,11 +226,18 @@ namespace API.Controllers
 				return StatusCode (badResult.StatusCode, badResult);
 			}
 
+			if (transaction.data == null)
+			{
+				var badResult = RequestResponse<TransactionResponse>.Failed (null, 404, "Transaction not found");
+				return StatusCode (badResult.StatusCode, badResult);
+			}
+
 			VerifyTransactionCommand request = new ()
 			{
 				PaymentReferenceId = id,
 				LastModifiedBy = tokenResponse.UserId,
-				CancellationToken = cancellationToken
+				CancellationToken = cancellationToken,
+				Amount = transaction.data.Amount / 100
 			};
 			var result = await _mediator.Send (request);
 			return StatusCode (result.StatusCode, result);

@@ -33,7 +33,7 @@ namespace Application.Models.Transactions.Command
 
 		public async Task<RequestResponse<TransactionResponse>> Handle (WithdrawCommand request, CancellationToken cancellationToken)
 		{
-			if (!request.Currency.Equals ("Naira", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("Pound", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("Yuan", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("Dollar", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("Euro", StringComparison.OrdinalIgnoreCase))
+			if (!request.Currency.Equals ("NGN", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("GBP", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("Yuan", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("USD", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("Euro", StringComparison.OrdinalIgnoreCase))
 			{
 				return RequestResponse<TransactionResponse>.Failed (null, 400, "You can only withdraw Naira, Dollar, Pound, Euro, or Yuan at this bank");
 			}
@@ -111,14 +111,14 @@ namespace Application.Models.Transactions.Command
 				return RequestResponse<TransactionResponse>.Failed (null, 400, $"You're unauthorized to initiate a transfer above {_appSettings.MaximumDailyWithdrawalLimitAmount} daily on this account, your remaining transfer sum for today is {_appSettings.MaximumDailyWithdrawalLimitAmount - withdrawalAmount.Data.Amount}. Please reach out to customer service to increase your limit");
 			}
 
-			payload.RecipientAccountNumber = accountDetails.Data.AccountNumber;
+			payload.SenderAccountNumber = accountDetails.Data.AccountNumber;
 			payload.TransactionType = TransactionType.Debit;
-			payload.RecipientBankName = _appSettings.BankName;
-			payload.RecipientAccountName = userDetails.Data.BusinessName ?? $"{userDetails.Data.FirstName} {userDetails.Data.LastName}";
+			payload.SenderBankName = _appSettings.BankName;
+			payload.SenderAccountName = userDetails.Data.BusinessName ?? $"{userDetails.Data.FirstName} {userDetails.Data.LastName}";
 			payload.PaymentService = _appSettings.DefaultPaymentService;
 			payload.Channel = _appSettings.DefaultPaymentChannel;
 
-			var result = await _transactionRepository.CreateTransactionAsync (payload);
+			var result = await _transactionRepository.CreateWithdrawalTransactionAsync (payload);
 
 			return result;
 		}

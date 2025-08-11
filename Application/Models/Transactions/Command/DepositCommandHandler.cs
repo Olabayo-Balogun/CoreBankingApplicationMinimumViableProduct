@@ -33,7 +33,7 @@ namespace Application.Models.Transactions.Command
 
 		public async Task<RequestResponse<TransactionResponse>> Handle (DepositCommand request, CancellationToken cancellationToken)
 		{
-			if (!request.Currency.Equals ("Naira", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("Pound", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("Yuan", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("Dollar", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("Euro", StringComparison.OrdinalIgnoreCase))
+			if (!request.Currency.Equals ("NGN", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("GBP", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("Yuan", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("USD", StringComparison.OrdinalIgnoreCase) && !request.Currency.Equals ("Euro", StringComparison.OrdinalIgnoreCase))
 			{
 				return RequestResponse<TransactionResponse>.Failed (null, 400, "You can only deposit Naira, Dollar, Pound, Euro, or Yuan at this bank");
 			}

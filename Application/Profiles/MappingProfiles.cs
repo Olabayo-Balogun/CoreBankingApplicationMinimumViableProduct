@@ -66,6 +66,7 @@ namespace Application.Profiles
 
 			CreateMap<DepositCommand, TransactionDto> ().ReverseMap ();
 			CreateMap<WithdrawCommand, TransactionDto> ().ReverseMap ();
+			CreateMap<TransactionDto, Transaction> ().ReverseMap ();
 			CreateMap<Transaction, TransactionResponse> ().ReverseMap ();
 
 			CreateMap<UploadDto, Upload> ().ReverseMap ();
