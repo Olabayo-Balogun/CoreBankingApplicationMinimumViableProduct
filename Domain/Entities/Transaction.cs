@@ -21,7 +21,7 @@ namespace Domain.Entities
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string? SenderBankName { get; set; }
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string RecipientAccountNumber { get; set; }
+		public string? RecipientAccountNumber { get; set; }
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string? RecipientAccountName { get; set; }
 		[StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
@@ -39,9 +39,8 @@ namespace Domain.Entities
 		[Required (ErrorMessage = "Transaction Currency is required")]
 		[StringLength (500, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string Currency { get; set; }
-		[Required (ErrorMessage = "Payment Reference ID is required")]
 		[StringLength (500, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string PaymentReferenceId { get; set; }
+		public string? PaymentReferenceId { get; set; }
 		/// <summary>
 		/// The name of the mode used eg Card Payments, Bank Account Payments, Bank Transfer etc.
 		/// </summary>

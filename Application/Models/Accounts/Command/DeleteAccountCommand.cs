@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 using Application.Model;
 using Application.Models.Accounts.Response;
@@ -17,9 +18,9 @@ namespace Application.Models.Accounts.Command
 		/// <summary>
 		/// Id of the user who is deleting the account
 		/// </summary>
-		[Required (ErrorMessage = "DeletedBy is required")]
+		[JsonIgnore]
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string DeletedBy { get; set; }
+		public string? DeletedBy { get; set; }
 		public CancellationToken CancellationToken { get; set; }
 	}
 }

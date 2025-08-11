@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 using Application.Model;
 using Application.Models.Accounts.Response;
@@ -15,7 +16,7 @@ namespace Application.Models.Accounts.Command
 		[Required]
 		[Range (1, 10, ErrorMessage = "{0} must be a valid account type.")]
 		public int AccountType { get; set; }
-
+		[JsonIgnore]
 		public string? CreatedBy { get; set; }
 		public CancellationToken CancellationToken { get; set; }
 	}

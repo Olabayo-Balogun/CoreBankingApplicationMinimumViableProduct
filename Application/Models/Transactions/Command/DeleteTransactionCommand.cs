@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 using Application.Model;
 using Application.Models.Transactions.Response;
@@ -12,9 +13,9 @@ namespace Application.Models.Transactions.Command
 		[Required]
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string PublicId { get; set; }
-		[Required]
+		[JsonIgnore]
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string DeletedBy { get; set; }
+		public string? DeletedBy { get; set; }
 		public CancellationToken CancellationToken { get; set; }
 	}
 }

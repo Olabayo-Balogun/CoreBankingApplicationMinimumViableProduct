@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 using Application.Model;
 using Application.Models.Transactions.Response;
@@ -14,8 +15,9 @@ namespace Application.Models.Transactions.Command
 		[Required (ErrorMessage = "Payment Reference ID is required")]
 		[StringLength (500, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
 		public string PaymentReferenceId { get; set; }
+		[JsonIgnore]
 		[StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
-		public string LastModifiedBy { get; set; }
+		public string? LastModifiedBy { get; set; }
 
 		[Precision (18, 2)]
 		[Range (0.01, double.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]

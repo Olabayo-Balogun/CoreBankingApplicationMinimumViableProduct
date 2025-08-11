@@ -178,6 +178,13 @@ namespace Persistence.Repositories
 
 				var updateAccountDetails = await _context.Accounts.Where (x => x.AccountNumber == createTransaction.SenderAccountNumber && x.IsDeleted == false).FirstOrDefaultAsync (createTransaction.CancellationToken);
 
+				if (updateAccountDetails == null)
+				{
+					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Sender bank account details");
+					_logger.LogInformation ($"CreateWithdrawalTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
+					return badRequest;
+				}
+
 				CreateAuditLogCommand createAuditLogRequest = new ()
 				{
 					CancellationToken = createTransaction.CancellationToken,
@@ -185,6 +192,12 @@ namespace Persistence.Repositories
 					Name = "Account",
 					Payload = JsonConvert.SerializeObject (updateAccountDetails)
 				};
+
+				updateAccountDetails.Balance -= createTransaction.Amount;
+				updateAccountDetails.LastModifiedBy = "SYSTEM";
+				updateAccountDetails.LastModifiedDate = DateTime.UtcNow.AddHours (1);
+
+				_context.Accounts.Update (updateAccountDetails);
 
 				RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
 
@@ -194,19 +207,6 @@ namespace Persistence.Repositories
 					_logger.LogInformation ($"CreateWithdrawalTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
 					return badRequest;
 				}
-
-				if (updateAccountDetails == null)
-				{
-					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Sender bank account details");
-					_logger.LogInformation ($"CreateWithdrawalTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
-					return badRequest;
-				}
-
-				updateAccountDetails.Balance -= createTransaction.Amount;
-				updateAccountDetails.LastModifiedBy = "SYSTEM";
-				updateAccountDetails.LastModifiedDate = DateTime.UtcNow.AddHours (1);
-
-				_context.Accounts.Update (updateAccountDetails);
 
 				await _context.SaveChangesAsync (createTransaction.CancellationToken);
 
@@ -332,59 +332,41 @@ namespace Persistence.Repositories
 				updateTransaction.LastModifiedBy = "SYSTEM";
 				updateTransaction.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 
-				if (updateTransaction.TransactionType.Equals (TransactionType.Credit, StringComparison.OrdinalIgnoreCase))
+				var updateSenderAccountDetails = await _context.Accounts.Where (x => x.AccountNumber == updateTransaction.RecipientAccountNumber && x.IsDeleted == false).FirstOrDefaultAsync (updateTransactionRequest.CancellationToken);
+
+				if (updateSenderAccountDetails == null)
 				{
-					var updateSenderAccountDetails = await _context.Accounts.Where (x => x.AccountNumber == updateTransaction.RecipientAccountNumber && x.IsDeleted == false).FirstOrDefaultAsync (updateTransactionRequest.CancellationToken);
-
-					if (updateSenderAccountDetails == null)
-					{
-						var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Recipient Bank account details");
-						_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
-						return badRequest;
-					}
-
-					CreateAuditLogCommand createAuditLogRequestForAccount = new ()
-					{
-						CancellationToken = updateTransactionRequest.CancellationToken,
-						CreatedBy = updateSenderAccountDetails.CreatedBy,
-						Name = "Account",
-						Payload = JsonConvert.SerializeObject (updateSenderAccountDetails)
-					};
-
-					RequestResponse<AuditLogResponse> createAuditLogForAccount = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
-
-					if (!createAuditLog.IsSuccessful)
-					{
-						var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
-						_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
-						return badRequest;
-					}
-
-					updateSenderAccountDetails.Balance += updateTransactionRequest.Amount;
-					updateSenderAccountDetails.LastModifiedBy = "SYSTEM";
-					updateSenderAccountDetails.LastModifiedDate = DateTime.UtcNow.AddHours (1);
-
-					_context.Accounts.Update (updateSenderAccountDetails);
+					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Recipient Bank account details");
+					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
+					return badRequest;
 				}
-				else if (updateTransaction.TransactionType.Equals (TransactionType.Debit, StringComparison.OrdinalIgnoreCase))
+
+				CreateAuditLogCommand createAuditLogRequestForAccount = new ()
 				{
-					var updateAccountDetails = await _context.Accounts.Where (x => x.AccountNumber == updateTransaction.SenderAccountNumber && x.IsDeleted == false).FirstOrDefaultAsync (updateTransactionRequest.CancellationToken);
+					CancellationToken = updateTransactionRequest.CancellationToken,
+					CreatedBy = updateSenderAccountDetails.CreatedBy,
+					Name = "Account",
+					Payload = JsonConvert.SerializeObject (updateSenderAccountDetails)
+				};
 
-					if (updateAccountDetails == null)
-					{
-						var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Sender bank account details");
-						_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
-						return badRequest;
-					}
+				updateSenderAccountDetails.Balance += updateTransactionRequest.Amount;
+				updateSenderAccountDetails.LastModifiedBy = "SYSTEM";
+				updateSenderAccountDetails.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 
-					updateAccountDetails.Balance -= updateTransactionRequest.Amount;
-					updateAccountDetails.LastModifiedBy = "SYSTEM";
-					updateAccountDetails.LastModifiedDate = DateTime.UtcNow.AddHours (1);
-
-					_context.Accounts.Update (updateAccountDetails);
-				}
+				_context.Accounts.Update (updateSenderAccountDetails);
 
 				_context.Transactions.Update (updateTransaction);
+
+				RequestResponse<AuditLogResponse> createAuditLogForAccount = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
+
+				if (!createAuditLog.IsSuccessful)
+				{
+					var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
+					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
+					return badRequest;
+				}
+
+
 				await _context.SaveChangesAsync (updateTransactionRequest.CancellationToken);
 
 				var result = _mapper.Map<TransactionResponse> (updateTransaction);

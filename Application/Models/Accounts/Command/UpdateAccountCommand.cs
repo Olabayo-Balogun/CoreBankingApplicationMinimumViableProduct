@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 using Application.Model;
 using Application.Models.Accounts.Response;
@@ -46,7 +47,8 @@ namespace Application.Models.Accounts.Command
 		[Range (0.01, double.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]
 		[Precision (18, 2)]
 		public decimal MaximumDailyTransferLimitAmount { get; set; }
-		public string LastModifiedBy { get; set; }
+		[JsonIgnore]
+		public string? LastModifiedBy { get; set; }
 		public CancellationToken CancellationToken { get; set; }
 	}
 }
