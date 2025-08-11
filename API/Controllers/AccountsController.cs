@@ -76,8 +76,7 @@ namespace API.Controllers
 		/// An endpoint to enable a admin and staff request for an account's information
 		/// </summary>
 		/// <param name="accountLedger">This allows admin and staff to search for an account using the account's ledger</param>
-		/// <param name="isCount">If set to true, staff and admin can see analytics on the number of acccounts that have been created, if userPublicId is not null, the number of accounts created for a specific customer will be returned</param>
-		/// <param name="userPublicId">This allows admin and staff to get the numbers accounts created for a specific customer as long isCount is set to true</param>
+		/// <param name="userPublicId">This allows admin and staff to get the numbers accounts created for a specific customer</param>
 		/// <param name="publicId">This allows admin and staff to search for an account using its unique ID on the database</param>
 		/// <param name="accountNumber">This allows admin and staff to search for an account using its account number</param>
 		/// <param name="cancellationToken"></param>
@@ -85,9 +84,8 @@ namespace API.Controllers
 		[HttpGet ("account")]
 		[Authorize (Roles = $"{UserRoles.Admin}, {UserRoles.Staff}")]
 		[EnableRateLimiting ("GetRequestRateLimit")]
-		[Idempotent (cacheTimeInSeconds: 60)]
 		[ProducesResponseType (type: typeof (RequestResponse<AccountResponse>), StatusCodes.Status200OK)]
-		public async Task<ActionResult<RequestResponse<AccountResponse>>> GetAccount ([FromQuery] string? publicId, string? accountLedger, string? accountNumber, string? userPublicId, CancellationToken cancellationToken, bool isCount = false)
+		public async Task<ActionResult<RequestResponse<AccountResponse>>> GetAccount ([FromQuery] string? publicId, string? accountLedger, string? accountNumber, string? userPublicId, CancellationToken cancellationToken)
 		{
 			var token = HttpContext.Items["JwtToken"] as string;
 			var tokenResponse = Utility.ValidateToken (token);
@@ -108,7 +106,6 @@ namespace API.Controllers
 				AccountLedger = accountLedger,
 				AccountNumber = accountNumber,
 				UserPublicId = userPublicId,
-				IsCount = isCount,
 				CancellationToken = cancellationToken
 			};
 			var result = await _mediator.Send (request);
@@ -130,7 +127,7 @@ namespace API.Controllers
 		[ProducesResponseType (type: typeof (RequestResponse<List<AccountResponse>>), StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType (type: typeof (RequestResponse<List<AccountResponse>>), StatusCodes.Status404NotFound)]
 		[ProducesResponseType (type: typeof (RequestResponse<List<AccountResponse>>), StatusCodes.Status429TooManyRequests)]
-		public async Task<ActionResult<RequestResponse<AccountResponse>>> GetAccounts ([FromRoute] string? id, CancellationToken cancellationToken, int pageNumber = 1, int pageSize = 10)
+		public async Task<ActionResult<RequestResponse<AccountResponse>>> GetAccounts ([FromRoute] string id, CancellationToken cancellationToken, int pageNumber = 1, int pageSize = 10)
 		{
 			var token = HttpContext.Items["JwtToken"] as string;
 			var tokenResponse = Utility.ValidateToken (token);
@@ -157,7 +154,7 @@ namespace API.Controllers
 
 			AccountsQuery request = new ()
 			{
-				PublicId = tokenResponse.UserId,
+				PublicId = id,
 				PageNumber = pageNumber,
 				PageSize = pageSize,
 				CancellationToken = cancellationToken

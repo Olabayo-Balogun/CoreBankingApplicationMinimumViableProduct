@@ -1,10 +1,8 @@
 ﻿using Application.Interface.Persistence;
 using Application.Model;
 using Application.Model.AuditLogs.Command;
-using Application.Model.Transactions.Queries;
 using Application.Models.AuditLogs.Response;
 using Application.Models.Transactions.Command;
-using Application.Models.Transactions.Queries;
 using Application.Models.Transactions.Response;
 
 using AutoMapper;
@@ -75,53 +73,6 @@ namespace Test.Repositories
 			Assert.Equal ("Transaction not found", result.Remark);
 		}
 
-		[Fact]
-		public async Task GetTransactionByBankNameAndAccountNumberAsync_NoDepositorMatches_ReturnsNotFound ()
-		{
-			using var context = CreateDbContext (); // No matching sender transactions
-
-			var query = new GetTransactionByBankNameAndAccountNumberQuery
-			{
-				BankName = "BankX",
-				AccountNumber = "1234567890",
-				IsDepositor = true,
-				IsDeleted = false,
-				PageNumber = 1,
-				PageSize = 10,
-				CancellationToken = CancellationToken.None
-			};
-
-			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.GetTransactionByBankNameAndAccountNumberAsync (query);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Transactions not found", result.Remark);
-		}
-
-		[Fact]
-		public async Task GetTransactionByBankNameAndAccountNumberAsync_NoRecipientMatches_ReturnsNotFound ()
-		{
-			using var context = CreateDbContext (); // No matching recipient transactions
-
-			var query = new GetTransactionByBankNameAndAccountNumberQuery
-			{
-				BankName = "BankY",
-				AccountNumber = "9876543210",
-				IsDepositor = false,
-				IsDeleted = false,
-				PageNumber = 1,
-				PageSize = 10,
-				CancellationToken = CancellationToken.None
-			};
-
-			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.GetTransactionByBankNameAndAccountNumberAsync (query);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Transactions not found", result.Remark);
-		}
 
 		[Fact]
 		public async Task CreateTransactionAsync_NullPayload_ReturnsNullPayload ()
@@ -384,28 +335,6 @@ namespace Test.Repositories
 		}
 
 		[Fact]
-		public async Task GetTransactionsByUserIdAsync_NoMatches_ReturnsNotFound ()
-		{
-			using var context = CreateDbContext (); // No matching transactions
-
-			var query = new GetTransactionByUserIdQuery
-			{
-				UserId = "user123",
-				IsDeleted = false,
-				PageNumber = 1,
-				PageSize = 10,
-				CancellationToken = CancellationToken.None
-			};
-
-			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.GetTransactionsByUserIdAsync (query);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Transactions not found", result.Remark);
-		}
-
-		[Fact]
 		public async Task GetAllTransactionsAsync_NoResults_ReturnsNotFound ()
 		{
 			using var context = CreateDbContext (); // No transactions added
@@ -413,27 +342,6 @@ namespace Test.Repositories
 			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
 
 			var result = await repo.GetAllTransactionsAsync (isDeleted: false, CancellationToken.None, pageNumber: 1, pageSize: 10);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Transactions not found", result.Remark);
-		}
-
-		[Fact]
-		public async Task GetTransactionsByDateAsync_NoMatches_ReturnsNotFound ()
-		{
-			using var context = CreateDbContext (); // No matching transactions
-
-			var query = new GetTransactionsByDateQuery
-			{
-				Date = DateTime.UtcNow.Date,
-				PageNumber = 1,
-				PageSize = 10,
-				CancellationToken = CancellationToken.None
-			};
-
-			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.GetTransactionsByDateAsync (query);
 
 			Assert.False (result.IsSuccessful);
 			Assert.Equal ("Transactions not found", result.Remark);
@@ -550,7 +458,7 @@ namespace Test.Repositories
 			);
 			await context.SaveChangesAsync ();
 
-			var result = await repo.GetTransactionByDateAsync (userId, targetDate, CancellationToken.None, 1, 10);
+			var result = await repo.GetTransactionsByDateAsync (userId, targetDate, CancellationToken.None, 1, 10);
 
 			Assert.True (result.IsSuccessful);
 			Assert.Single (result.Data);

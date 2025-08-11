@@ -9,9 +9,6 @@ namespace Application.Models.Transactions.Queries
 	{
 		public string? AccountNumber { get; set; }
 		public string? PublicId { get; set; }
-		public int PageNumber { get; set; }
-		public int PageSize { get; set; }
-		public bool IsCount { get; set; }
 		public CancellationToken CancellationToken { get; set; }
 		public string? UserId { get; set; }
 		public DateTime? Date { get; set; }

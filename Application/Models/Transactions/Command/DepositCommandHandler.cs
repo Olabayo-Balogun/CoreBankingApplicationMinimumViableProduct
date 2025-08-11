@@ -65,15 +65,15 @@ namespace Application.Models.Transactions.Command
 				return RequestResponse<TransactionResponse>.NotFound (null, "User");
 			}
 
-			if (accountDetails.Data.AccountType != AccountType.NairaCurrent && accountDetails.Data.AccountType != AccountType.NairaSaving && request.Currency.Equals ("Naira", StringComparison.OrdinalIgnoreCase))
+			if (accountDetails.Data.AccountType != AccountType.NairaCurrent && accountDetails.Data.AccountType != AccountType.NairaSaving && request.Currency.Equals ("NGN", StringComparison.OrdinalIgnoreCase))
 			{
 				return RequestResponse<TransactionResponse>.Failed (null, 400, "You can only deposit Naira into this account");
 			}
-			else if (accountDetails.Data.AccountType != AccountType.DollarCurrent && accountDetails.Data.AccountType != AccountType.DollarSaving && request.Currency.Equals ("Dollar", StringComparison.OrdinalIgnoreCase))
+			else if (accountDetails.Data.AccountType != AccountType.DollarCurrent && accountDetails.Data.AccountType != AccountType.DollarSaving && request.Currency.Equals ("USD", StringComparison.OrdinalIgnoreCase))
 			{
 				return RequestResponse<TransactionResponse>.Failed (null, 400, "You can only deposit Dollar into this account");
 			}
-			else if (accountDetails.Data.AccountType != AccountType.PoundCurrent && accountDetails.Data.AccountType != AccountType.PoundSaving && request.Currency.Equals ("Pound", StringComparison.OrdinalIgnoreCase))
+			else if (accountDetails.Data.AccountType != AccountType.PoundCurrent && accountDetails.Data.AccountType != AccountType.PoundSaving && request.Currency.Equals ("GBP", StringComparison.OrdinalIgnoreCase))
 			{
 				return RequestResponse<TransactionResponse>.Failed (null, 400, "You can only deposit Pound into this account");
 			}

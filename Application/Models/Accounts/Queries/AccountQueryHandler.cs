@@ -53,7 +53,7 @@ namespace Application.Models.Accounts.Queries
 				var result = await _accountRepository.GetAccountByAccountNumberAsync (request.AccountNumber, request.CancellationToken);
 				return result;
 			}
-			else if (request.UserPublicId != null && request.IsCount)
+			else if (request.UserPublicId != null)
 			{
 				ValidateQueryParameterAndPaginationResponse validateQueryAndPagination = Utility.Utility
 				.ValidateQueryParameter (request.UserPublicId, null);

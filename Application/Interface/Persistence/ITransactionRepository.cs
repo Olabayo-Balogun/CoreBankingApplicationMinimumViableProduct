@@ -1,5 +1,4 @@
 ﻿using Application.Model;
-using Application.Model.Transactions.Queries;
 using Application.Models.Transactions.Command;
 using Application.Models.Transactions.Response;
 
@@ -16,9 +15,8 @@ namespace Application.Interface.Persistence
 		Task<RequestResponse<TransactionResponse>> GetTransactionsByIdAsync (string publicId, CancellationToken cancellationToken);
 		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByBankNameAsync (string bankName, CancellationToken cancellationToken, int pageNumber, int pageSize);
 		Task<RequestResponse<List<TransactionResponse>>> GetAllTransactionsAsync (bool isDeleted, CancellationToken cancellationToken, int pageNumber, int pageSize);
-		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByDateAsync (GetTransactionsByDateQuery getTransactionsByDate);
 		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByCustomDateAsync (string userId, DateTime fromDate, DateTime toDate, CancellationToken cancellationToken, int pageNumber, int pageSize);
-		Task<RequestResponse<List<TransactionResponse>>> GetTransactionByDateAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
+		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByDateAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
 		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByWeekAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
 		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByMonthAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);
 		Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByYearAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize);

@@ -1,7 +1,6 @@
 ﻿using Application.Interface.Persistence;
 using Application.Model;
 using Application.Model.AuditLogs.Command;
-using Application.Model.Transactions.Queries;
 using Application.Models.AuditLogs.Response;
 using Application.Models.Transactions.Command;
 using Application.Models.Transactions.Response;
@@ -490,46 +489,6 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByDateAsync (GetTransactionsByDateQuery getTransactionsByDate)
-		{
-			try
-			{
-				_logger.LogInformation ($"GetTransactionsByDate for isDeleted: {getTransactionsByDate.IsDeleted}, toDate: {getTransactionsByDate.ToDate}, fromDate: {getTransactionsByDate.FromDate}, date: {getTransactionsByDate.Date}, and period: {getTransactionsByDate.Period} begins at {DateTime.UtcNow.AddHours (1)}");
-
-				var result = await _context.Transactions
-					.AsNoTracking ()
-					.Where (x => x.IsDeleted == false && x.DateCreated == getTransactionsByDate.Date.Date)
-					.OrderBy (x => x.DateCreated)
-					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
-					.Skip ((getTransactionsByDate.PageNumber - 1) * getTransactionsByDate.PageSize)
-					.Take (getTransactionsByDate.PageSize)
-					.ToListAsync (getTransactionsByDate.CancellationToken);
-
-				if (result.Count < 1)
-				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-
-					_logger.LogInformation ($"GetTransactionsByDate for isDeleted: {getTransactionsByDate.IsDeleted}, toDate: {getTransactionsByDate.ToDate}, fromDate: {getTransactionsByDate.FromDate}, date: {getTransactionsByDate.Date}, and period: {getTransactionsByDate.Period} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-
-					return badResponse;
-				}
-
-				var count = await _context.Transactions
-				.AsNoTracking ()
-				.Where (x => x.IsDeleted == false && x.DateCreated == getTransactionsByDate.Date.Date).LongCountAsync (getTransactionsByDate.CancellationToken);
-
-				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-
-				_logger.LogInformation ($"GetTransactionsByDate for isDeleted: {getTransactionsByDate.IsDeleted}, toDate: {getTransactionsByDate.ToDate}, fromDate: {getTransactionsByDate.FromDate}, date: {getTransactionsByDate.Date}, and period: {getTransactionsByDate.Period} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
-				return response;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError ($"GetTransactionsByDate for isDeleted: {getTransactionsByDate.IsDeleted}, toDate: {getTransactionsByDate.ToDate}, fromDate: {getTransactionsByDate.FromDate}, date: {getTransactionsByDate.Date}, and period: {getTransactionsByDate.Period} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
-			}
-		}
-
 		public async Task<RequestResponse<TransactionResponse>> GetTransactionsCountByCustomDateAsync (string userId, DateTime fromDate, DateTime toDate, CancellationToken cancellationToken)
 		{
 			try
@@ -682,7 +641,7 @@ namespace Persistence.Repositories
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionByDateAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByDateAsync (string userId, DateTime date, CancellationToken cancellationToken, int pageNumber, int pageSize)
 		{
 			try
 			{

@@ -1,15 +1,17 @@
-﻿using Application.Model;
+﻿using System.ComponentModel.DataAnnotations;
+
+using Application.Model;
 using Application.Models.Transactions.Response;
 
 using MediatR;
 
+using Microsoft.EntityFrameworkCore;
+
 namespace Application.Models.Transactions.Queries
 {
-	public class TransactionsQuery : IRequest<RequestResponse<TransactionResponse>>
+	public class TransactionsQuery : IRequest<RequestResponse<List<TransactionResponse>>>
 	{
 		public string? AccountNumber { get; set; }
-		public bool? IsDepositor { get; set; }
-		public string? BankName { get; set; }
 		public int PageNumber { get; set; }
 		public int PageSize { get; set; }
 		public CancellationToken CancellationToken { get; set; }
@@ -20,5 +22,8 @@ namespace Application.Models.Transactions.Queries
 		public DateTime? Year { get; set; }
 		public DateTime? FromDate { get; set; }
 		public DateTime? ToDate { get; set; }
+		[Precision (18, 2)]
+		[Range (0.01, double.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]
+		public decimal? Amount { get; set; }
 	}
 }
