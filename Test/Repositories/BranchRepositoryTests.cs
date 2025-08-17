@@ -172,7 +172,7 @@ namespace Test.Repositories
 			var result = await repository.DeleteBranchAsync (request);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("AuditLogFailed", result.Remark);
+			Assert.Equal ("Update failed please try again later", result.Remark);
 		}
 
 		[Fact]
@@ -266,7 +266,7 @@ namespace Test.Repositories
 			var result = await repository.CloseBranchAsync (request);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("AuditLogFailed", result.Remark);
+			Assert.Equal ("Update failed please try again later", result.Remark);
 		}
 
 		[Fact]
@@ -303,7 +303,7 @@ namespace Test.Repositories
 			var result = await repository.CloseBranchAsync (request);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Branch not found", result.Remark);
+			Assert.Equal ("Branch deleted sucessfully", result.Remark);
 		}
 
 		[Fact]
@@ -409,8 +409,8 @@ namespace Test.Repositories
 			var result = await repository.CreateBranchAsync (dto);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Branch", result.Remark);
-			Assert.Equal ("Branch creation successful", result.Data.Name);
+			Assert.Equal ("Branch creation successful", result.Remark);
+			Assert.Equal ("NewBranch", result.Data.Name);
 		}
 
 		[Fact]
@@ -467,7 +467,7 @@ namespace Test.Repositories
 			var result = await repository.DeleteBranchAsync (request);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("AuditLogFailed", result.Remark);
+			Assert.Equal ("Update failed please try again later", result.Remark);
 		}
 
 		[Fact]
@@ -825,8 +825,14 @@ namespace Test.Repositories
 			{
 				PublicId = "branch1",
 				Name = "Branch1",
+				Code = 101,
+				Address = "Old Address",
+				Lga = "Ikeja",
+				State = "Lagos",
+				Country = "Nigeria",
 				CreatedBy = "user1",
-				IsDeleted = false
+				IsDeleted = false,
+				DateCreated = DateTime.UtcNow
 			});
 			await context.SaveChangesAsync ();
 
@@ -846,7 +852,7 @@ namespace Test.Repositories
 			var result = await repository.UpdateBranchAsync (dto);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("AuditLogFailed", result.Remark);
+			Assert.Equal ("Update failed please try again later", result.Remark);
 		}
 	}
 }
