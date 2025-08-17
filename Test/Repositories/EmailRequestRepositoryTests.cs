@@ -94,6 +94,9 @@ namespace Test.Repositories
 				Id = 1,
 				CreatedBy = "user123",
 				IsDeleted = false,
+				Message = "Test Message",
+				ToRecipient = "Sender@example.com",
+				Subject = "Test Subject",
 				DateCreated = DateTime.UtcNow
 			};
 
@@ -121,8 +124,12 @@ namespace Test.Repositories
 
 			var requests = new List<EmailRequest>
 			{
-				new () { Id = 1, CreatedBy = "user123", IsDeleted = false, DateCreated = DateTime.UtcNow },
-				new () { Id = 2, CreatedBy = "user123", IsDeleted = false, DateCreated = DateTime.UtcNow }
+				new () { Id = 1, CreatedBy = "user123", IsDeleted = false, DateCreated = DateTime.UtcNow, Message = "Test Message",
+				ToRecipient = "Sender@example.com",
+				Subject = "Test Subject" },
+				new () { Id = 2, CreatedBy = "user123", IsDeleted = false, DateCreated = DateTime.UtcNow, Message = "Test Message",
+				ToRecipient = "Sender@example.com",
+				Subject = "Test Subject" }
 			};
 
 			context.EmailRequests.AddRange (requests);
@@ -148,9 +155,33 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailRequests.AddRange (
-				new EmailRequest { Id = 1, IsDeleted = false },
-				new EmailRequest { Id = 2, IsDeleted = true },
-				new EmailRequest { Id = 3, IsDeleted = false }
+				new EmailRequest
+				{
+					Id = 1,
+					IsDeleted = false,
+					Message = "Test Message",
+					ToRecipient = "Sender@example.com",
+					Subject = "Test Subject",
+					CreatedBy = "user123"
+				},
+				new EmailRequest
+				{
+					Id = 2,
+					IsDeleted = true,
+					Message = "Test Message",
+					ToRecipient = "Sender@example.com",
+					Subject = "Test Subject",
+					CreatedBy = "user123"
+				},
+				new EmailRequest
+				{
+					Id = 3,
+					IsDeleted = false,
+					Message = "Test Message",
+					ToRecipient = "Sender@example.com",
+					Subject = "Test Subject",
+					CreatedBy = "user123"
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -167,8 +198,28 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailRequests.AddRange (
-				new EmailRequest { Id = 1, IsHtml = true, IsDeleted = false, DateCreated = DateTime.UtcNow },
-				new EmailRequest { Id = 2, IsHtml = false, IsDeleted = false, DateCreated = DateTime.UtcNow }
+				new EmailRequest
+				{
+					Id = 1,
+					IsHtml = true,
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					Message = "Test Message",
+					ToRecipient = "Sender@example.com",
+					Subject = "Test Subject",
+					CreatedBy = "user123"
+				},
+				new EmailRequest
+				{
+					Id = 2,
+					IsHtml = false,
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					Message = "Test Message",
+					ToRecipient = "Sender@example.com",
+					Subject = "Test Subject",
+					CreatedBy = "user123"
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -190,7 +241,10 @@ namespace Test.Repositories
 				Id = 99,
 				IsDeleted = false,
 				ToRecipient = "target@example.com",
-				DateCreated = DateTime.UtcNow
+				DateCreated = DateTime.UtcNow,
+				Message = "Test Message",
+				Subject = "Test Subject",
+				CreatedBy = "user123"
 			});
 			await context.SaveChangesAsync ();
 
@@ -207,9 +261,38 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailRequests.AddRange (
-				new EmailRequest { Id = 1, ToRecipient = "user@example.com", IsDeleted = false, DateCreated = DateTime.UtcNow },
-				new EmailRequest { Id = 2, CcRecipient = "user@example.com", IsDeleted = false, DateCreated = DateTime.UtcNow },
-				new EmailRequest { Id = 3, BccRecipient = "user@example.com", IsDeleted = false, DateCreated = DateTime.UtcNow }
+				new EmailRequest
+				{
+					Id = 1,
+					ToRecipient = "user@example.com",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					Message = "Test Message",
+					Subject = "Test Subject",
+					CreatedBy = "user123"
+				},
+				new EmailRequest
+				{
+					Id = 2,
+					CcRecipient = "user@example.com",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					Message = "Test Message",
+					ToRecipient = "Sender@example.com",
+					Subject = "Test Subject",
+					CreatedBy = "user123"
+				},
+				new EmailRequest
+				{
+					Id = 3,
+					BccRecipient = "user@example.com",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					Message = "Test Message",
+					ToRecipient = "Sender@example.com",
+					Subject = "Test Subject",
+					CreatedBy = "user123"
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -226,8 +309,26 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailRequests.AddRange (
-				new EmailRequest { Id = 1, CreatedBy = "user123", IsDeleted = false, DateCreated = DateTime.UtcNow },
-				new EmailRequest { Id = 2, CreatedBy = "user456", IsDeleted = false, DateCreated = DateTime.UtcNow }
+				new EmailRequest
+				{
+					Id = 1,
+					CreatedBy = "user123",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					Message = "Test Message",
+					ToRecipient = "Sender@example.com",
+					Subject = "Test Subject"
+				},
+				new EmailRequest
+				{
+					Id = 2,
+					CreatedBy = "user456",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					Message = "Test Message",
+					ToRecipient = "Sender@example.com",
+					Subject = "Test Subject"
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -248,7 +349,10 @@ namespace Test.Repositories
 				Id = 1,
 				IsDeleted = false,
 				Subject = "Old Subject",
-				DateCreated = DateTime.UtcNow
+				DateCreated = DateTime.UtcNow,
+				Message = "Test Message",
+				ToRecipient = "Sender@example.com",
+				CreatedBy = "user123"
 			});
 			await context.SaveChangesAsync ();
 
@@ -257,7 +361,10 @@ namespace Test.Repositories
 				Id = 1,
 				Subject = "Updated Subject",
 				LastModifiedBy = "user123",
-				CancellationToken = CancellationToken.None
+				CancellationToken = CancellationToken.None,
+				Message = "Test Message",
+				ToRecipient = "Sender@example.com",
+				CreatedBy = "user123"
 			};
 
 			var result = await repo.UpdateEmailRequestAsync (dto);

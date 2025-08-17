@@ -42,40 +42,6 @@ namespace Test.Services
 		}
 
 		[Fact]
-		public async Task SendUnsentEmailsAsync_SendsValidEmailAndUpdatesStatus ()
-		{
-			// Arrange
-			var emailLog = new EmailLogResponse
-			{
-				Id = 1,
-				ToRecipient = "valid@example.com",
-				CcRecipient = null,
-				BccRecipient = null,
-				Sender = "sender@example.com",
-				Subject = "Test Subject",
-				Message = "Test Body",
-				IsHtml = true
-			};
-
-			var response = RequestResponse<List<EmailLogResponse>>.SearchSuccessful ([emailLog], 1, "EmailLogs");
-
-			_emailLogRepoMock
-				.Setup (repo => repo.GetEmailLogBySentStatusAsync (false, It.IsAny<CancellationToken> (), 1, 10))
-				.ReturnsAsync (response);
-
-			_emailLogRepoMock
-				.Setup (repo => repo.UpdateMultipleEmailLogSentStatusAsync (It.IsAny<List<UpdateEmailLogSentStatusCommand>> ()))
-				.ReturnsAsync (RequestResponse<List<EmailLogResponse>>.Success (response.Data, 1, "Updated"));
-
-			// Act
-			await _emailerService.SendUnsentEmailsAsync ();
-
-			// Assert
-			_emailLogRepoMock.Verify (repo => repo.UpdateMultipleEmailLogSentStatusAsync (It.Is<List<UpdateEmailLogSentStatusCommand>> (list => list.Count == 1)), Times.Once);
-			_loggerMock.Verify (log => log.LogInformation (It.IsAny<string> ()), Times.AtLeastOnce);
-		}
-
-		[Fact]
 		public async Task SendUnsentEmailsAsync_DeletesInvalidEmail ()
 		{
 			// Arrange

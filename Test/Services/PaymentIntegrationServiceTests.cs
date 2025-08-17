@@ -64,7 +64,7 @@ namespace Test.Services
 			var result = await _service.PaystackPaymentWebhookRequestAsync (webhookCommand);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Payment", result.Remark);
+			Assert.Equal ("Payment not found", result.Remark);
 			Assert.Equal (404, result.StatusCode);
 		}
 
@@ -74,7 +74,12 @@ namespace Test.Services
 			_context.Transactions.Add (new Transaction
 			{
 				PaymentReferenceId = "ref123",
-				IsReconciled = true
+				IsReconciled = true,
+				Channel = "Bank Transfer",
+				PaymentService = "Paystack",
+				CreatedBy = "testuser",
+				Currency = "NGN",
+				TransactionType = "Credit",
 			});
 			await _context.SaveChangesAsync ();
 

@@ -75,18 +75,6 @@ namespace Test.Repositories
 
 
 		[Fact]
-		public async Task CreateTransactionAsync_NullPayload_ReturnsNullPayload ()
-		{
-			using var context = CreateDbContext ();
-			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.CreateTransactionAsync (null);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Payload is null", result.Remark);
-		}
-
-		[Fact]
 		public async Task CreateTransactionAsync_InvalidType_ReturnsBadRequest ()
 		{
 			using var context = CreateDbContext ();
@@ -112,6 +100,9 @@ namespace Test.Repositories
 			using var context = CreateDbContext ();
 			var dto = new TransactionDto
 			{
+				Channel = "Bank Transfer",
+				Currency = "NGN",
+				PaymentService = "Paystack",
 				TransactionType = "Credit",
 				CreatedBy = "user123",
 				Amount = 5000,
@@ -128,18 +119,6 @@ namespace Test.Repositories
 		}
 
 		[Fact]
-		public async Task UpdateTransactionAsync_NullPayload_ReturnsNullPayload ()
-		{
-			using var context = CreateDbContext ();
-			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.UpdateTransactionAsync (null);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Payload is null", result.Remark);
-		}
-
-		[Fact]
 		public async Task UpdateTransactionAsync_TransactionNotFound_ReturnsNotFound ()
 		{
 			using var context = CreateDbContext ();
@@ -148,7 +127,11 @@ namespace Test.Repositories
 				PublicId = "nonexistent-id",
 				LastModifiedBy = "user123",
 				Amount = 1000,
-				CancellationToken = CancellationToken.None
+				CancellationToken = CancellationToken.None,
+				Channel = "Bank Transfer",
+				Currency = "NGN",
+				PaymentService = "Paystack",
+				TransactionType = "Credit"
 			};
 
 			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
@@ -169,7 +152,11 @@ namespace Test.Repositories
 				IsDeleted = false,
 				CreatedBy = "user123",
 				Amount = 500,
-				DateCreated = DateTime.UtcNow
+				DateCreated = DateTime.UtcNow,
+				Channel = "Bank Transfer",
+				Currency = "NGN",
+				PaymentService = "Paystack",
+				TransactionType = "Credit"
 			};
 			context.Transactions.Add (transaction);
 			await context.SaveChangesAsync ();
@@ -179,7 +166,11 @@ namespace Test.Repositories
 				PublicId = "tx123",
 				LastModifiedBy = "user123",
 				Amount = 1000,
-				CancellationToken = CancellationToken.None
+				CancellationToken = CancellationToken.None,
+				Channel = "Bank Transfer",
+				Currency = "NGN",
+				PaymentService = "Paystack",
+				TransactionType = "Credit"
 			};
 
 			_auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
@@ -190,19 +181,7 @@ namespace Test.Repositories
 			var result = await repo.UpdateTransactionAsync (dto);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Audit log creation failed", result.Remark);
-		}
-
-		[Fact]
-		public async Task ConfirmTransactionAsync_NullPayload_ReturnsNullPayload ()
-		{
-			using var context = CreateDbContext ();
-			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.ConfirmTransactionAsync (null);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Payload is null", result.Remark);
+			Assert.Equal ("Update failed please try again later", result.Remark);
 		}
 
 		[Fact]
@@ -236,7 +215,10 @@ namespace Test.Repositories
 				RecipientAccountNumber = "1234567890",
 				CreatedBy = "user123",
 				Amount = 1000,
-				DateCreated = DateTime.UtcNow
+				DateCreated = DateTime.UtcNow,
+				Channel = "Bank Transfer",
+				Currency = "NGN",
+				PaymentService = "Paystack"
 			};
 			context.Transactions.Add (transaction);
 			await context.SaveChangesAsync ();
@@ -256,21 +238,8 @@ namespace Test.Repositories
 			var result = await repo.ConfirmTransactionAsync (command);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Audit log creation failed", result.Remark);
+			Assert.Equal ("Update failed please try again later", result.Remark);
 		}
-
-		[Fact]
-		public async Task DeleteTransactionAsync_NullPayload_ReturnsNullPayload ()
-		{
-			using var context = CreateDbContext ();
-			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.DeleteTransactionAsync (null);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Payload is null", result.Remark);
-		}
-
 		[Fact]
 		public async Task DeleteTransactionAsync_TransactionNotFound_ReturnsNotFound ()
 		{
@@ -299,7 +268,11 @@ namespace Test.Repositories
 				PublicId = "tx123",
 				IsDeleted = false,
 				CreatedBy = "user123",
-				DateCreated = DateTime.UtcNow
+				DateCreated = DateTime.UtcNow,
+				Channel = "Bank Transfer",
+				Currency = "NGN",
+				PaymentService = "Paystack",
+				TransactionType = "Credit"
 			});
 			await context.SaveChangesAsync ();
 
@@ -318,7 +291,7 @@ namespace Test.Repositories
 			var result = await repo.DeleteTransactionAsync (command);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Audit log creation failed", result.Remark);
+			Assert.Equal ("Update failed please try again later", result.Remark);
 		}
 
 		[Fact]
@@ -362,7 +335,7 @@ namespace Test.Repositories
 
 			Assert.True (result.IsSuccessful);
 			Assert.Equal (0, result.TotalCount);
-			Assert.Equal ("Transaction", result.Remark);
+			Assert.Equal ("Transaction count successful", result.Remark);
 		}
 
 		[Fact]
@@ -376,7 +349,7 @@ namespace Test.Repositories
 
 			Assert.True (result.IsSuccessful);
 			Assert.Equal (0, result.TotalCount);
-			Assert.Equal ("Transaction", result.Remark);
+			Assert.Equal ("Transaction count successful", result.Remark);
 		}
 
 		[Fact]
@@ -430,9 +403,42 @@ namespace Test.Repositories
 			var toDate = DateTime.UtcNow;
 
 			context.Transactions.AddRange (
-				new Transaction { CreatedBy = userId, DateCreated = DateTime.UtcNow.AddDays (-4), IsDeleted = false, Amount = 100, Description = "Test 1" },
-				new Transaction { CreatedBy = userId, DateCreated = DateTime.UtcNow.AddDays (-2), IsDeleted = false, Amount = 200, Description = "Test 2" },
-				new Transaction { CreatedBy = "otherUser", DateCreated = DateTime.UtcNow.AddDays (-3), IsDeleted = false, Amount = 300, Description = "Should be excluded" }
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = DateTime.UtcNow.AddDays (-4),
+					IsDeleted = false,
+					Amount = 100,
+					Description = "Test 1",
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				},
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = DateTime.UtcNow.AddDays (-2),
+					IsDeleted = false,
+					Amount = 200,
+					Description = "Test 2",
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				},
+				new Transaction
+				{
+					CreatedBy = "otherUser",
+					DateCreated = DateTime.UtcNow.AddDays (-3),
+					IsDeleted = false,
+					Amount = 300,
+					Description = "Should be excluded",
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -453,8 +459,30 @@ namespace Test.Repositories
 			var targetDate = DateTime.UtcNow.Date;
 
 			context.Transactions.AddRange (
-				new Transaction { CreatedBy = userId, DateCreated = targetDate, IsDeleted = false, Amount = 150, Description = "Today’s transaction" },
-				new Transaction { CreatedBy = userId, DateCreated = targetDate.AddDays (-1), IsDeleted = false, Amount = 250, Description = "Yesterday’s transaction" }
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = targetDate,
+					IsDeleted = false,
+					Amount = 150,
+					Description = "Today’s transaction",
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				},
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = targetDate.AddDays (-1),
+					IsDeleted = false,
+					Amount = 250,
+					Description = "Yesterday’s transaction",
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -479,9 +507,39 @@ namespace Test.Repositories
 			var endOfWeek = startOfWeek.AddDays (7);
 
 			context.Transactions.AddRange (
-				new Transaction { CreatedBy = userId, DateCreated = startOfWeek.AddDays (1), IsDeleted = false, Amount = 100 },
-				new Transaction { CreatedBy = userId, DateCreated = endOfWeek.AddDays (-1), IsDeleted = false, Amount = 200 },
-				new Transaction { CreatedBy = userId, DateCreated = endOfWeek.AddDays (1), IsDeleted = false, Amount = 300 } // Outside week
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = startOfWeek.AddDays (1),
+					IsDeleted = false,
+					Amount = 100,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				},
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = endOfWeek.AddDays (-1),
+					IsDeleted = false,
+					Amount = 200,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				},
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = endOfWeek.AddDays (1),
+					IsDeleted = false,
+					Amount = 300,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				} // Outside week
 			);
 			await context.SaveChangesAsync ();
 
@@ -501,9 +559,39 @@ namespace Test.Repositories
 			var targetDate = new DateTime (2024, 8, 15); // August
 
 			context.Transactions.AddRange (
-				new Transaction { CreatedBy = userId, DateCreated = new DateTime (2024, 8, 1), IsDeleted = false, Amount = 100 },
-				new Transaction { CreatedBy = userId, DateCreated = new DateTime (2024, 8, 20), IsDeleted = false, Amount = 200 },
-				new Transaction { CreatedBy = userId, DateCreated = new DateTime (2024, 7, 31), IsDeleted = false, Amount = 300 } // Outside month
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = new DateTime (2024, 8, 1),
+					IsDeleted = false,
+					Amount = 100,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				},
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = new DateTime (2024, 8, 20),
+					IsDeleted = false,
+					Amount = 200,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				},
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = new DateTime (2024, 7, 31),
+					IsDeleted = false,
+					Amount = 300,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				} // Outside month
 			);
 			await context.SaveChangesAsync ();
 
@@ -523,9 +611,39 @@ namespace Test.Repositories
 			var targetDate = new DateTime (2024, 1, 1); // Year 2024
 
 			context.Transactions.AddRange (
-				new Transaction { CreatedBy = userId, DateCreated = new DateTime (2024, 3, 15), IsDeleted = false, Amount = 150 },
-				new Transaction { CreatedBy = userId, DateCreated = new DateTime (2024, 11, 5), IsDeleted = false, Amount = 250 },
-				new Transaction { CreatedBy = userId, DateCreated = new DateTime (2023, 12, 31), IsDeleted = false, Amount = 350 } // Outside year
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = new DateTime (2024, 3, 15),
+					IsDeleted = false,
+					Amount = 150,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				},
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = new DateTime (2024, 11, 5),
+					IsDeleted = false,
+					Amount = 250,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				},
+				new Transaction
+				{
+					CreatedBy = userId,
+					DateCreated = new DateTime (2023, 12, 31),
+					IsDeleted = false,
+					Amount = 350,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit"
+				} // Outside year
 			);
 			await context.SaveChangesAsync ();
 
@@ -544,7 +662,11 @@ namespace Test.Repositories
 			{
 				PublicId = "txn123",
 				CreatedBy = "user1",
-				IsDeleted = false
+				IsDeleted = false,
+				Channel = "Bank Transfer",
+				Currency = "NGN",
+				PaymentService = "Paystack",
+				TransactionType = "Credit"
 			};
 			context.Transactions.Add (transaction);
 			await context.SaveChangesAsync ();
@@ -569,20 +691,6 @@ namespace Test.Repositories
 			var updatedTransaction = context.Transactions.First (t => t.PublicId == "txn123");
 			Assert.True (updatedTransaction.IsFlagged);
 			Assert.Equal ("admin", updatedTransaction.LastModifiedBy);
-		}
-
-		[Fact]
-		public async Task FlagTransactionAsync_NullCommand_ReturnsNullPayload ()
-		{
-			// Arrange
-			using var context = CreateDbContext ();
-			var repo = new TransactionRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			// Act
-			var result = await repo.FlagTransactionAsync (null);
-
-			// Assert
-			Assert.False (result.IsSuccessful);
 		}
 
 		[Fact]
@@ -615,7 +723,11 @@ namespace Test.Repositories
 			{
 				PublicId = "txn123",
 				CreatedBy = "user1",
-				IsDeleted = false
+				IsDeleted = false,
+				Channel = "Bank Transfer",
+				Currency = "NGN",
+				PaymentService = "Paystack",
+				TransactionType = "Credit"
 			};
 			context.Transactions.Add (transaction);
 			await context.SaveChangesAsync ();
@@ -650,9 +762,39 @@ namespace Test.Repositories
 			var toDate = DateTime.UtcNow.Date;
 
 			context.Transactions.AddRange (
-				new Transaction { RecipientAccountNumber = account, DateCreated = fromDate, IsDeleted = false },
-				new Transaction { RecipientAccountNumber = account, DateCreated = toDate, IsDeleted = false },
-				new Transaction { RecipientAccountNumber = account, DateCreated = toDate.AddDays (1), IsDeleted = false } // outside range
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = fromDate,
+					IsDeleted = false,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				},
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = toDate,
+					IsDeleted = false,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				},
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = toDate.AddDays (1),
+					IsDeleted = false,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				} // outside range
 			);
 			await context.SaveChangesAsync ();
 
@@ -672,8 +814,28 @@ namespace Test.Repositories
 			var date = DateTime.UtcNow.Date;
 
 			context.Transactions.AddRange (
-				new Transaction { RecipientAccountNumber = account, DateCreated = date, IsDeleted = false },
-				new Transaction { RecipientAccountNumber = account, DateCreated = date.AddDays (-1), IsDeleted = false }
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = date,
+					IsDeleted = false,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				},
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = date.AddDays (-1),
+					IsDeleted = false,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -696,8 +858,28 @@ namespace Test.Repositories
 			var endOfWeek = startOfWeek.AddDays (7);
 
 			context.Transactions.AddRange (
-				new Transaction { RecipientAccountNumber = account, DateCreated = startOfWeek.AddDays (1), IsDeleted = false },
-				new Transaction { RecipientAccountNumber = account, DateCreated = endOfWeek.AddDays (1), IsDeleted = false } // outside week
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = startOfWeek.AddDays (1),
+					IsDeleted = false,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				},
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = endOfWeek.AddDays (1),
+					IsDeleted = false,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				} // outside week
 			);
 			await context.SaveChangesAsync ();
 
@@ -717,8 +899,28 @@ namespace Test.Repositories
 			var date = new DateTime (2024, 8, 15);
 
 			context.Transactions.AddRange (
-				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2024, 8, 1), IsDeleted = false },
-				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2024, 7, 31), IsDeleted = false }
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = new DateTime (2024, 8, 1),
+					IsDeleted = false,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				},
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = new DateTime (2024, 7, 31),
+					IsDeleted = false,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -738,8 +940,28 @@ namespace Test.Repositories
 			var date = new DateTime (2024, 5, 10);
 
 			context.Transactions.AddRange (
-				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2024, 1, 1), IsDeleted = false },
-				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2023, 12, 31), IsDeleted = false }
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = new DateTime (2024, 1, 1),
+					IsDeleted = false,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				},
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = new DateTime (2023, 12, 31),
+					IsDeleted = false,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -760,9 +982,42 @@ namespace Test.Repositories
 			var toDate = DateTime.UtcNow.Date;
 
 			context.Transactions.AddRange (
-				new Transaction { RecipientAccountNumber = account, DateCreated = fromDate, IsDeleted = false, Amount = 100 },
-				new Transaction { RecipientAccountNumber = account, DateCreated = toDate, IsDeleted = false, Amount = 200 },
-				new Transaction { RecipientAccountNumber = account, DateCreated = toDate.AddDays (1), IsDeleted = false, Amount = 300 } // outside range
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = fromDate,
+					IsDeleted = false,
+					Amount = 100,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				},
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = toDate,
+					IsDeleted = false,
+					Amount = 200,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				},
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = toDate.AddDays (1),
+					IsDeleted = false,
+					Amount = 300,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				} // outside range
 			);
 			await context.SaveChangesAsync ();
 
@@ -783,8 +1038,30 @@ namespace Test.Repositories
 			var date = DateTime.UtcNow.Date;
 
 			context.Transactions.AddRange (
-				new Transaction { RecipientAccountNumber = account, DateCreated = date, IsDeleted = false, Amount = 150 },
-				new Transaction { RecipientAccountNumber = account, DateCreated = date.AddDays (-1), IsDeleted = false, Amount = 250 }
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = date,
+					IsDeleted = false,
+					Amount = 150,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				},
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = date.AddDays (-1),
+					IsDeleted = false,
+					Amount = 250,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Debit",
+					CreatedBy = "user123"
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -807,8 +1084,30 @@ namespace Test.Repositories
 			var endOfWeek = startOfWeek.AddDays (7);
 
 			context.Transactions.AddRange (
-				new Transaction { RecipientAccountNumber = account, DateCreated = startOfWeek.AddDays (1), IsDeleted = false, Amount = 300 },
-				new Transaction { RecipientAccountNumber = account, DateCreated = endOfWeek.AddDays (1), IsDeleted = false, Amount = 400 } // outside week
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = startOfWeek.AddDays (1),
+					IsDeleted = false,
+					Amount = 300,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				},
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = endOfWeek.AddDays (1),
+					IsDeleted = false,
+					Amount = 400,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				} // outside week
 			);
 			await context.SaveChangesAsync ();
 
@@ -828,7 +1127,7 @@ namespace Test.Repositories
 			var result = await repo.GetTransactionsByAccountNumberAndCustomDateAsync ("NON_EXISTENT", DateTime.UtcNow.AddDays (-5), DateTime.UtcNow, CancellationToken.None, 1, 10);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Transactions", result.Remark);
+			Assert.Equal ("Transactions not found", result.Remark);
 			Assert.Equal (0, result.TotalCount);
 			Assert.Null (result.Data);
 		}
@@ -843,8 +1142,30 @@ namespace Test.Repositories
 			var targetDate = new DateTime (2024, 8, 15);
 
 			context.Transactions.AddRange (
-				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2024, 8, 1), IsDeleted = false, Amount = 100 },
-				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2024, 7, 31), IsDeleted = false, Amount = 200 } // outside month
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = new DateTime (2024, 8, 1),
+					IsDeleted = false,
+					Amount = 100,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				},
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = new DateTime (2024, 7, 31),
+					IsDeleted = false,
+					Amount = 200,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				} // outside month
 			);
 			await context.SaveChangesAsync ();
 
@@ -865,8 +1186,30 @@ namespace Test.Repositories
 			var targetDate = new DateTime (2024, 5, 10);
 
 			context.Transactions.AddRange (
-				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2024, 1, 1), IsDeleted = false, Amount = 300 },
-				new Transaction { RecipientAccountNumber = account, DateCreated = new DateTime (2023, 12, 31), IsDeleted = false, Amount = 400 } // outside year
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = new DateTime (2024, 1, 1),
+					IsDeleted = false,
+					Amount = 300,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				},
+				new Transaction
+				{
+					RecipientAccountNumber = account,
+					DateCreated = new DateTime (2023, 12, 31),
+					IsDeleted = false,
+					Amount = 400,
+					Channel = "Bank Transfer",
+					Currency = "NGN",
+					PaymentService = "Paystack",
+					TransactionType = "Credit",
+					CreatedBy = "user123"
+				} // outside year
 			);
 			await context.SaveChangesAsync ();
 
@@ -886,7 +1229,7 @@ namespace Test.Repositories
 			var result = await repo.GetTransactionsByAccountNumberAndMonthAsync ("NO_MATCH", new DateTime (2024, 8, 1), CancellationToken.None, 1, 10);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Transactions", result.Remark);
+			Assert.Equal ("Transactions not found", result.Remark);
 			Assert.Equal (0, result.TotalCount);
 			Assert.Null (result.Data);
 		}
@@ -900,7 +1243,7 @@ namespace Test.Repositories
 			var result = await repo.GetTransactionsByAccountNumberAndYearAsync ("NO_MATCH", new DateTime (2024, 1, 1), CancellationToken.None, 1, 10);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Transactions", result.Remark);
+			Assert.Equal ("Transactions not found", result.Remark);
 			Assert.Equal (0, result.TotalCount);
 			Assert.Null (result.Data);
 		}

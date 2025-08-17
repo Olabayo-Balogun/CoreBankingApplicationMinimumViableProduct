@@ -76,6 +76,9 @@ namespace Test.Repositories
 				Id = 1,
 				IsDeleted = false,
 				TemplateName = "Promo",
+				CreatedBy = "user123",
+				Template = "<h1>Welcome!</h1>",
+				Channel = "Marketing",
 				DateCreated = DateTime.UtcNow
 			});
 			await context.SaveChangesAsync ();
@@ -100,8 +103,24 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailTemplates.AddRange (
-				new EmailTemplate { Id = 1, IsDeleted = false },
-				new EmailTemplate { Id = 2, IsDeleted = false }
+				new EmailTemplate
+				{
+					Id = 1,
+					IsDeleted = false,
+					CreatedBy = "user123",
+					Template = "<h1>Welcome!</h1>",
+					Channel = "Marketing",
+					TemplateName = "Template1",
+				},
+				new EmailTemplate
+				{
+					Id = 2,
+					IsDeleted = false,
+					CreatedBy = "user123",
+					Template = "<h1>Welcome!</h1>",
+					Channel = "Marketing",
+					TemplateName = "Template2",
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -125,9 +144,33 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailTemplates.AddRange (
-				new EmailTemplate { Id = 1, IsDeleted = false },
-				new EmailTemplate { Id = 2, IsDeleted = true },
-				new EmailTemplate { Id = 3, IsDeleted = false }
+				new EmailTemplate
+				{
+					Id = 1,
+					IsDeleted = false,
+					CreatedBy = "user123",
+					Template = "<h1>Welcome!</h1>",
+					Channel = "Marketing",
+					TemplateName = "Template1"
+				},
+				new EmailTemplate
+				{
+					Id = 2,
+					IsDeleted = true,
+					CreatedBy = "user123",
+					Template = "<h1>Welcome!</h1>",
+					Channel = "Marketing",
+					TemplateName = "Template1"
+				},
+				new EmailTemplate
+				{
+					Id = 3,
+					IsDeleted = false,
+					CreatedBy = "user123",
+					Template = "<h1>Welcome!</h1>",
+					Channel = "Marketing",
+					TemplateName = "Template1"
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -144,8 +187,26 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailTemplates.AddRange (
-				new EmailTemplate { Id = 1, Channel = "Support", IsDeleted = false, DateCreated = DateTime.UtcNow },
-				new EmailTemplate { Id = 2, Channel = "Marketing", IsDeleted = false, DateCreated = DateTime.UtcNow }
+				new EmailTemplate
+				{
+					Id = 1,
+					Channel = "Support",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					CreatedBy = "user123",
+					Template = "<h1>Welcome!</h1>",
+					TemplateName = "Template1"
+				},
+				new EmailTemplate
+				{
+					Id = 2,
+					Channel = "Marketing",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					CreatedBy = "user123",
+					Template = "<h1>Welcome!</h1>",
+					TemplateName = "Template1"
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -169,7 +230,8 @@ namespace Test.Repositories
 				TemplateName = "Welcome",
 				Channel = "Marketing",
 				Template = "<h1>Hello</h1>",
-				DateCreated = DateTime.UtcNow
+				DateCreated = DateTime.UtcNow,
+				CreatedBy = "user123"
 			});
 			await context.SaveChangesAsync ();
 
@@ -192,7 +254,8 @@ namespace Test.Repositories
 				Channel = "Support",
 				Template = "<p>Reset your password</p>",
 				IsDeleted = false,
-				DateCreated = DateTime.UtcNow
+				DateCreated = DateTime.UtcNow,
+				CreatedBy = "user123"
 			});
 			await context.SaveChangesAsync ();
 
@@ -209,8 +272,26 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailTemplates.AddRange (
-				new EmailTemplate { Id = 1, CreatedBy = "user123", IsDeleted = false, TemplateName = "A", DateCreated = DateTime.UtcNow },
-				new EmailTemplate { Id = 2, CreatedBy = "user456", IsDeleted = false, TemplateName = "B", DateCreated = DateTime.UtcNow }
+				new EmailTemplate
+				{
+					Id = 1,
+					CreatedBy = "user123",
+					IsDeleted = false,
+					TemplateName = "A",
+					DateCreated = DateTime.UtcNow,
+					Template = "<h1>Welcome!</h1>",
+					Channel = "Marketing",
+				},
+				new EmailTemplate
+				{
+					Id = 2,
+					CreatedBy = "user456",
+					IsDeleted = false,
+					TemplateName = "B",
+					DateCreated = DateTime.UtcNow,
+					Template = "<h1>Welcome!</h1>",
+					Channel = "Marketing",
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -227,8 +308,26 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailTemplates.AddRange (
-				new EmailTemplate { Id = 1, IsDeleted = false, TemplateName = "A", DateCreated = DateTime.UtcNow },
-				new EmailTemplate { Id = 2, IsDeleted = false, TemplateName = "B", DateCreated = DateTime.UtcNow }
+				new EmailTemplate
+				{
+					Id = 1,
+					IsDeleted = false,
+					TemplateName = "A",
+					DateCreated = DateTime.UtcNow,
+					CreatedBy = "user123",
+					Template = "<h1>Welcome!</h1>",
+					Channel = "Marketing",
+				},
+				new EmailTemplate
+				{
+					Id = 2,
+					IsDeleted = false,
+					TemplateName = "B",
+					DateCreated = DateTime.UtcNow,
+					CreatedBy = "user123",
+					Template = "<h1>Welcome!</h1>",
+					Channel = "Marketing",
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -251,7 +350,8 @@ namespace Test.Repositories
 				TemplateName = "OldName",
 				Channel = "OldChannel",
 				Template = "OldContent",
-				DateCreated = DateTime.UtcNow
+				DateCreated = DateTime.UtcNow,
+				CreatedBy = "user123"
 			});
 			await context.SaveChangesAsync ();
 
@@ -262,6 +362,7 @@ namespace Test.Repositories
 				Channel = "NewChannel",
 				Template = "NewContent",
 				LastModifiedBy = "user123",
+				CreatedBy = "user123",
 				CancellationToken = CancellationToken.None
 			};
 

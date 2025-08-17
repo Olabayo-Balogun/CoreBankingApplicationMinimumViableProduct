@@ -8,6 +8,7 @@ using Application.Models.Transactions.Response;
 using AutoMapper;
 
 using Domain.DTO;
+using Domain.Entities;
 using Domain.Enums;
 
 using Microsoft.EntityFrameworkCore;
@@ -117,7 +118,7 @@ namespace Persistence.Repositories
 					return badRequest;
 				}
 
-				var payload = _mapper.Map<Domain.Entities.Transaction> (createTransaction);
+				var payload = _mapper.Map<Transaction> (createTransaction);
 
 				payload.IsDeleted = false;
 				payload.DateDeleted = null;
