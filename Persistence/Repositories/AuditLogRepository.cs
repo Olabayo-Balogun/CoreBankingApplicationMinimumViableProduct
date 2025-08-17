@@ -45,6 +45,13 @@ namespace Persistence.Repositories
 					return badRequest;
 				}
 
+				if (!request.Name.Equals ("Account", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Bank", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Branch", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Transaction", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Upload", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("User", StringComparison.OrdinalIgnoreCase))
+				{
+					var badResult = RequestResponse<AuditLogsQueryResponse>.Failed (null, 400, "Please enter valid details");
+
+					_logger.LogInformation ($"CreateAuditLog ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResult.Remark} by userPublicId: {request.CreatedBy}");
+				}
+
 				var payload = new AuditLog
 				{
 					Name = request.Name,
@@ -69,7 +76,7 @@ namespace Persistence.Repositories
 				var response = new AuditLogResponse ();
 				switch (payload.Name)
 				{
-					case "AccountDetail":
+					case "Account":
 						response.AccountLog = JsonConvert.DeserializeObject<AccountResponse> (payload.Payload);
 						break;
 					case "Bank":
@@ -115,11 +122,31 @@ namespace Persistence.Repositories
 					return badRequest;
 				}
 
-				var payloads = _mapper.Map<List<AuditLog>> (requests);
-				foreach (var payload in payloads)
+				var payloads = new List<AuditLog> ();
+				foreach (var request in requests)
 				{
-					payload.PublicId = Guid.NewGuid ().ToString ();
+					if (!request.Name.Equals ("Account", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Bank", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Branch", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Transaction", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Upload", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("User", StringComparison.OrdinalIgnoreCase))
+					{
+						var badResult = RequestResponse<AuditLogsQueryResponse>.Failed (null, 400, "Please enter valid details");
+
+						_logger.LogInformation ($"CreateAuditLog ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResult.Remark} by userPublicId: {requests.First ().CreatedBy}");
+					}
+
+					var payload = new AuditLog
+					{
+						Name = request.Name,
+						Payload = request.Payload,
+						CreatedBy = request.CreatedBy,
+						IsDeleted = false,
+						DateDeleted = null,
+						LastModifiedBy = null,
+						LastModifiedDate = null,
+						DeletedBy = null,
+						DateCreated = DateTime.UtcNow.AddHours (1),
+						PublicId = Guid.NewGuid ().ToString ()
+					};
 					payload.DateCreated = DateTime.UtcNow.AddHours (1);
+					payloads.Add (payload);
 				}
 
 				await _context.AuditLogs.AddRangeAsync (payloads, requests.First ().CancellationToken);
@@ -139,7 +166,7 @@ namespace Persistence.Repositories
 				{
 					switch (payload.Name)
 					{
-						case "AccountDetail":
+						case "Account":
 							response.AccountLogs.Add (JsonConvert.DeserializeObject<AccountResponse> (payload.Payload));
 							break;
 						case "Bank":
@@ -158,7 +185,7 @@ namespace Persistence.Repositories
 							response.UserLogs.Add (JsonConvert.DeserializeObject<UserResponse> (payload.Payload));
 							break;
 						default:
-							break;
+							return RequestResponse<AuditLogsQueryResponse>.NullPayload (null);
 					}
 				}
 
@@ -195,7 +222,7 @@ namespace Persistence.Repositories
 				var payload = new AuditLogResponse ();
 				switch (response.Name)
 				{
-					case "AccountDetail":
+					case "Account":
 						payload.AccountLog = JsonConvert.DeserializeObject<AccountResponse> (response.Payload);
 						break;
 					case "Bank":
@@ -243,7 +270,7 @@ namespace Persistence.Repositories
 					UserLogs = []
 				};
 
-				List<AuditLog>? responses = [];
+				List<AuditLog>? responses = null;
 
 				long count = 0;
 				if (userId != null && logName == null)
@@ -304,7 +331,7 @@ namespace Persistence.Repositories
 				}
 
 
-				if (responses == null)
+				if (responses.Count < 1)
 				{
 					var badResult = RequestResponse<AuditLogsQueryResponse>.NotFound (null, "Audit logs");
 					_logger.LogInformation ($"GetAuditLogs ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResult.Remark} with count: {badResult.TotalCount}");
@@ -315,7 +342,7 @@ namespace Persistence.Repositories
 				{
 					switch (response.Name)
 					{
-						case "AccountDetail":
+						case "Account":
 							result.AccountLogs.Add (JsonConvert.DeserializeObject<AccountResponse> (response.Payload));
 							break;
 						case "Bank":
