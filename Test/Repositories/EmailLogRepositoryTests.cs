@@ -103,6 +103,7 @@ namespace Test.Repositories
 				CreatedBy = "user123",
 				ToRecipient = "recipient@example.com",
 				Subject = "Test",
+				Sender = "sender@example.com",
 				Message = "Body",
 				IsDeleted = false,
 				DateCreated = DateTime.UtcNow
@@ -132,8 +133,22 @@ namespace Test.Repositories
 
 			var logs = new List<EmailLog>
 			{
-				new EmailLog { Id = 1, CreatedBy = "user123", IsDeleted = false, DateCreated = DateTime.UtcNow },
-				new EmailLog { Id = 2, CreatedBy = "user123", IsDeleted = false, DateCreated = DateTime.UtcNow }
+				new () { Id = 1,
+				CreatedBy = "user123",
+				ToRecipient = "recipient@example.com",
+				Subject = "Test",
+				Sender = "sender@example.com",
+				Message = "Body",
+				IsDeleted = false,
+				DateCreated = DateTime.UtcNow },
+				new () {Id = 2,
+				CreatedBy = "user123",
+				ToRecipient = "recipient@example.com",
+				Subject = "Test",
+				Sender = "sender@example.com",
+				Message = "Body",
+				IsDeleted = false,
+				DateCreated = DateTime.UtcNow }
 			};
 
 			context.EmailLogs.AddRange (logs);
@@ -141,7 +156,7 @@ namespace Test.Repositories
 
 			var command = new DeleteMultipleEmailLogsCommand
 			{
-				Ids = new List<long> { 1, 2 },
+				Ids = [1, 2],
 				UserId = "user123",
 				CancellationToken = CancellationToken.None
 			};
@@ -159,9 +174,28 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailLogs.AddRange (
-				new EmailLog { Id = 1, IsDeleted = false },
-				new EmailLog { Id = 2, IsDeleted = true },
-				new EmailLog { Id = 3, IsDeleted = false }
+				new EmailLog
+				{
+					Id = 2,
+					CreatedBy = "user123",
+					ToRecipient = "recipient@example.com",
+					Subject = "Test",
+					Sender = "sender@example.com",
+					Message = "Body",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow
+				},
+				new EmailLog
+				{
+					Id = 1,
+					CreatedBy = "user123",
+					ToRecipient = "recipient@example.com",
+					Subject = "Test",
+					Sender = "sender@example.com",
+					Message = "Body",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -178,8 +212,30 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailLogs.AddRange (
-				new EmailLog { Id = 1, IsHtml = true, IsDeleted = false, DateCreated = DateTime.UtcNow },
-				new EmailLog { Id = 2, IsHtml = false, IsDeleted = false, DateCreated = DateTime.UtcNow }
+				new EmailLog
+				{
+					Id = 1,
+					CreatedBy = "user123",
+					ToRecipient = "recipient@example.com",
+					Subject = "Test",
+					Sender = "sender@example.com",
+					Message = "Body",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					IsHtml = true
+				},
+				new EmailLog
+				{
+					Id = 2,
+					CreatedBy = "user123",
+					ToRecipient = "recipient@example.com",
+					Subject = "Test",
+					Sender = "sender@example.com",
+					Message = "Body",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					IsHtml = false
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -199,16 +255,21 @@ namespace Test.Repositories
 			context.EmailLogs.Add (new EmailLog
 			{
 				Id = 99,
+				CreatedBy = "user123",
+				ToRecipient = "recipient@example.com",
+				Subject = "Test",
+				Sender = "sender@example.com",
+				Message = "Body",
 				IsDeleted = false,
-				ToRecipient = "target@example.com",
-				DateCreated = DateTime.UtcNow
+				DateCreated = DateTime.UtcNow,
+				IsHtml = false
 			});
 			await context.SaveChangesAsync ();
 
 			var result = await repo.GetEmailLogByIdAsync (99, CancellationToken.None);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("target@example.com", result.Data.ToRecipient);
+			Assert.Equal ("recipient@example.com", result.Data.ToRecipient);
 		}
 
 		[Fact]
@@ -218,8 +279,30 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailLogs.AddRange (
-				new EmailLog { Id = 1, IsSent = true, IsDeleted = false, DateCreated = DateTime.UtcNow },
-				new EmailLog { Id = 2, IsSent = false, IsDeleted = false, DateCreated = DateTime.UtcNow }
+				new EmailLog
+				{
+					Id = 1,
+					CreatedBy = "user123",
+					ToRecipient = "recipient@example.com",
+					Subject = "Test",
+					Sender = "sender@example.com",
+					Message = "Body",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					IsSent = true
+				},
+				new EmailLog
+				{
+					Id = 2,
+					CreatedBy = "user123",
+					ToRecipient = "recipient@example.com",
+					Subject = "Test",
+					Sender = "sender@example.com",
+					Message = "Body",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					IsSent = false
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -237,8 +320,28 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailLogs.AddRange (
-				new EmailLog { Id = 1, CreatedBy = "user123", IsDeleted = false, DateCreated = DateTime.UtcNow },
-				new EmailLog { Id = 2, CreatedBy = "user456", IsDeleted = false, DateCreated = DateTime.UtcNow }
+				new EmailLog
+				{
+					Id = 1,
+					CreatedBy = "user123",
+					ToRecipient = "recipient@example.com",
+					Subject = "Test",
+					Sender = "sender@example.com",
+					Message = "Body",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow
+				},
+				new EmailLog
+				{
+					Id = 2,
+					CreatedBy = "user456",
+					ToRecipient = "recipient@example.com",
+					Subject = "Test",
+					Sender = "sender@example.com",
+					Message = "Body",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -246,7 +349,7 @@ namespace Test.Repositories
 
 			Assert.True (result.IsSuccessful);
 			Assert.Single (result.Data);
-			Assert.Equal ("user123", result.Data.First ().Sender); // Assuming Sender is set to CreatedBy
+			Assert.Equal ("sender@example.com", result.Data.First ().Sender);
 		}
 
 		[Fact]
@@ -256,9 +359,30 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailLogs.AddRange (
-				new EmailLog { Id = 1, IsSent = false, IsDeleted = false },
-				new EmailLog { Id = 2, IsSent = true, IsDeleted = false },
-				new EmailLog { Id = 3, IsSent = false, IsDeleted = true }
+				new EmailLog
+				{
+					Id = 1,
+					CreatedBy = "user123",
+					ToRecipient = "recipient@example.com",
+					Subject = "Test",
+					Sender = "sender@example.com",
+					Message = "Body",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					IsSent = false
+				},
+				new EmailLog
+				{
+					Id = 2,
+					CreatedBy = "user123",
+					ToRecipient = "recipient@example.com",
+					Subject = "Test",
+					Sender = "sender@example.com",
+					Message = "Body",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					IsSent = true
+				}
 			);
 			await context.SaveChangesAsync ();
 
@@ -277,14 +401,23 @@ namespace Test.Repositories
 			context.EmailLogs.Add (new EmailLog
 			{
 				Id = 1,
+				CreatedBy = "user123",
+				ToRecipient = "recipient@example.com",
+				Subject = "Test",
+				Sender = "sender@example.com",
+				Message = "Body",
 				IsDeleted = false,
-				Subject = "Old Subject",
 				DateCreated = DateTime.UtcNow
 			});
 			await context.SaveChangesAsync ();
 
 			var dto = new EmailLogDto
 			{
+				ToRecipient = "recipient@example.com",
+				Sender = "sender@example.com",
+				Message = "Body",
+				IsDeleted = false,
+				LastModifiedDate = DateTime.UtcNow,
 				Id = 1,
 				Subject = "Updated Subject",
 				LastModifiedBy = "user123",
@@ -306,15 +439,21 @@ namespace Test.Repositories
 			context.EmailLogs.Add (new EmailLog
 			{
 				Id = 1,
+				CreatedBy = "user123",
+				ToRecipient = "recipient@example.com",
+				Subject = "Test",
+				Sender = "sender@example.com",
+				Message = "Body",
 				IsDeleted = false,
-				IsSent = false,
-				DateCreated = DateTime.UtcNow
+				DateCreated = DateTime.UtcNow,
+				IsSent = false
 			});
 			await context.SaveChangesAsync ();
 
 			var command = new UpdateEmailLogSentStatusCommand
 			{
 				Id = 1,
+
 				IsSent = true,
 				DateSent = DateTime.UtcNow,
 				LastModifiedBy = "user123",
@@ -334,15 +473,37 @@ namespace Test.Repositories
 			var context = new ApplicationDbContext (_dbOptions);
 
 			context.EmailLogs.AddRange (
-				new EmailLog { Id = 1, IsDeleted = false, IsSent = false },
-				new EmailLog { Id = 2, IsDeleted = false, IsSent = false }
+				new EmailLog
+				{
+					Id = 1,
+					CreatedBy = "user123",
+					ToRecipient = "recipient@example.com",
+					Subject = "Test",
+					Sender = "sender@example.com",
+					Message = "Body",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					IsSent = false
+				},
+				new EmailLog
+				{
+					Id = 2,
+					CreatedBy = "user123",
+					ToRecipient = "recipient@example.com",
+					Subject = "Test",
+					Sender = "sender@example.com",
+					Message = "Body",
+					IsDeleted = false,
+					DateCreated = DateTime.UtcNow,
+					IsSent = false
+				}
 			);
 			await context.SaveChangesAsync ();
 
 			var commands = new List<UpdateEmailLogSentStatusCommand>
 	{
-		new UpdateEmailLogSentStatusCommand { Id = 1, IsSent = true, DateSent = DateTime.UtcNow, LastModifiedBy = "user123", CancellationToken = CancellationToken.None },
-		new UpdateEmailLogSentStatusCommand { Id = 2, IsSent = true, DateSent = DateTime.UtcNow, LastModifiedBy = "user123", CancellationToken = CancellationToken.None }
+		new () { Id = 1, IsSent = true, DateSent = DateTime.UtcNow, LastModifiedBy = "user123", CancellationToken = CancellationToken.None },
+		new () { Id = 2, IsSent = true, DateSent = DateTime.UtcNow, LastModifiedBy = "user123", CancellationToken = CancellationToken.None }
 	};
 
 			var result = await repo.UpdateMultipleEmailLogSentStatusAsync (commands);
