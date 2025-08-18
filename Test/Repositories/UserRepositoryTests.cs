@@ -71,14 +71,14 @@ namespace Test.Repositories
 			var result = await repo.DeleteUserAsync (command);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task DeleteUserAsync_UserNotAdmin_ReturnsUnauthorized ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, UserRole = "User" });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, UserRole = "User", Email = "example@gmail.com", Password = "Password1!" });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -96,7 +96,7 @@ namespace Test.Repositories
 		public async Task DeleteUserAsync_AdminUser_DeletesSuccessfully ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "admin1", IsDeleted = false, UserRole = "Admin" });
+			context.Users.Add (new User { PublicId = "admin1", IsDeleted = false, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
 			await context.SaveChangesAsync ();
 
 			_auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
@@ -110,14 +110,14 @@ namespace Test.Repositories
 			var result = await repo.DeleteUserAsync (command);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User deleted sucessfully", result.Remark);
 		}
 
 		[Fact]
 		public async Task DeleteMultipleUserAsync_OneUserNotFound_ReturnsNotFound ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "admin1", IsDeleted = false, UserRole = "Admin" });
+			context.Users.Add (new User { PublicId = "admin1", IsDeleted = false, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -133,7 +133,7 @@ namespace Test.Repositories
 			var result = await repo.DeleteMultipleUserAsync (command);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users not found", result.Remark);
 		}
 
 		[Fact]
@@ -148,14 +148,14 @@ namespace Test.Repositories
 			var result = await repo.GetAllDeletedUserByDateAsync (date, CancellationToken.None, 1, 10);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task GetAllDeletedUserByDateAsync_UsersExist_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = true, DateDeleted = DateTime.UtcNow.Date });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = true, DateDeleted = DateTime.UtcNow.Date, Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -166,7 +166,7 @@ namespace Test.Repositories
 			var result = await repo.GetAllDeletedUserByDateAsync (date, CancellationToken.None, 1, 10);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users retrieved successfully", result.Remark);
 			Assert.Single (result.Data);
 		}
 
@@ -180,14 +180,14 @@ namespace Test.Repositories
 			var result = await repo.GetAllDeletedUsersAsync (CancellationToken.None, 1, 10);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task GetAllDeletedUsersAsync_UsersExist_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = true, DateDeleted = DateTime.UtcNow });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = true, DateDeleted = DateTime.UtcNow.Date, Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -196,7 +196,7 @@ namespace Test.Repositories
 			var result = await repo.GetAllDeletedUsersAsync (CancellationToken.None, 1, 10);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users retrieved successfully", result.Remark);
 			Assert.Single (result.Data);
 		}
 
@@ -212,14 +212,14 @@ namespace Test.Repositories
 			var result = await repo.GetAllUserByDateAsync (date, CancellationToken.None, 1, 10);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task GetAllUserByDateAsync_UsersExist_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, DateCreated = DateTime.UtcNow.Date });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, DateCreated = DateTime.UtcNow.Date, Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -230,7 +230,7 @@ namespace Test.Repositories
 			var result = await repo.GetAllUserByDateAsync (date, CancellationToken.None, 1, 10);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users retrieved successfully", result.Remark);
 			Assert.Single (result.Data);
 		}
 
@@ -244,14 +244,14 @@ namespace Test.Repositories
 			var result = await repo.GetAllUserByCountryAsync ("Nigeria", CancellationToken.None, 1, 10);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task GetAllUserByCountryAsync_UsersExist_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, CountryOfOrigin = "Nigeria" });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, CountryOfOrigin = "Nigeria", Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -260,7 +260,7 @@ namespace Test.Repositories
 			var result = await repo.GetAllUserByCountryAsync ("Nigeria", CancellationToken.None, 1, 10);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users retrieved successfully", result.Remark);
 			Assert.Single (result.Data);
 		}
 
@@ -268,7 +268,7 @@ namespace Test.Repositories
 		public async Task GetAllUserByRoleAsync_DeletedUsersExist_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = true, UserRole = "Admin", DateDeleted = DateTime.UtcNow });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = true, UserRole = "Admin", DateDeleted = DateTime.UtcNow, Email = "example@gmail.com", Password = "Password1!" });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -277,7 +277,7 @@ namespace Test.Repositories
 			var result = await repo.GetAllUserByRoleAsync ("Admin", true, CancellationToken.None, 1, 10);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users retrieved successfully", result.Remark);
 			Assert.Single (result.Data);
 		}
 
@@ -285,7 +285,7 @@ namespace Test.Repositories
 		public async Task GetAllUserByRoleAsync_ActiveUsersExist_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user2", IsDeleted = false, UserRole = "User", DateCreated = DateTime.UtcNow });
+			context.Users.Add (new User { PublicId = "user2", IsDeleted = false, UserRole = "User", DateCreated = DateTime.UtcNow, Email = "example@gmail.com", Password = "Password1!" });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -294,7 +294,7 @@ namespace Test.Repositories
 			var result = await repo.GetAllUserByRoleAsync ("User", false, CancellationToken.None, 1, 10);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users retrieved successfully", result.Remark);
 			Assert.Single (result.Data);
 		}
 
@@ -308,14 +308,14 @@ namespace Test.Repositories
 			var result = await repo.GetAllUsersAsync (CancellationToken.None, 1, 10);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task GetAllUsersAsync_UsersExist_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, DateCreated = DateTime.UtcNow });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, DateCreated = DateTime.UtcNow.Date, Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -324,7 +324,7 @@ namespace Test.Repositories
 			var result = await repo.GetAllUsersAsync (CancellationToken.None, 1, 10);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users retrieved successfully", result.Remark);
 			Assert.Single (result.Data);
 		}
 
@@ -333,8 +333,8 @@ namespace Test.Repositories
 		{
 			using var context = CreateDbContext ();
 			context.Users.AddRange (
-				new User { PublicId = "user1", IsDeleted = false },
-				new User { PublicId = "user2", IsDeleted = false }
+				new User { PublicId = "user1", IsDeleted = false, Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User },
+				new User { PublicId = "user2", IsDeleted = false, Email = "example2@gmail.com", Password = "Password1!", UserRole = UserRoles.User }
 			);
 			await context.SaveChangesAsync ();
 
@@ -352,7 +352,7 @@ namespace Test.Repositories
 		{
 			using var context = CreateDbContext ();
 			var today = DateTime.UtcNow.Date;
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, DateCreated = today });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, DateCreated = today, Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -369,7 +369,7 @@ namespace Test.Repositories
 		{
 			using var context = CreateDbContext ();
 			var today = DateTime.UtcNow.Date;
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, LastLoggedInDate = today });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, LastLoggedInDate = today, Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -385,7 +385,7 @@ namespace Test.Repositories
 		public async Task GetCountOfUserByRoleAsync_UsersExist_ReturnsCorrectCount ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, UserRole = "Admin" });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -401,7 +401,7 @@ namespace Test.Repositories
 		public async Task GetCountOfDeletedUserAsync_UsersExist_ReturnsCorrectCount ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = true });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = true, Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -418,7 +418,7 @@ namespace Test.Repositories
 		{
 			using var context = CreateDbContext ();
 			var today = DateTime.UtcNow.Date;
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = true, DateDeleted = today });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = true, DateDeleted = today, Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -440,14 +440,14 @@ namespace Test.Repositories
 			var result = await repo.GetDeletedUsersByUserIdAsync ("deleter1", CancellationToken.None, 1, 10);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task GetDeletedUsersByUserIdAsync_UsersExist_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = true, DeletedBy = "deleter1", DateDeleted = DateTime.UtcNow });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = true, DeletedBy = "deleter1", DateDeleted = DateTime.UtcNow, Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -456,7 +456,7 @@ namespace Test.Repositories
 			var result = await repo.GetDeletedUsersByUserIdAsync ("deleter1", CancellationToken.None, 1, 10);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users retrieved successfully", result.Remark);
 			Assert.Single (result.Data);
 		}
 
@@ -470,14 +470,14 @@ namespace Test.Repositories
 			var result = await repo.GetLatestCreatedUsersAsync (CancellationToken.None, 1, 10);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task GetLatestCreatedUsersAsync_UsersExist_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, DateCreated = DateTime.UtcNow });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, DateCreated = DateTime.UtcNow, Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -486,7 +486,7 @@ namespace Test.Repositories
 			var result = await repo.GetLatestCreatedUsersAsync (CancellationToken.None, 1, 10);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Users", result.Remark);
+			Assert.Equal ("Users retrieved successfully", result.Remark);
 			Assert.Single (result.Data);
 		}
 
@@ -500,14 +500,14 @@ namespace Test.Repositories
 			var result = await repo.GetUserByIdAsync ("nonexistent", CancellationToken.None);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task GetUserByIdAsync_UserExists_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -516,7 +516,7 @@ namespace Test.Repositories
 			var result = await repo.GetUserByIdAsync ("user1", CancellationToken.None);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User retrieved successfully", result.Remark);
 			Assert.NotNull (result.Data);
 		}
 
@@ -530,14 +530,14 @@ namespace Test.Repositories
 			var result = await repo.GetUserByEmailAddressAsync ("test@example.com", CancellationToken.None);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task GetUserByEmailAddressAsync_UserExists_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Email = "test@example.com" });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Email = "test@example.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -546,7 +546,7 @@ namespace Test.Repositories
 			var result = await repo.GetUserByEmailAddressAsync ("test@example.com", CancellationToken.None);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User retrieved successfully", result.Remark);
 			Assert.NotNull (result.Data);
 		}
 
@@ -601,7 +601,7 @@ namespace Test.Repositories
 			var result = await repo.GetUserLocationByIdAsync ("nonexistent", CancellationToken.None);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User not found", result.Remark);
 		}
 
 		[Fact]
@@ -615,7 +615,10 @@ namespace Test.Repositories
 				CountryOfOrigin = "Nigeria",
 				CountryOfResidence = "UK",
 				StateOfOrigin = "Lagos",
-				StateOfResidence = "London"
+				StateOfResidence = "London",
+				Email = "example@gmail.com",
+				Password = "Password1!",
+				UserRole = UserRoles.User
 			});
 			await context.SaveChangesAsync ();
 
@@ -625,7 +628,7 @@ namespace Test.Repositories
 			var result = await repo.GetUserLocationByIdAsync ("user1", CancellationToken.None);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User retrieved successfully", result.Remark);
 			Assert.Equal ("Nigeria", result.Data.CountryOfOrigin);
 			Assert.Equal ("UK", result.Data.CountryOfResidence);
 		}
@@ -640,14 +643,14 @@ namespace Test.Repositories
 			var result = await repo.GetUserFullNameByIdAsync ("nonexistent", CancellationToken.None);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task GetUserFullNameByIdAsync_UserExists_ReturnsFullName ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, FirstName = "Ola", LastName = "Bayo" });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, FirstName = "Ola", LastName = "Bayo", Email = "example@gmail.com", Password = "Password1!", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -680,7 +683,7 @@ namespace Test.Repositories
 		public async Task LoginAsync_EmailNotConfirmed_ReturnsUnauthorized ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "test@example.com", Password = "hashed", IsDeleted = false, EmailConfirmed = false });
+			context.Users.Add (new User { Email = "test@example.com", Password = "hashed", IsDeleted = false, EmailConfirmed = false, PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var login = new LoginCommand { Email = "test@example.com", Password = "password", CancellationToken = CancellationToken.None };
@@ -708,23 +711,12 @@ namespace Test.Repositories
 			Assert.False (string.IsNullOrWhiteSpace (result.Data.Token));
 		}
 
-		[Fact]
-		public async Task RegisterAsync_NullPayload_ReturnsNullPayload ()
-		{
-			using var context = CreateDbContext ();
-			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
-				_emailTemplateServiceMock.Object, _emailRequestServiceMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.RegisterAsync (null);
-
-			Assert.False (result.IsSuccessful);
-		}
 
 		[Fact]
 		public async Task RegisterAsync_DuplicateEmail_ReturnsAlreadyExists ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "test@cbamvp.com", IsDeleted = false, EmailConfirmed = true });
+			context.Users.Add (new User { Email = "test@cbamvp.com", IsDeleted = false, EmailConfirmed = true, Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -735,7 +727,7 @@ namespace Test.Repositories
 			var result = await repo.RegisterAsync (dto);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User already exists", result.Remark);
 		}
 
 		[Fact]
@@ -829,18 +821,6 @@ namespace Test.Repositories
 		}
 
 		[Fact]
-		public async Task UpdateUserAsync_NullPayload_ReturnsNullPayload ()
-		{
-			using var context = CreateDbContext ();
-			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
-				_emailTemplateServiceMock.Object, _emailRequestServiceMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.UpdateUserAsync (null);
-
-			Assert.False (result.IsSuccessful);
-		}
-
-		[Fact]
 		public async Task UpdateUserAsync_UserNotFound_ReturnsNotFound ()
 		{
 			using var context = CreateDbContext ();
@@ -859,8 +839,8 @@ namespace Test.Repositories
 		public async Task UpdateUserAsync_ModifierNotAdminOrSelf_ReturnsUnauthorized ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false });
-			context.Users.Add (new User { PublicId = "user2", IsDeleted = false, UserRole = "User" });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Password = "Password1!", Email = "Password2@gmail.com", UserRole = UserRoles.User });
+			context.Users.Add (new User { PublicId = "user2", IsDeleted = false, UserRole = "User", Password = "Password1!", Email = "Password1!" });
 			await context.SaveChangesAsync ();
 
 			var dto = new UserDto { PublicId = "user1", LastModifiedBy = "user2", Email = "new@example.com", CancellationToken = CancellationToken.None };
@@ -878,9 +858,9 @@ namespace Test.Repositories
 		public async Task UpdateUserAsync_EmailAlreadyExists_ReturnsUnauthorized ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Email = "old@example.com" });
-			context.Users.Add (new User { PublicId = "user2", IsDeleted = false, Email = "new@example.com", EmailConfirmed = true });
-			context.Users.Add (new User { PublicId = "admin", IsDeleted = false, UserRole = "Admin" });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Email = "old@example.com", Password = "Password1!", UserRole = UserRoles.User });
+			context.Users.Add (new User { PublicId = "user2", IsDeleted = false, Email = "new@example.com", EmailConfirmed = true, Password = "Password1!", UserRole = UserRoles.User });
+			context.Users.Add (new User { PublicId = "admin", IsDeleted = false, UserRole = "Admin", Password = "Password1!", Email = "example@gmail.com" });
 			await context.SaveChangesAsync ();
 
 			var dto = new UserDto
@@ -904,8 +884,8 @@ namespace Test.Repositories
 		public async Task UpdateUserAsync_ValidUpdate_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Email = "old@example.com" });
-			context.Users.Add (new User { PublicId = "admin", IsDeleted = false, UserRole = "Admin" });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Email = "old@example.com", Password = "Password1!", UserRole = UserRoles.User });
+			context.Users.Add (new User { PublicId = "admin", IsDeleted = false, UserRole = "Admin", Password = "Password1!", Email = "example@gmail.com" });
 			await context.SaveChangesAsync ();
 
 			_auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
@@ -937,17 +917,6 @@ namespace Test.Repositories
 			Assert.Equal ("updated@example.com", result.Data.Email);
 		}
 
-		[Fact]
-		public async Task UpdateUserRoleAsync_NullPayload_ReturnsNullPayload ()
-		{
-			using var context = CreateDbContext ();
-			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
-				_emailTemplateServiceMock.Object, _emailRequestServiceMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.UpdateUserRoleAsync (null);
-
-			Assert.False (result.IsSuccessful);
-		}
 
 		[Fact]
 		public async Task UpdateUserRoleAsync_UserNotFound_ReturnsNotFound ()
@@ -961,14 +930,14 @@ namespace Test.Repositories
 			var result = await repo.UpdateUserRoleAsync (command);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task UpdateUserRoleAsync_AuditLogFails_ReturnsAuditLogFailed ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Password = "Password1!", Email = "user1@example.com", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			_auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
@@ -989,7 +958,7 @@ namespace Test.Repositories
 		public async Task UpdateUserRoleAsync_ValidUpdate_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, UserRole = "User" });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, UserRole = "User", Email = "example@gmail.com", Password = "Password1!" });
 			await context.SaveChangesAsync ();
 
 			_auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
@@ -1017,14 +986,14 @@ namespace Test.Repositories
 			var result = await repo.UpdateUserProfileImageAsync ("image.png", "nonexistent", CancellationToken.None);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task UpdateUserProfileImageAsync_AuditLogFails_ReturnsAuditLogFailed ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Password = "Password1!", Email = "user1@example.com", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			_auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
@@ -1036,14 +1005,14 @@ namespace Test.Repositories
 			var result = await repo.UpdateUserProfileImageAsync ("image.png", "user1", CancellationToken.None);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("AuditLogFailed", result.Remark);
+			Assert.Equal ("Update failed please try again later", result.Remark);
 		}
 
 		[Fact]
 		public async Task UpdateUserProfileImageAsync_ValidUpdate_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user1", IsDeleted = false });
+			context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Password = "Password2!", Email = "user1@example.com", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			_auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
@@ -1071,14 +1040,14 @@ namespace Test.Repositories
 			var result = await repo.VerifyUserEmailAsync (command);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task VerifyUserEmailAsync_EmailAlreadyVerified_ReturnsFailed ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "verified@example.com", IsDeleted = false, EmailConfirmed = true });
+			context.Users.Add (new User { Email = "verified@example.com", IsDeleted = false, EmailConfirmed = true, Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var command = new EmailVerificationCommand { Email = "verified@example.com", Token = "anytoken" };
@@ -1096,7 +1065,7 @@ namespace Test.Repositories
 		public async Task VerifyUserEmailAsync_IncorrectToken_ReturnsUnauthorized ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = false, EmailVerificationToken = "correct-token" });
+			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = false, EmailVerificationToken = "correct-token", Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var command = new EmailVerificationCommand { Email = "user@example.com", Token = "wrong-token" };
@@ -1114,7 +1083,7 @@ namespace Test.Repositories
 		public async Task VerifyUserEmailAsync_CorrectToken_VerifiesEmail ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = false, EmailVerificationToken = "token123" });
+			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = false, EmailVerificationToken = "token123", Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var command = new EmailVerificationCommand { Email = "user@example.com", Token = "token123" };
@@ -1153,14 +1122,14 @@ namespace Test.Repositories
 			var result = await repo.ForgotPasswordAsync ("missing@example.com", CancellationToken.None);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task ForgotPasswordAsync_EmailNotConfirmed_ReturnsUnauthorized ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = false });
+			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = false, Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -1176,7 +1145,7 @@ namespace Test.Repositories
 		public async Task ForgotPasswordAsync_EmailRequestFails_ReturnsFailed ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = true });
+			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = true, Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			_emailTemplateServiceMock.Setup (x => x.GetEmailTemplateByTemplateNameAsync ("PasswordReset", It.IsAny<CancellationToken> ()))
@@ -1198,7 +1167,7 @@ namespace Test.Repositories
 		public async Task ForgotPasswordAsync_ValidRequest_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = true });
+			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = true, Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			_emailTemplateServiceMock.Setup (x => x.GetEmailTemplateByTemplateNameAsync ("PasswordReset", It.IsAny<CancellationToken> ()))
@@ -1223,8 +1192,8 @@ namespace Test.Repositories
 			var command = new ChangePasswordCommand
 			{
 				Email = "missing@example.com",
-				NewPassword = "newpass",
-				ConfirmPassword = "newpass",
+				NewPassword = "Password1!",
+				ConfirmPassword = "Password1!",
 				Token = Guid.NewGuid (),
 				CancellationToken = CancellationToken.None
 			};
@@ -1235,21 +1204,21 @@ namespace Test.Repositories
 			var result = await repo.ChangePasswordAsync (command);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task ChangePasswordAsync_EmailNotConfirmed_ReturnsUnauthorized ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = false });
+			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = false, Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var command = new ChangePasswordCommand
 			{
 				Email = "user@example.com",
-				NewPassword = "newpass",
-				ConfirmPassword = "newpass",
+				NewPassword = "Password1!",
+				ConfirmPassword = "Password1!",
 				Token = Guid.NewGuid (),
 				CancellationToken = CancellationToken.None
 			};
@@ -1267,14 +1236,14 @@ namespace Test.Repositories
 		public async Task ChangePasswordAsync_PasswordsDoNotMatch_ReturnsFailed ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = true });
+			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = true, Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var command = new ChangePasswordCommand
 			{
 				Email = "user@example.com",
-				NewPassword = "newpass",
-				ConfirmPassword = "wrongpass",
+				NewPassword = "Newpass1!",
+				ConfirmPassword = "Wrongpass1!",
 				Token = Guid.NewGuid (),
 				CancellationToken = CancellationToken.None
 			};
@@ -1292,14 +1261,14 @@ namespace Test.Repositories
 		public async Task ChangePasswordAsync_InvalidToken_ReturnsUnauthorized ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = true, PasswordResetToken = Guid.NewGuid () });
+			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = true, PasswordResetToken = Guid.NewGuid (), Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var command = new ChangePasswordCommand
 			{
 				Email = "user@example.com",
-				NewPassword = "newpass",
-				ConfirmPassword = "newpass",
+				NewPassword = "Newpass1!",
+				ConfirmPassword = "Newpass1!",
 				Token = Guid.NewGuid (), // mismatched token
 				CancellationToken = CancellationToken.None
 			};
@@ -1318,14 +1287,14 @@ namespace Test.Repositories
 		{
 			using var context = CreateDbContext ();
 			var token = Guid.NewGuid ();
-			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = true, PasswordResetToken = token });
+			context.Users.Add (new User { Email = "user@example.com", IsDeleted = false, EmailConfirmed = true, PasswordResetToken = token, Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var command = new ChangePasswordCommand
 			{
 				Email = "user@example.com",
-				NewPassword = "newpass",
-				ConfirmPassword = "newpass",
+				NewPassword = "Newpass1!",
+				ConfirmPassword = "Newpass1!",
 				Token = token,
 				CancellationToken = CancellationToken.None
 			};
@@ -1346,8 +1315,8 @@ namespace Test.Repositories
 			var command = new UpdatePasswordCommand
 			{
 				LastModifiedBy = Guid.NewGuid ().ToString (),
-				NewPassword = "newpass",
-				ConfirmPassword = "newpass",
+				NewPassword = "Newpass1!",
+				ConfirmPassword = "Newpass1!",
 				CancellationToken = CancellationToken.None
 			};
 
@@ -1357,21 +1326,21 @@ namespace Test.Repositories
 			var result = await repo.UpdatePasswordAsync (command);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task UpdatePasswordAsync_EmailNotConfirmed_ReturnsUnauthorized ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = Guid.NewGuid ().ToString (), EmailConfirmed = false, IsDeleted = false });
+			context.Users.Add (new User { PublicId = Guid.NewGuid ().ToString (), EmailConfirmed = false, IsDeleted = false, Password = "Password2!", Email = "example@gmail.com", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var command = new UpdatePasswordCommand
 			{
 				LastModifiedBy = context.Users.First ().PublicId,
-				NewPassword = "newpass",
-				ConfirmPassword = "newpass",
+				NewPassword = "Newpass1!",
+				ConfirmPassword = "Newpass1!",
 				CancellationToken = CancellationToken.None
 			};
 
@@ -1389,7 +1358,7 @@ namespace Test.Repositories
 		{
 			using var context = CreateDbContext ();
 			var userId = Guid.NewGuid ().ToString ();
-			context.Users.Add (new User { PublicId = userId, EmailConfirmed = true, IsDeleted = false });
+			context.Users.Add (new User { PublicId = userId, EmailConfirmed = true, IsDeleted = false, Password = "Password2!", UserRole = UserRoles.User, Email = "example@gmail.com" });
 			await context.SaveChangesAsync ();
 
 			var command = new UpdatePasswordCommand
@@ -1414,13 +1383,15 @@ namespace Test.Repositories
 		{
 			using var context = CreateDbContext ();
 			var userId = Guid.NewGuid ().ToString ();
-			var password = "samepass";
+			var password = "Password2!";
 			context.Users.Add (new User
 			{
 				PublicId = userId,
 				EmailConfirmed = true,
 				IsDeleted = false,
-				Password = password
+				Password = password,
+				Email = "example@gmail.com",
+				UserRole = UserRoles.User
 			});
 			await context.SaveChangesAsync ();
 
@@ -1451,15 +1422,17 @@ namespace Test.Repositories
 				PublicId = userId,
 				EmailConfirmed = true,
 				IsDeleted = false,
-				Password = "oldpass"
+				Password = "Password2!",
+				UserRole = UserRoles.User,
+				Email = "example@gmail.com"
 			});
 			await context.SaveChangesAsync ();
 
 			var command = new UpdatePasswordCommand
 			{
 				LastModifiedBy = userId,
-				NewPassword = "newpass",
-				ConfirmPassword = "newpass",
+				NewPassword = "Password1!",
+				ConfirmPassword = "Password1!",
 				CancellationToken = CancellationToken.None
 			};
 
@@ -1482,14 +1455,14 @@ namespace Test.Repositories
 			var result = await repo.ResendEmailVerificationTokenAsync ("missing@example.com", CancellationToken.None);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User not found", result.Remark);
 		}
 
 		[Fact]
 		public async Task ResendEmailVerificationTokenAsync_EmailAlreadyVerified_ReturnsFailed ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "user@example.com", EmailConfirmed = true, IsDeleted = false });
+			context.Users.Add (new User { Email = "user@example.com", EmailConfirmed = true, IsDeleted = false, Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -1505,7 +1478,7 @@ namespace Test.Repositories
 		public async Task ResendEmailVerificationTokenAsync_TemplateFetchFails_ReturnsFailed ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "user@example.com", EmailConfirmed = false, IsDeleted = false });
+			context.Users.Add (new User { Email = "user@example.com", EmailConfirmed = false, IsDeleted = false, Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			_emailTemplateServiceMock.Setup (x => x.GetEmailTemplateByTemplateNameAsync ("Registration", It.IsAny<CancellationToken> ()))
@@ -1524,7 +1497,7 @@ namespace Test.Repositories
 		public async Task ResendEmailVerificationTokenAsync_EmailRequestFails_ReturnsFailed ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "user@example.com", EmailConfirmed = false, IsDeleted = false });
+			context.Users.Add (new User { Email = "user@example.com", EmailConfirmed = false, IsDeleted = false, Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			_emailTemplateServiceMock.Setup (x => x.GetEmailTemplateByTemplateNameAsync ("Registration", It.IsAny<CancellationToken> ()))
@@ -1546,7 +1519,7 @@ namespace Test.Repositories
 		public async Task ResendEmailVerificationTokenAsync_ValidRequest_ReturnsSuccess ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { Email = "user@example.com", EmailConfirmed = false, IsDeleted = false });
+			context.Users.Add (new User { Email = "user@example.com", EmailConfirmed = false, IsDeleted = false, Password = "Password2!", PublicId = "example", UserRole = UserRoles.User });
 			await context.SaveChangesAsync ();
 
 			_emailTemplateServiceMock.Setup (x => x.GetEmailTemplateByTemplateNameAsync ("Registration", It.IsAny<CancellationToken> ()))
@@ -1563,7 +1536,5 @@ namespace Test.Repositories
 			Assert.True (result.IsSuccessful);
 			Assert.Equal ("Token resend successful", result.Remark);
 		}
-
-
 	}
 }
