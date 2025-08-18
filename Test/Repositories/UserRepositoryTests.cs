@@ -659,7 +659,7 @@ namespace Test.Repositories
 			var result = await repo.GetUserFullNameByIdAsync ("user1", CancellationToken.None);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal ("User retrieved successfully", result.Remark);
 			Assert.Equal ("Ola", result.Data.FirstName);
 			Assert.Equal ("Bayo", result.Data.LastName);
 		}

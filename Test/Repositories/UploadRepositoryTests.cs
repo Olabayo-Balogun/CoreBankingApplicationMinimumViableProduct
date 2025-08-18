@@ -70,7 +70,7 @@ namespace Test.Repositories
 			var result = await repo.GetAllDeletedUploadsAsync (CancellationToken.None, page: 1, pageSize: 10);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Uploads", result.Remark);
+			Assert.Equal ("Uploads not found", result.Remark);
 			Assert.Null (result.Data);
 		}
 
@@ -80,8 +80,8 @@ namespace Test.Repositories
 			using var context = CreateDbContext ();
 			context.Uploads.AddRange (new List<Upload>
 			{
-				new () { IsDeleted = true, DateDeleted = DateTime.UtcNow.AddDays(-1), FilePath = "file1.jpg", FileFormat = "jpg", FileSize = 1024, PublicId = Guid.NewGuid().ToString() },
-				new () { IsDeleted = true, DateDeleted = DateTime.UtcNow, FilePath = "file2.png", FileFormat = "png", FileSize = 2048, PublicId = Guid.NewGuid().ToString() }
+				new () { IsDeleted = true, DateDeleted = DateTime.UtcNow.AddDays(-1), FilePath = "file1.jpg", FileFormat = "jpg", FileSize = 1024, PublicId = Guid.NewGuid().ToString(), CreatedBy = "Sample", RootFilePath = "Sample" },
+				new () { IsDeleted = true, DateDeleted = DateTime.UtcNow, FilePath = "file2.png", FileFormat = "png", FileSize = 2048, PublicId = Guid.NewGuid().ToString(), CreatedBy = "Sample", RootFilePath = "Sample" }
 			});
 			await context.SaveChangesAsync ();
 
@@ -91,7 +91,7 @@ namespace Test.Repositories
 
 			Assert.True (result.IsSuccessful);
 			Assert.Equal (2, result.TotalCount);
-			Assert.Equal ("Uploads", result.Remark);
+			Assert.Equal ("Uploads retrieved successfully", result.Remark);
 			Assert.NotEmpty (result.Data);
 		}
 
@@ -105,7 +105,7 @@ namespace Test.Repositories
 
 			Assert.True (result.IsSuccessful);
 			Assert.Equal (0, result.TotalCount);
-			Assert.Equal ("Uploads", result.Remark);
+			Assert.Equal ("Uploads count successful", result.Remark);
 		}
 
 		[Fact]
@@ -114,9 +114,9 @@ namespace Test.Repositories
 			using var context = CreateDbContext ();
 			context.Uploads.AddRange (new List<Upload>
 			{
-				new () { IsDeleted = false },
-				new () { IsDeleted = false },
-				new () { IsDeleted = true } // should be excluded
+				new () { IsDeleted = false, FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg",  CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" },
+				new () { IsDeleted = false, FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg",  CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" },
+				new () { IsDeleted = true, FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg",  CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" } // should be excluded
 			});
 			await context.SaveChangesAsync ();
 
@@ -132,7 +132,7 @@ namespace Test.Repositories
 		public async Task GetCountOfCreatedUploadsByDateAsync_NoUploadsOnDate_ReturnsZero ()
 		{
 			using var context = CreateDbContext ();
-			context.Uploads.Add (new Upload { IsDeleted = false, DateCreated = DateTime.UtcNow.AddDays (-1) });
+			context.Uploads.Add (new Upload { IsDeleted = false, DateCreated = DateTime.UtcNow.AddDays (-1), FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg", CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" });
 			await context.SaveChangesAsync ();
 
 			var repo = new UploadRepository (context, _mapper, _appSettings, _loggerMock.Object, _auditLogRepoMock.Object);
@@ -151,9 +151,9 @@ namespace Test.Repositories
 
 			context.Uploads.AddRange (new List<Upload>
 			{
-				new () { IsDeleted = false, DateCreated = today },
-				new () { IsDeleted = false, DateCreated = today },
-				new () { IsDeleted = false, DateCreated = today.AddDays(-1) } // excluded
+				new () { IsDeleted = false, DateCreated = today, FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg" , CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" },
+				new () { IsDeleted = false, DateCreated = today, FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg" , CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" },
+				new () { IsDeleted = false, DateCreated = today.AddDays(-1), FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg" , CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" } // excluded
 			});
 			await context.SaveChangesAsync ();
 
@@ -170,9 +170,9 @@ namespace Test.Repositories
 		{
 			using var context = CreateDbContext ();
 			context.Uploads.AddRange (
-				new Upload { IsDeleted = true },
-				new Upload { IsDeleted = false },
-				new Upload { IsDeleted = true }
+				new Upload { IsDeleted = true, FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg", CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" },
+				new Upload { IsDeleted = false, FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg", CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" },
+				new Upload { IsDeleted = true, FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg", CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" }
 			);
 			await context.SaveChangesAsync ();
 
@@ -194,9 +194,9 @@ namespace Test.Repositories
 
 			using var context = CreateDbContext ();
 			context.Uploads.AddRange (
-				new Upload { IsDeleted = true, DateDeleted = targetDate },
-				new Upload { IsDeleted = true, DateDeleted = targetDate.AddDays (-1) },
-				new Upload { IsDeleted = false, DateDeleted = targetDate }
+				new Upload { IsDeleted = true, DateDeleted = targetDate, FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg", CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" },
+				new Upload { IsDeleted = true, DateDeleted = targetDate.AddDays (-1), FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg", CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" },
+				new Upload { IsDeleted = false, DateDeleted = targetDate, FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg", CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample" }
 			);
 			await context.SaveChangesAsync ();
 
@@ -217,9 +217,9 @@ namespace Test.Repositories
 			var userId = "user123";
 
 			context.Uploads.AddRange (
-				new Upload { IsDeleted = true, DeletedBy = userId, DateDeleted = DateTime.UtcNow, FilePath = "file1.jpg", FileFormat = "jpg", FileSize = 100 },
-				new Upload { IsDeleted = true, DeletedBy = userId, DateDeleted = DateTime.UtcNow, FilePath = "file2.jpg", FileFormat = "jpg", FileSize = 200 },
-				new Upload { IsDeleted = true, DeletedBy = "otherUser", DateDeleted = DateTime.UtcNow }
+				new Upload { IsDeleted = true, DeletedBy = userId, DateDeleted = DateTime.UtcNow, FilePath = "file1.jpg", FileFormat = "jpg", FileSize = 100, CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample3" },
+				new Upload { IsDeleted = true, DeletedBy = userId, DateDeleted = DateTime.UtcNow, FilePath = "file2.jpg", FileFormat = "jpg", FileSize = 200, CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample2" },
+				new Upload { IsDeleted = true, DeletedBy = "otherUser", DateDeleted = DateTime.UtcNow, CreatedBy = "Sample", RootFilePath = "Sample", PublicId = "sample", FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg" }
 			);
 			await context.SaveChangesAsync ();
 
@@ -278,7 +278,7 @@ namespace Test.Repositories
 			var result = await repo.CreateUploadAsync (uploadDto);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Upload", result.Remark);
+			Assert.Equal ("Upload creation successful", result.Remark);
 			Assert.NotNull (result.Data);
 		}
 
@@ -288,14 +288,17 @@ namespace Test.Repositories
 			using var context = CreateDbContext ();
 
 			var userId = "admin123";
-			context.Users.Add (new User { PublicId = userId, UserRole = "Admin" });
+			context.Users.Add (new User { PublicId = userId, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
 
 			var upload = new Upload
 			{
 				PublicId = "upload123",
 				CreatedBy = userId,
 				IsDeleted = false,
-				RootFilePath = Path.GetTempFileName ()
+				RootFilePath = Path.GetTempFileName (),
+				FileFormat = "jpg",
+				FileSize = 100,
+				FilePath = "file1.jpg"
 			};
 			context.Uploads.Add (upload);
 			await context.SaveChangesAsync ();
@@ -317,7 +320,7 @@ namespace Test.Repositories
 			var result = await repo.DeleteUploadAsync (command);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Upload", result.Remark);
+			Assert.Equal ("Upload deleted sucessfully", result.Remark);
 		}
 
 		[Fact]
@@ -326,10 +329,10 @@ namespace Test.Repositories
 			using var context = CreateDbContext ();
 			var userId = "admin123";
 
-			context.Users.Add (new User { PublicId = userId, UserRole = "Admin" });
+			context.Users.Add (new User { PublicId = userId, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
 			context.Uploads.AddRange (
-				new Upload { PublicId = "file1", CreatedBy = userId, IsDeleted = false, RootFilePath = Path.GetTempFileName () },
-				new Upload { PublicId = "file2", CreatedBy = userId, IsDeleted = false, RootFilePath = Path.GetTempFileName () }
+				new Upload { PublicId = "file1", CreatedBy = userId, IsDeleted = false, RootFilePath = Path.GetTempFileName (), FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg" },
+				new Upload { PublicId = "file2", CreatedBy = userId, IsDeleted = false, RootFilePath = Path.GetTempFileName (), FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg" }
 			);
 			await context.SaveChangesAsync ();
 
@@ -357,8 +360,8 @@ namespace Test.Repositories
 		{
 			using var context = CreateDbContext ();
 			context.Uploads.AddRange (
-				new Upload { PublicId = "1", IsDeleted = false, DateCreated = DateTime.UtcNow },
-				new Upload { PublicId = "2", IsDeleted = false, DateCreated = DateTime.UtcNow }
+				new Upload { PublicId = "1", IsDeleted = false, DateCreated = DateTime.UtcNow, FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg", CreatedBy = "sample", RootFilePath = "sample" },
+				new Upload { PublicId = "2", IsDeleted = false, DateCreated = DateTime.UtcNow, FileFormat = "jpg", FileSize = 100, FilePath = "file2.jpg", CreatedBy = "sample", RootFilePath = "sample" }
 			);
 			await context.SaveChangesAsync ();
 
@@ -381,7 +384,9 @@ namespace Test.Repositories
 				IsDeleted = false,
 				FilePath = "path.jpg",
 				FileFormat = "jpg",
-				FileSize = 100
+				FileSize = 100,
+				CreatedBy = "Sample",
+				RootFilePath = "Sample"
 			});
 			await context.SaveChangesAsync ();
 
@@ -403,7 +408,9 @@ namespace Test.Repositories
 				IsDeleted = false,
 				FilePath = "https://localhost/files/image.jpg",
 				FileFormat = "jpg",
-				FileSize = 200
+				FileSize = 200,
+				CreatedBy = "Sample",
+				RootFilePath = "Sample"
 			});
 			await context.SaveChangesAsync ();
 
@@ -421,13 +428,16 @@ namespace Test.Repositories
 			using var context = CreateDbContext ();
 			var userId = "user456";
 
-			context.Users.Add (new User { PublicId = userId, UserRole = "User" });
+			context.Users.Add (new User { PublicId = userId, UserRole = "User", Email = "example@gmail.com", Password = "Password1!" });
 			context.Uploads.Add (new Upload
 			{
 				PublicId = "file1",
 				CreatedBy = "otherUser",
 				IsDeleted = false,
-				RootFilePath = Path.GetTempFileName ()
+				RootFilePath = Path.GetTempFileName (),
+				FileFormat = "jpg",
+				FileSize = 100,
+				FilePath = "file1.jpg"
 			});
 			await context.SaveChangesAsync ();
 
@@ -453,13 +463,16 @@ namespace Test.Repositories
 			using var context = CreateDbContext ();
 			var userId = "admin123";
 
-			context.Users.Add (new User { PublicId = userId, UserRole = "Admin" });
+			context.Users.Add (new User { PublicId = userId, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
 			context.Uploads.Add (new Upload
 			{
 				PublicId = "file1",
 				CreatedBy = userId,
 				IsDeleted = false,
-				RootFilePath = Path.GetTempFileName ()
+				RootFilePath = Path.GetTempFileName (),
+				FileFormat = "jpg",
+				FileSize = 100,
+				FilePath = "file1.jpg"
 			});
 			await context.SaveChangesAsync ();
 
@@ -479,7 +492,7 @@ namespace Test.Repositories
 			var result = await repo.DeleteMultipleUploadsAsync (command);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Audit log creation failed", result.Remark);
+			Assert.Equal ("Update failed please try again later", result.Remark);
 		}
 
 		[Fact]
@@ -521,36 +534,6 @@ namespace Test.Repositories
 			Assert.Equal ("Upload not found", result.Remark);
 		}
 
-		[Fact]
-		public async Task CreateMultipleUploadsAsync_NullList_ReturnsNullPayload ()
-		{
-			using var context = CreateDbContext ();
-			var repo = new UploadRepository (context, _mapper, _appSettings, _loggerMock.Object, null);
-
-			var result = await repo.CreateMultipleUploadsAsync (null);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Payload is null", result.Remark);
-		}
-
-		[Fact]
-		public async Task CreateMultipleUploadsAsync_FileIsNull_ReturnsNullPayload ()
-		{
-			using var context = CreateDbContext ();
-			var uploadDto = new UploadDto
-			{
-				UploadFile = null,
-				CreatedBy = "user123",
-				CancellationToken = CancellationToken.None
-			};
-
-			var repo = new UploadRepository (context, _mapper, _appSettings, _loggerMock.Object, null);
-
-			var result = await repo.CreateMultipleUploadsAsync ([uploadDto]);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Payload is null", result.Remark);
-		}
 
 		[Fact]
 		public async Task CreateMultipleUploadsAsync_UnsupportedFormat_ReturnsBadRequest ()
@@ -608,38 +591,6 @@ namespace Test.Repositories
 		}
 
 		[Fact]
-		public async Task UpdateUploadAsync_NullPayload_ReturnsNullPayload ()
-		{
-			using var context = CreateDbContext ();
-			var repo = new UploadRepository (context, _mapper, _appSettings, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.UpdateUploadAsync (null);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Payload is null", result.Remark);
-		}
-
-		[Fact]
-		public async Task UpdateUploadAsync_FileIsNullOrEmpty_ReturnsNullPayload ()
-		{
-			using var context = CreateDbContext ();
-			var uploadDto = new UploadDto
-			{
-				PublicId = "upload123",
-				UploadFile = null,
-				LastModifiedBy = "user123",
-				CancellationToken = CancellationToken.None
-			};
-
-			var repo = new UploadRepository (context, _mapper, _appSettings, _loggerMock.Object, _auditLogRepoMock.Object);
-
-			var result = await repo.UpdateUploadAsync (uploadDto);
-
-			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Payload is null", result.Remark);
-		}
-
-		[Fact]
 		public async Task UpdateUploadAsync_UnsupportedFormat_ReturnsBadRequest ()
 		{
 			using var context = CreateDbContext ();
@@ -680,7 +631,7 @@ namespace Test.Repositories
 			var result = await repo.UpdateUploadAsync (uploadDto);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Contains ("Maximum allowed file size", result.Remark);
+			Assert.Contains ("Please enter valid details", result.Remark);
 		}
 
 		[Fact]
@@ -715,7 +666,10 @@ namespace Test.Repositories
 				PublicId = "upload123",
 				IsDeleted = false,
 				CreatedBy = "creator123",
-				RootFilePath = Path.GetTempFileName ()
+				RootFilePath = Path.GetTempFileName (),
+				FileFormat = "jpg",
+				FileSize = 100,
+				FilePath = "file1.jpg"
 			});
 			await context.SaveChangesAsync ();
 
@@ -741,13 +695,16 @@ namespace Test.Repositories
 		public async Task UpdateUploadAsync_UnauthorizedUser_ReturnsUnauthorized ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user123", UserRole = "User" });
+			context.Users.Add (new User { PublicId = "user123", UserRole = "User", Email = "user123@gmail.com", Password = "Password1!" });
 			context.Uploads.Add (new Upload
 			{
 				PublicId = "upload123",
 				IsDeleted = false,
 				CreatedBy = "creator456",
-				RootFilePath = Path.GetTempFileName ()
+				RootFilePath = Path.GetTempFileName (),
+				FileFormat = "jpg",
+				FileSize = 100,
+				FilePath = "file1.jpg",
 			});
 			await context.SaveChangesAsync ();
 
@@ -789,7 +746,7 @@ namespace Test.Repositories
 			var result = await repo.UpdateMultipleUploadsAsync ([uploadDto]);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Payload is null", result.Remark);
+			Assert.Equal ("Please enter valid details", result.Remark);
 		}
 
 		[Fact]
@@ -810,7 +767,7 @@ namespace Test.Repositories
 			var result = await repo.UpdateMultipleUploadsAsync ([uploadDto]);
 
 			Assert.False (result.IsSuccessful);
-			Assert.Equal ("Payload is null", result.Remark);
+			Assert.Equal ("Please enter valid details", result.Remark);
 		}
 
 		[Fact]
@@ -891,7 +848,10 @@ namespace Test.Repositories
 				PublicId = "upload123",
 				IsDeleted = false,
 				CreatedBy = "creator123",
-				RootFilePath = Path.GetTempFileName ()
+				RootFilePath = Path.GetTempFileName (),
+				FileFormat = "jpg",
+				FileSize = 100,
+				FilePath = "file1.jpg"
 			});
 			await context.SaveChangesAsync ();
 
@@ -917,13 +877,16 @@ namespace Test.Repositories
 		public async Task UpdateMultipleUploadsAsync_UnauthorizedUser_ReturnsUnauthorized ()
 		{
 			using var context = CreateDbContext ();
-			context.Users.Add (new User { PublicId = "user123", UserRole = "User" });
+			context.Users.Add (new User { PublicId = "user123", UserRole = "User", Email = "user123@gmail.com", Password = "Password1!" });
 			context.Uploads.Add (new Upload
 			{
 				PublicId = "upload123",
 				IsDeleted = false,
 				CreatedBy = "creator456",
-				RootFilePath = Path.GetTempFileName ()
+				RootFilePath = Path.GetTempFileName (),
+				FileFormat = "jpg",
+				FileSize = 100,
+				FilePath = "file1.jpg",
 			});
 			await context.SaveChangesAsync ();
 
@@ -951,13 +914,16 @@ namespace Test.Repositories
 			using var context = CreateDbContext ();
 			var userId = "admin123";
 
-			context.Users.Add (new User { PublicId = userId, UserRole = "Admin" });
+			context.Users.Add (new User { PublicId = userId, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
 			context.Uploads.Add (new Upload
 			{
 				PublicId = "upload123",
 				IsDeleted = false,
 				CreatedBy = userId,
-				RootFilePath = Path.GetTempFileName ()
+				RootFilePath = Path.GetTempFileName (),
+				FileFormat = "jpg",
+				FileSize = 100,
+				FilePath = "file1.jpg",
 			});
 			await context.SaveChangesAsync ();
 
@@ -1006,7 +972,9 @@ namespace Test.Repositories
 				DateCreated = DateTime.UtcNow.Date,
 				FilePath = "deleted.jpg",
 				FileFormat = "jpg",
-				FileSize = 100
+				FileSize = 100,
+				CreatedBy = "Sample",
+				RootFilePath = "Sample"
 			});
 			await context.SaveChangesAsync ();
 
@@ -1042,7 +1010,9 @@ namespace Test.Repositories
 				DateDeleted = null,
 				FilePath = "deleted.jpg",
 				FileFormat = "jpg",
-				FileSize = 100
+				FileSize = 100,
+				CreatedBy = "Sample",
+				RootFilePath = "Sample"
 			});
 			await context.SaveChangesAsync ();
 

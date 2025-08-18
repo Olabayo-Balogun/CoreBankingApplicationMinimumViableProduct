@@ -380,11 +380,15 @@ namespace Persistence.Repositories
 					stream.SetLength (0);
 				}
 
-				DotEnv.Load (options: new DotEnvOptions (probeForEnv: false));
-				Cloudinary cloudinary = new (_appSettings.CloudinaryUrl);
-				cloudinary.Api.Secure = true;
+				if (_appSettings.IsSavingFilesToCloudStorage)
+				{
+					DotEnv.Load (options: new DotEnvOptions (probeForEnv: false));
+					Cloudinary cloudinary = new (_appSettings.CloudinaryUrl);
+					cloudinary.Api.Secure = true;
 
-				var uploadResult = await cloudinary.DeleteResourcesAsync (request.Id);
+					var uploadResult = await cloudinary.DeleteResourcesAsync (request.Id);
+				}
+
 				uploadCheck.IsDeleted = true;
 				uploadCheck.DeletedBy = request.DeletedBy;
 				uploadCheck.DateDeleted = DateTime.UtcNow.AddHours (1);
@@ -456,11 +460,15 @@ namespace Persistence.Repositories
 
 					auditLogs.Add (createAuditLogRequestViewModel);
 
-					DotEnv.Load (options: new DotEnvOptions (probeForEnv: false));
-					Cloudinary cloudinary = new (_appSettings.CloudinaryUrl);
-					cloudinary.Api.Secure = true;
+					if (_appSettings.IsSavingFilesToCloudStorage)
+					{
+						DotEnv.Load (options: new DotEnvOptions (probeForEnv: false));
+						Cloudinary cloudinary = new (_appSettings.CloudinaryUrl);
+						cloudinary.Api.Secure = true;
 
-					var uploadResult = await cloudinary.DeleteResourcesAsync (id);
+						var uploadResult = await cloudinary.DeleteResourcesAsync (id);
+					}
+
 
 					uploadCheck.IsDeleted = true;
 					uploadCheck.DeletedBy = request.DeletedBy;
