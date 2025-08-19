@@ -39,7 +39,6 @@ namespace Test.Repositories
 			_mapper = config.CreateMapper ();
 		}
 
-
 		private ApplicationDbContext CreateDbContext ()
 		{
 			var options = new DbContextOptionsBuilder<ApplicationDbContext> ()

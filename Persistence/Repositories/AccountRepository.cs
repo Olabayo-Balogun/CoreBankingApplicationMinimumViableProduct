@@ -69,16 +69,14 @@ namespace Persistence.Repositories
 
 				string customerNumber = customerId.ToString ().PadLeft (6, '0');
 
-				string ledgerNumber = Utility.GenerateLedgerNumber (branchCode, customerNumber, account.AccountType.ToString ()).Trim ();
+				string ledgerNumber = Utility.GenerateLedgerNumber (branchCode, customerNumber, account.AccountType.ToString (), 0.ToString()).Trim ();
 
 				long existingLedgerNumberCount = await _context.Accounts.AsNoTracking ().Where (x => x.LedgerNumber == ledgerNumber)
 					.LongCountAsync (account.CancellationToken);
 
 				if (existingLedgerNumberCount > 0)
 				{
-					var failure = RequestResponse<AccountResponse>.AlreadyExists (null, existingLedgerNumberCount, "You are not allowed to create multiple accounts of the same type");
-					_logger.LogError ($"CreateAccount failed at {DateTime.UtcNow.AddHours (1)}: {failure.Remark}");
-					return failure;
+					ledgerNumber = Utility.GenerateLedgerNumber (branchCode, customerNumber, account.AccountType.ToString (), existingLedgerNumberCount.ToString ()).Trim ();
 				}
 
 				string? nuban = await GenerateUniqueNUBANAsync (bankCode, customerNumber, account.CancellationToken);

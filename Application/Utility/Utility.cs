@@ -486,10 +486,10 @@ namespace Application.Utility
 			return bankCode + serialNumber + checkDigit.ToString ();
 		}
 
-		public static string GenerateLedgerNumber (string branchCode, string customerNumber, string accountType)
+		public static string GenerateLedgerNumber (string branchCode, string customerNumber, string accountType, string subledgerNumber)
 		{
 
-			return $"{branchCode}/{accountType}/{customerNumber}";
+			return $"{branchCode}/{accountType}/{customerNumber}/{subledgerNumber}";
 		}
 
 		public static string PadToSixDigits (int number)
