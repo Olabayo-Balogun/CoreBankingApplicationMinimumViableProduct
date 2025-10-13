@@ -41,6 +41,7 @@ namespace Test.Repositories
 			{
 				cfg.CreateMap<Upload, UploadResponse> ();
 			});
+
 			_mapper = config.CreateMapper ();
 
 			_appSettings = Options.Create (new AppSettings
@@ -48,7 +49,8 @@ namespace Test.Repositories
 				BaseUrl = "https://localhost/",
 				Secret = "supersecretkey1234567890",
 				ValidIssuer = "issuer",
-				ValidAudience = "audience"
+				ValidAudience = "audience",
+				AcceptableFileFormats = ".jpg, .jpeg, .png, .gif, .svg, .pdf, .webp" // Add this line
 			});
 		}
 

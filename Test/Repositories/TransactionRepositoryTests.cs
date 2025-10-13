@@ -114,7 +114,7 @@ namespace Test.Repositories
 			var result = await repo.CreateTransactionAsync (dto);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("Transaction", result.Remark);
+			Assert.Equal (201, result.StatusCode);
 			Assert.Equal (1, result.TotalCount);
 		}
 

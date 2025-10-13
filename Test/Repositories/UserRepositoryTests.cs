@@ -756,7 +756,7 @@ namespace Test.Repositories
 			var result = await repo.RegisterAsync (dto);
 
 			Assert.True (result.IsSuccessful);
-			Assert.Equal ("User", result.Remark);
+			Assert.Equal (201, result.StatusCode);
 			Assert.Equal (UserRoles.Admin, result.Data.UserRole);
 		}
 
