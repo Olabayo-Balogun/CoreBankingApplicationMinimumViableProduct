@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Model.EmailRequests.Queries
+namespace Application.Models.EmailRequests.Response
 {
 	public class EmailRequestResponse
 	{

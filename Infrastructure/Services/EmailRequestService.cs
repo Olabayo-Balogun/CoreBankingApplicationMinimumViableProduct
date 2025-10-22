@@ -1,9 +1,9 @@
 ﻿using Application.Interface.Infrastructure;
 using Application.Interface.Persistence;
-using Application.Model;
-using Application.Model.EmailLogs.Command;
-using Application.Model.EmailRequests.Command;
-using Application.Model.EmailRequests.Queries;
+using Application.Models;
+using Application.Models.EmailLogs.Command;
+using Application.Models.EmailRequests.Command;
+using Application.Models.EmailRequests.Response;
 using Application.Utility;
 
 using AutoMapper;

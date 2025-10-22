@@ -19,7 +19,8 @@ namespace Infrastructure
 			services.AddScoped<IEmailLogService, EmailLogService> ();
 			services.AddScoped<IEmailRequestService, EmailRequestService> ();
 			services.AddScoped<IEmailTemplateService, EmailTemplateService> ();
-
+			services.AddScoped<IPaymentIntegrationService, PaymentIntegrationService> ();
+			services.AddScoped<IEmailerService, EmailerService> ();
 			return services;
 		}
 	}

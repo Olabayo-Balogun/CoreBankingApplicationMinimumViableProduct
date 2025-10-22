@@ -1,6 +1,4 @@
-﻿using ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegration.Request;
-
-namespace Application.Model.PaymentIntegration.Command
+﻿namespace ThirdPartyIntegrations.Models.PaymentIntegration.Paystack.Command
 {
 	public class PaystackWebhookCommand
 	{

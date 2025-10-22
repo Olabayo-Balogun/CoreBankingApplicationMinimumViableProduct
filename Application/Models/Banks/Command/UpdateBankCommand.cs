@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Model.Banks.Command
+namespace Application.Models.Banks.Command
 {
 	public class UpdateBankCommand
 	{

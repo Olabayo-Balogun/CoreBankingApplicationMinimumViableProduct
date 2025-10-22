@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Model.Uploads.Queries
+namespace Application.Models.Uploads.Response
 {
 	public class UploadResponse
 	{

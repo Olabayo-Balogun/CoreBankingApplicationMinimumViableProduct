@@ -1,4 +1,4 @@
-﻿namespace ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegration.Response
+﻿namespace ThirdPartyIntegrations.Models.PaymentIntegration.Paystack.Response
 {
 	public class PaystackPaymentVerificationLogResponse
 	{

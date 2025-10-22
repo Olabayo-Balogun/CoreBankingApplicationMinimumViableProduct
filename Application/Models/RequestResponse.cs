@@ -1,4 +1,4 @@
-﻿namespace Application.Model
+﻿namespace Application.Models
 {
 	public class RequestResponse<T>
 	{
@@ -60,6 +60,11 @@
 		public static RequestResponse<T> Approved (T data, long totalCount, string remark)
 		{
 			return new RequestResponse<T> (true, 200, $"{remark} approval successful", totalCount, data);
+		}
+
+		public static RequestResponse<T> Error (T? data)
+		{
+			return new RequestResponse<T> (false, 500, "An error occurred", 0, data);
 		}
 
 		public static RequestResponse<T> Failed (T? data, int statusCode, string remark)

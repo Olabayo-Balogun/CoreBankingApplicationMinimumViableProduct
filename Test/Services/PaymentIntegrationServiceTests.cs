@@ -1,8 +1,11 @@
-﻿using Application.Interface.Persistence;
-using Application.Model.PaymentIntegration.Command;
+﻿using Application.Interface.Infrastructure;
+using Application.Interface.Persistence;
 using Application.Models;
+using Application.Models.PaymentIntegration.Paystack.Command;
 
 using Domain.Entities;
+
+using Infrastructure.Services;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,9 +15,6 @@ using Moq;
 
 using Persistence;
 
-using ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegration.Request;
-using ThirdPartyIntegrations.Services;
-
 namespace Test.Services
 {
 	public class PaymentIntegrationServiceTests
@@ -22,7 +22,7 @@ namespace Test.Services
 		private readonly Mock<ILogger<PaymentIntegrationService>> _loggerMock;
 		private readonly Mock<ITransactionRepository> _transactionRepoMock;
 		private readonly ApplicationDbContext _context;
-		private readonly PaymentIntegrationService _service;
+		private readonly IPaymentIntegrationService _service;
 
 		public PaymentIntegrationServiceTests ()
 		{

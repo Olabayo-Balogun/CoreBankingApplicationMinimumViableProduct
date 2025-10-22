@@ -1,6 +1,4 @@
 ﻿using Application.Interface.Persistence;
-using Application.Model;
-using Application.Model.PaymentIntegration.Command;
 using Application.Models;
 using Application.Models.Transactions.Command;
 
@@ -16,8 +14,6 @@ using RestSharp;
 
 using ThirdPartyIntegrations.Interface;
 using ThirdPartyIntegrations.Models.PaymentIntegration.Paystack.Response;
-using ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegration.Request;
-using ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegration.Response;
 
 namespace ThirdPartyIntegrations.Services
 {

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Folder Include="Models\Branches\Queries\" />
+    <Folder Include="Models\PaymentIntegration\Paystack\Query\" />
     <Folder Include="Models\Uploads\Queries\" />
   </ItemGroup>
 

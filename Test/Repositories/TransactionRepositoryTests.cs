@@ -1,6 +1,6 @@
 ﻿using Application.Interface.Persistence;
-using Application.Model;
-using Application.Model.AuditLogs.Command;
+using Application.Models;
+using Application.Models.AuditLogs.Command;
 using Application.Models.AuditLogs.Response;
 using Application.Models.Transactions.Command;
 using Application.Models.Transactions.Response;

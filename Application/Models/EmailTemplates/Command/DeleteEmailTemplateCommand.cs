@@ -1,4 +1,4 @@
-﻿namespace Application.Model.EmailTemplates.Command
+﻿namespace Application.Models.EmailTemplates.Command
 {
 	public class DeleteEmailTemplateCommand
 	{

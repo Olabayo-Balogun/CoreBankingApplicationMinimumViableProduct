@@ -1,9 +1,8 @@
 ﻿using Application.Interface.Persistence;
-using Application.Model;
-using Application.Model.AuditLogs.Command;
 using Application.Models;
 using Application.Models.Accounts.Command;
 using Application.Models.Accounts.Response;
+using Application.Models.AuditLogs.Command;
 using Application.Models.AuditLogs.Response;
 
 using AutoMapper;
@@ -42,12 +41,14 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"CreateAccount begins at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {account.CreatedBy}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (CreateAccountAsync), nameof (account.CreatedBy), account.CreatedBy);
+				_logger.LogInformation (openingLog);
 
 				if (account == null)
 				{
 					var badRequest = RequestResponse<AccountResponse>.NullPayload (null);
-					_logger.LogInformation ($"CreateAccount ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateAccountAsync), nameof (account.CreatedBy), account.CreatedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -62,14 +63,14 @@ namespace Persistence.Repositories
 				if (customerId < 1)
 				{
 					var badRequest = RequestResponse<AccountResponse>.Failed (null, 400, "Unable to validate user identity");
-					_logger.LogInformation ($"CreateAccount ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
-
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateAccountAsync), nameof (account.CreatedBy), account.CreatedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 					return badRequest;
 				}
 
 				string customerNumber = customerId.ToString ().PadLeft (6, '0');
 
-				string ledgerNumber = Utility.GenerateLedgerNumber (branchCode, customerNumber, account.AccountType.ToString (), 0.ToString()).Trim ();
+				string ledgerNumber = Utility.GenerateLedgerNumber (branchCode, customerNumber, account.AccountType.ToString (), 0.ToString ()).Trim ();
 
 				long existingLedgerNumberCount = await _context.Accounts.AsNoTracking ().Where (x => x.LedgerNumber == ledgerNumber)
 					.LongCountAsync (account.CancellationToken);
@@ -83,9 +84,10 @@ namespace Persistence.Repositories
 
 				if (nuban == null)
 				{
-					var failure = RequestResponse<AccountResponse>.Failed (null, 500, "Unable to generate unique account number");
-					_logger.LogError ($"CreateAccount failed at {DateTime.UtcNow.AddHours (1)}: {failure.Remark}");
-					return failure;
+					var badRequest = RequestResponse<AccountResponse>.Failed (null, 500, "Unable to generate unique account number");
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateAccountAsync), nameof (account.CreatedBy), account.CreatedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+					return badRequest;
 				}
 
 				var payload = _mapper.Map<Account> (account);
@@ -109,13 +111,15 @@ namespace Persistence.Repositories
 				var response = _mapper.Map<AccountResponse> (payload);
 				var result = RequestResponse<AccountResponse>.Created (response, 1, "Account");
 
-				_logger.LogInformation ($"CreateAccount ends at {DateTime.UtcNow.AddHours (1)} with remark: {result.Remark} by UserPublicId: {account.CreatedBy}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CreateAccountAsync), nameof (account.CreatedBy), account.CreatedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"CreateAccount by UserPublicId: {account.CreatedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateAccountAsync), nameof (account.CreatedBy), account.CreatedBy, ex.Message);
+				_logger.LogError (errorLog);
+				return RequestResponse<AccountResponse>.Error (null);
 			}
 		}
 
@@ -123,6 +127,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GenerateUniqueNUBANAsync), nameof (bankCode), bankCode, nameof (customerNumber), customerNumber);
+				_logger.LogInformation (openingLog);
 				string nuban = Utility.GenerateNUBAN (bankCode, customerNumber);
 
 				Random rand = new ();
@@ -136,6 +142,8 @@ namespace Persistence.Repositories
 
 				if (existingAccountNumberCount < 1)
 				{
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GenerateUniqueNUBANAsync), nameof (bankCode), bankCode, nameof (customerNumber), customerNumber, nuban);
+					_logger.LogInformation (closingLog);
 					return nuban;
 				}
 
@@ -153,17 +161,22 @@ namespace Persistence.Repositories
 
 					if (count < 1)
 					{
+						string closingLog = Utility.GenerateMethodConclusionLog (nameof (GenerateUniqueNUBANAsync), nameof (bankCode), bankCode, nameof (customerNumber), customerNumber, nuban);
+						_logger.LogInformation (closingLog);
 						return newNuban;
 					}
 
 					attempts++;
 				}
 
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GenerateUniqueNUBANAsync), nameof (bankCode), bankCode, nameof (customerNumber), customerNumber, nuban);
+				_logger.LogInformation (conclusionLog);
 				return null;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GenerateUniqueNUBANAsync exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GenerateUniqueNUBANAsync), nameof (bankCode), bankCode, nameof (customerNumber), customerNumber, ex.Message);
+				_logger.LogError (errorLog);
 				throw;
 			}
 		}
@@ -172,14 +185,16 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"DeleteAccount begins at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.DeletedBy} for Account with ID: {request.Id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (DeleteAccountAsync), nameof (request.DeletedBy), request.DeletedBy, nameof (request.Id), request.Id);
+				_logger.LogInformation (openingLog);
 
 				var accountCheck = await _context.Accounts.Where (x => x.PublicId == request.Id && x.IsDeleted == false).FirstOrDefaultAsync (request.CancellationToken);
 				if (accountCheck == null)
 				{
 					var badRequest = RequestResponse<AccountResponse>.NotFound (null, "Account");
 
-					_logger.LogInformation ($"DeleteAccount ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.DeletedBy} with remark: {badRequest.Remark}");
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteAccountAsync), nameof (request.DeletedBy), request.DeletedBy, nameof (request.Id), request.Id, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -198,7 +213,8 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<AccountResponse>.AuditLogFailed (null);
 
-					_logger.LogInformation ($"DeleteAccount ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.DeletedBy} with remark: {badRequest.Remark}");
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteAccountAsync), nameof (request.DeletedBy), request.DeletedBy, nameof (request.Id), request.Id, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -207,19 +223,21 @@ namespace Persistence.Repositories
 				accountCheck.DeletedBy = request.DeletedBy;
 				accountCheck.DateDeleted = DateTime.UtcNow.AddHours (1);
 
-				_context.Accounts.Update (accountCheck);
 				await _context.SaveChangesAsync ();
 
 				var result = RequestResponse<AccountResponse>.Deleted (null, 1, "Account");
 
-				_logger.LogInformation ($"DeleteAccount ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.DeletedBy} with remark: {result.Remark}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (DeleteAccountAsync), nameof (request.DeletedBy), request.DeletedBy, nameof (request.Id), request.Id, result.Remark);
+				_logger.LogInformation (conclusionLog);
 
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"DeleteAccount by UserPublicId: {request.DeletedBy} for Account with ID: {request.Id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (DeleteAccountAsync), nameof (request.DeletedBy), request.DeletedBy, nameof (request.Id), request.Id, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<AccountResponse>.Error (null);
 			}
 		}
 
@@ -227,7 +245,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetAccountByPublicId begins at {DateTime.UtcNow.AddHours (1)} for account with publicId: {id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAccountByPublicIdAsync), nameof (id), id);
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Accounts
 					.AsNoTracking ()
@@ -239,19 +258,24 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<AccountResponse>.NotFound (null, "Account");
 
-					_logger.LogInformation ($"GetAccountByPublicId ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for id: {id}");
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAccountByPublicIdAsync), nameof (id), id, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
 
 				var response = RequestResponse<AccountResponse>.SearchSuccessful (result, 1, "Account");
-				_logger.LogInformation ($"GetAccountByPublicId ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for id: {id}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAccountByPublicIdAsync), nameof (id), id, response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetAccountByPublicId for account with publicId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAccountByPublicIdAsync), nameof (id), id, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<AccountResponse>.Error (null);
 			}
 		}
 
@@ -259,7 +283,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetAccountByAccountNumber begins at {DateTime.UtcNow.AddHours (1)} for account number: {accountNumber}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAccountByAccountNumberAsync), nameof (accountNumber), accountNumber);
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Accounts
 					.AsNoTracking ()
@@ -271,19 +296,25 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<AccountResponse>.NotFound (null, "Account");
 
-					_logger.LogInformation ($"GetAccountByAccountNumber ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for account number: {accountNumber}");
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAccountByAccountNumberAsync), nameof (accountNumber), accountNumber, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
 
 				var response = RequestResponse<AccountResponse>.SearchSuccessful (result, 1, "Account");
-				_logger.LogInformation ($"GetAccountByAccountNumber ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for account number: {accountNumber}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAccountByAccountNumberAsync), nameof (accountNumber), accountNumber, response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetAccountByAccountNumber for account with account number: {accountNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAccountByAccountNumberAsync), nameof (accountNumber), accountNumber, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<AccountResponse>.Error (null);
 			}
 		}
 
@@ -291,7 +322,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetAccountByLedgerNumber begins at {DateTime.UtcNow.AddHours (1)} for ledger number: {ledgerNumber}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAccountByLedgerNumberAsync), nameof (ledgerNumber), ledgerNumber);
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Accounts
 					.AsNoTracking ()
@@ -303,19 +335,25 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<AccountResponse>.NotFound (null, "Account");
 
-					_logger.LogInformation ($"GetAccountByLedgerNumber ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for ledger number: {ledgerNumber}");
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAccountByLedgerNumberAsync), nameof (ledgerNumber), ledgerNumber, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
 
 				var response = RequestResponse<AccountResponse>.SearchSuccessful (result, 1, "Account");
-				_logger.LogInformation ($"GetAccountByLedgerNumber ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for ledger number: {ledgerNumber}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAccountByLedgerNumberAsync), nameof (ledgerNumber), ledgerNumber, response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetAccountByLedgerNumber for account with ledger number: {ledgerNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAccountByLedgerNumberAsync), nameof (ledgerNumber), ledgerNumber, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<AccountResponse>.Error (null);
 			}
 		}
 
@@ -323,7 +361,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetAccountByUserId begins at {DateTime.UtcNow.AddHours (1)} for account with userPublicId: {id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAccountsByUserIdAsync), nameof (id), id);
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Accounts
 					.AsNoTracking ()
@@ -337,7 +376,9 @@ namespace Persistence.Repositories
 				if (result.Count < 1)
 				{
 					var badResponse = RequestResponse<List<AccountResponse>>.NotFound (null, "Account");
-					_logger.LogInformation ($"GetAccountByUserId ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {result.Count}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAccountsByUserIdAsync), nameof (id), id, nameof (result.Count), result.Count.ToString (), badResponse.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badResponse;
 				}
@@ -348,15 +389,17 @@ namespace Persistence.Repositories
 					.LongCountAsync ();
 
 				var response = RequestResponse<List<AccountResponse>>.SearchSuccessful (result, count, "Accounts");
-
-				_logger.LogInformation ($"GetAccountByUserId ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAccountsByUserIdAsync), nameof (id), id, nameof (result.Count), result.Count.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetAccountByUserId for account with userPublicId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAccountsByUserIdAsync), nameof (id), id, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<AccountResponse>>.Error (null);
 			}
 		}
 
@@ -364,20 +407,26 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetAccountCount begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAccountCountAsync));
+				_logger.LogInformation (openingLog);
+
 				long count = await _context.Accounts
 					.AsNoTracking ()
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<AccountResponse>.CountSuccessful (null, count, "Account");
-				_logger.LogInformation ($"GetAccountCount ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAccountCountAsync), response.Remark);
+				_logger.LogInformation (closingLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetAccountCount exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAccountCountAsync), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<AccountResponse>.Error (null);
 			}
 		}
 
@@ -385,21 +434,26 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetAccountCountByUserId for userPublicId: {id} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAccountCountByUserIdAsync), nameof (id), id);
+				_logger.LogInformation (openingLog);
+
 				long count = await _context.Accounts
 					.AsNoTracking ()
 					.Where (x => x.CreatedBy == id)
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<AccountResponse>.CountSuccessful (null, count, "Account");
-				_logger.LogInformation ($"GetAccountCountByUserId for userPublicId: {id} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark}");
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAccountCountByUserIdAsync), nameof (id), id, response.Remark);
+				_logger.LogInformation (closingLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetAccountCountByUserId for userPublicId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAccountCountByUserIdAsync), nameof (id), id, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<AccountResponse>.Error (null);
 			}
 		}
 
@@ -407,12 +461,15 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"UpdateAccount begins at {DateTime.UtcNow.AddHours (1)} for account with publicId: {account.PublicId} by UserPublicId: {account.LastModifiedBy}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (UpdateAccountAsync), nameof (account.PublicId), account.PublicId, nameof (account.LastModifiedBy), account.LastModifiedBy);
+				_logger.LogInformation (openingLog);
 
 				if (account == null)
 				{
 					var badRequest = RequestResponse<AccountResponse>.NullPayload (null);
-					_logger.LogInformation ($"UpdateAccount ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateAccountAsync), badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -424,7 +481,10 @@ namespace Persistence.Repositories
 				if (updateAccountRequest == null)
 				{
 					var badRequest = RequestResponse<AccountResponse>.NotFound (null, "Account");
-					_logger.LogInformation ($"UpdateAccount ends at {DateTime.UtcNow.AddHours (1)}  with remark: {badRequest.Remark} by UserPublicId: {account.LastModifiedBy} for account with Id: {account.Id}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateAccountAsync), nameof (account.PublicId), account.PublicId, nameof (account.LastModifiedBy), account.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -433,9 +493,12 @@ namespace Persistence.Repositories
 
 				if (existingLedgerNumberCount > 0)
 				{
-					var failure = RequestResponse<AccountResponse>.AlreadyExists (null, existingLedgerNumberCount, "You are not allowed to create multiple accounts of the same type");
-					_logger.LogError ($"CreateAccount failed at {DateTime.UtcNow.AddHours (1)}: {failure.Remark}");
-					return failure;
+					var badRequest = RequestResponse<AccountResponse>.AlreadyExists (null, existingLedgerNumberCount, "You are not allowed to create multiple accounts of the same type");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateAccountAsync), nameof (account.PublicId), account.PublicId, nameof (account.LastModifiedBy), account.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				CreateAuditLogCommand createAuditLogRequestViewModel = new ()
@@ -451,7 +514,10 @@ namespace Persistence.Repositories
 				if (createAuditLog.IsSuccessful == false)
 				{
 					var badRequest = RequestResponse<AccountResponse>.AuditLogFailed (null);
-					_logger.LogInformation ($"UpdateAccount ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by UserPublicId: {account.LastModifiedBy} for account with Id: {account.Id}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateAccountAsync), nameof (account.PublicId), account.PublicId, nameof (account.LastModifiedBy), account.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -461,19 +527,22 @@ namespace Persistence.Repositories
 				updateAccountRequest.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 				updateAccountRequest.LastModifiedBy = account.LastModifiedBy;
 
-				_context.Accounts.Update (updateAccountRequest);
 				await _context.SaveChangesAsync (account.CancellationToken);
 
 				var result = _mapper.Map<AccountResponse> (updateAccountRequest);
 				var response = RequestResponse<AccountResponse>.Updated (result, 1, "Account");
-				_logger.LogInformation ($"UpdateAccount at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} by UserPublicId: {account.LastModifiedBy} for account with Id: {account.Id}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (UpdateAccountAsync), nameof (account.PublicId), account.PublicId, nameof (account.LastModifiedBy), account.LastModifiedBy, response.Remark);
+				_logger.LogInformation (conclusionLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"UpdateAccount for account with publicId: {account.Id} error occurred at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {account.LastModifiedBy} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (UpdateAccountAsync), nameof (account.PublicId), account.PublicId, nameof (account.LastModifiedBy), account.LastModifiedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<AccountResponse>.Error (null);
 			}
 		}
 	}

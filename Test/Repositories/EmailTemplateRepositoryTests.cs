@@ -1,6 +1,6 @@
 ﻿using Application.Interface.Persistence;
-using Application.Model.EmailTemplates.Command;
-using Application.Model.EmailTemplates.Queries;
+using Application.Models.EmailTemplates.Command;
+using Application.Models.EmailTemplates.Response;
 
 using AutoMapper;
 

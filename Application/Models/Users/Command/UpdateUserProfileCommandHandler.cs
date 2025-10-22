@@ -1,5 +1,4 @@
 ﻿using Application.Interface.Persistence;
-using Application.Model;
 using Application.Models.Users.Response;
 
 using AutoMapper;

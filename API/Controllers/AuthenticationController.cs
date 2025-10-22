@@ -1,7 +1,6 @@
 ﻿using API.Middleware;
 
-using Application.Model;
-using Application.Model.Users.Response;
+using Application.Models;
 using Application.Models.Users.Command;
 using Application.Models.Users.Response;
 using Application.Utility;

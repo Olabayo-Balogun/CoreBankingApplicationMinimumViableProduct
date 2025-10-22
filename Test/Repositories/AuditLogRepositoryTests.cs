@@ -1,5 +1,5 @@
-﻿using Application.Model.AuditLogs.Command;
-using Application.Models.Accounts.Response;
+﻿using Application.Models.Accounts.Response;
+using Application.Models.AuditLogs.Command;
 using Application.Models.Banks.Response;
 using Application.Models.Users.Response;
 

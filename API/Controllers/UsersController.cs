@@ -1,4 +1,4 @@
-﻿using Application.Model;
+﻿using Application.Models;
 using Application.Models.Users.Command;
 using Application.Models.Users.Queries;
 using Application.Models.Users.Response;

@@ -1,4 +1,4 @@
-﻿namespace Application.Model
+﻿namespace Application.Models
 {
 	public class ValidateTokenResponse : ValidationResponse
 	{

@@ -1,5 +1,4 @@
-﻿using Application.Model;
-using Application.Models.Transactions.Response;
+﻿using Application.Models.Transactions.Response;
 
 using MediatR;
 

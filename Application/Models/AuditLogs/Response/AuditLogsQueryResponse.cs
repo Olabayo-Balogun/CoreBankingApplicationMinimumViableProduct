@@ -1,8 +1,8 @@
-﻿using Application.Model.Uploads.Queries;
-using Application.Models.Accounts.Response;
+﻿using Application.Models.Accounts.Response;
 using Application.Models.Banks.Response;
 using Application.Models.Branches.Response;
 using Application.Models.Transactions.Response;
+using Application.Models.Uploads.Response;
 using Application.Models.Users.Response;
 
 namespace Application.Models.AuditLogs.Response

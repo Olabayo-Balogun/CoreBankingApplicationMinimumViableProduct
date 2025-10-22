@@ -1,7 +1,8 @@
 ﻿using API.Middleware;
 
-using Application.Model;
+using Application.Interface.Infrastructure;
 using Application.Models;
+using Application.Models.PaymentIntegration.Paystack.Command;
 using Application.Models.Transactions.Command;
 using Application.Models.Transactions.Queries;
 using Application.Models.Transactions.Response;
@@ -17,9 +18,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
-
-using ThirdPartyIntegrations.Interface;
-using ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegration.Request;
 
 namespace API.Controllers
 {

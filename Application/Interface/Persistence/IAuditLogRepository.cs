@@ -1,5 +1,5 @@
-﻿using Application.Model;
-using Application.Model.AuditLogs.Command;
+﻿using Application.Models;
+using Application.Models.AuditLogs.Command;
 using Application.Models.AuditLogs.Response;
 
 namespace Application.Interface.Persistence

@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
-using Application.Model;
 using Application.Models;
 
 using Microsoft.AspNetCore.Http;
@@ -370,7 +369,7 @@ namespace Application.Utility
 			return result;
 		}
 
-		public static ValidateQueryParameterAndPaginationResponse ValidateQueryParameter (string query, string query2, string? query3, int? characterLimit)
+		public static ValidateQueryParameterAndPaginationResponse ValidateQueryParameter (string query, string query2, int? characterLimit)
 		{
 			ValidateQueryParameterAndPaginationResponse result = new ();
 			ValidateQueryParameterAndPaginationResponse queryResponse = ValidateQueryParameter (query, characterLimit);
@@ -391,19 +390,6 @@ namespace Application.Utility
 				return result;
 			}
 
-			if (query3 != null)
-			{
-				ValidateQueryParameterAndPaginationResponse query3Response = ValidateQueryParameter (query3, characterLimit);
-				if (!queryResponse.IsValid)
-				{
-					result.IsValid = false;
-					result.Remark = queryResponse.Remark;
-
-					return result;
-				}
-
-				result.DecodedString3 = query3Response.DecodedString;
-			}
 
 			result.IsValid = true;
 			result.Remark = "Valid";
@@ -413,7 +399,7 @@ namespace Application.Utility
 			return result;
 		}
 
-		public static ValidateQueryParameterAndPaginationResponse ValidateQueryParameterAndPagination (string query, string query2, string? query3, int? characterLimit, int pageNumber, int pageSize)
+		public static ValidateQueryParameterAndPaginationResponse ValidateQueryParameter (string query, string query2, string query3, int? characterLimit)
 		{
 			ValidateQueryParameterAndPaginationResponse result = new ();
 			ValidateQueryParameterAndPaginationResponse queryResponse = ValidateQueryParameter (query, characterLimit);
@@ -434,18 +420,43 @@ namespace Application.Utility
 				return result;
 			}
 
-			if (query3 != null)
+			ValidateQueryParameterAndPaginationResponse query3Response = ValidateQueryParameter (query3, characterLimit);
+			if (!queryResponse.IsValid)
 			{
-				ValidateQueryParameterAndPaginationResponse query3Response = ValidateQueryParameter (query3, characterLimit);
-				if (!queryResponse.IsValid)
-				{
-					result.IsValid = false;
-					result.Remark = queryResponse.Remark;
+				result.IsValid = false;
+				result.Remark = queryResponse.Remark;
 
-					return result;
-				}
+				return result;
+			}
 
-				result.DecodedString3 = query3Response.DecodedString;
+			result.IsValid = true;
+			result.Remark = "Valid";
+			result.DecodedString = queryResponse.DecodedString;
+			result.DecodedString2 = query2Response.DecodedString;
+			result.DecodedString3 = query3Response.DecodedString;
+
+			return result;
+		}
+
+		public static ValidateQueryParameterAndPaginationResponse ValidateQueryParameterAndPagination (string query, string query2, int? characterLimit, int pageNumber, int pageSize)
+		{
+			ValidateQueryParameterAndPaginationResponse result = new ();
+			ValidateQueryParameterAndPaginationResponse queryResponse = ValidateQueryParameter (query, characterLimit);
+			if (!queryResponse.IsValid)
+			{
+				result.IsValid = false;
+				result.Remark = queryResponse.Remark;
+
+				return result;
+			}
+
+			ValidateQueryParameterAndPaginationResponse query2Response = ValidateQueryParameter (query2, characterLimit);
+			if (!queryResponse.IsValid)
+			{
+				result.IsValid = false;
+				result.Remark = queryResponse.Remark;
+
+				return result;
 			}
 
 			ValidationResponse paginationResponse = ValidatePagination (pageNumber, pageSize);
@@ -461,6 +472,55 @@ namespace Application.Utility
 			result.Remark = "Valid";
 			result.DecodedString = queryResponse.DecodedString;
 			result.DecodedString2 = query2Response.DecodedString;
+
+			return result;
+		}
+
+		public static ValidateQueryParameterAndPaginationResponse ValidateQueryParameterAndPagination (string query, string query2, string query3, int? characterLimit, int pageNumber, int pageSize)
+		{
+			ValidateQueryParameterAndPaginationResponse result = new ();
+			ValidateQueryParameterAndPaginationResponse queryResponse = ValidateQueryParameter (query, characterLimit);
+			if (!queryResponse.IsValid)
+			{
+				result.IsValid = false;
+				result.Remark = queryResponse.Remark;
+
+				return result;
+			}
+
+			ValidateQueryParameterAndPaginationResponse query2Response = ValidateQueryParameter (query2, characterLimit);
+			if (!queryResponse.IsValid)
+			{
+				result.IsValid = false;
+				result.Remark = queryResponse.Remark;
+
+				return result;
+			}
+
+			ValidateQueryParameterAndPaginationResponse query3Response = ValidateQueryParameter (query3, characterLimit);
+			if (!queryResponse.IsValid)
+			{
+				result.IsValid = false;
+				result.Remark = queryResponse.Remark;
+
+				return result;
+			}
+
+
+			ValidationResponse paginationResponse = ValidatePagination (pageNumber, pageSize);
+			if (!paginationResponse.IsValid)
+			{
+				result.IsValid = false;
+				result.Remark = queryResponse.Remark;
+
+				return result;
+			}
+
+			result.IsValid = true;
+			result.Remark = "Valid";
+			result.DecodedString = queryResponse.DecodedString;
+			result.DecodedString2 = query2Response.DecodedString;
+			result.DecodedString3 = query3Response.DecodedString;
 
 			return result;
 		}
@@ -511,6 +571,110 @@ namespace Application.Utility
 			return number < 0 || number > 99
 				? throw new ArgumentOutOfRangeException ("Number must be between 0 and 99.")
 				: number.ToString ("D2");
+		}
+
+		public static string GenerateMethodInitiationLog (string methodName)
+		{
+			string result = string.Empty;
+			result = $"{methodName} begins at {DateTime.UtcNow.AddHours (1)}";
+
+			return result;
+		}
+
+		public static string GenerateMethodInitiationLog (string methodName, string firstParameterName, string firstParameterValue)
+		{
+			string result = string.Empty;
+			result = $"{methodName} begins at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue}";
+
+			return result;
+		}
+
+		public static string GenerateMethodInitiationLog (string methodName, string firstParameterName, string firstParameterValue, string secondParameterName, string secondParameterValue)
+		{
+			string result = string.Empty;
+			result = $"{methodName} begins at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue} and {secondParameterName}: {secondParameterValue}";
+
+			return result;
+		}
+
+		public static string GenerateMethodInitiationLog (string methodName, string firstParameterName, string firstParameterValue, string secondParameterName, string secondParameterValue, string thirdParameterName, string thirdParameterValue)
+		{
+			string result = string.Empty;
+			result = $"{methodName} begins at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue}, {secondParameterName}: {secondParameterValue}, and {thirdParameterName}: {thirdParameterValue}";
+
+			return result;
+		}
+
+		public static string GenerateMethodConclusionLog (string methodName)
+		{
+			string result = string.Empty;
+			result = $"{methodName} ends at {DateTime.UtcNow.AddHours (1)}";
+
+			return result;
+		}
+
+		public static string GenerateMethodConclusionLog (string methodName, string remark)
+		{
+			string result = string.Empty;
+			result = $"{methodName} ends at {DateTime.UtcNow.AddHours (1)} with remark: {remark}";
+
+			return result;
+		}
+
+		public static string GenerateMethodConclusionLog (string methodName, string firstParameterName, string firstParameterValue, string remark)
+		{
+			string result = string.Empty;
+			result = $"{methodName} ends at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue} with remark: {remark}";
+
+			return result;
+		}
+
+		public static string GenerateMethodConclusionLog (string methodName, string firstParameterName, string firstParameterValue, string secondParameterName, string secondParameterValue, string remark)
+		{
+			string result = string.Empty;
+			result = $"{methodName} ends at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue} and {secondParameterName}: {secondParameterValue} with remark: {remark}";
+
+			return result;
+		}
+
+		public static string GenerateMethodConclusionLog (string methodName, string firstParameterName, string firstParameterValue, string secondParameterName, string secondParameterValue, string thirdParameterName, string thirdParameterValue, string remark)
+		{
+			string result = string.Empty;
+			result = $"{methodName} ends at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue}, {secondParameterName}: {secondParameterValue}, and {thirdParameterName}: {thirdParameterValue} with remark: {remark}";
+
+			return result;
+		}
+
+		public static string GenerateMethodExceptionLog (string methodName, string message)
+		{
+			string result = string.Empty;
+			result = $"{methodName} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {message}";
+
+			return result;
+		}
+
+		public static string GenerateMethodExceptionLog (string methodName, string firstParameterName, string firstParameterValue, string message)
+		{
+			string result = string.Empty;
+			result = $"{methodName} exception occurred at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue} with message: {message}";
+
+			return result;
+		}
+
+		public static string GenerateMethodExceptionLog (string methodName, string firstParameterName, string firstParameterValue, string secondParameterName, string secondParameterValue, string message)
+		{
+			string result = string.Empty;
+			result = $"{methodName} exception occurred at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue} and {secondParameterName}: {secondParameterValue} with message: {message}";
+
+			return result;
+		}
+
+		public static string GenerateMethodExceptionLog (string methodName, string firstParameterName, string firstParameterValue, string secondParameterName, string secondParameterValue, string thirdParameterName, string thirdParameterValue, string message)
+		{
+			string result = string.Empty;
+			result = $"{methodName} exception occurred at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue}, {secondParameterName}: {secondParameterValue}, and {thirdParameterName}: {thirdParameterValue} with message: {message}";
+
+			return result;
 		}
 	}
 }

@@ -1,6 +1,6 @@
-﻿using Application.Model;
-using Application.Model.EmailLogs.Command;
-using Application.Model.EmailLogs.Queries;
+﻿using Application.Models;
+using Application.Models.EmailLogs.Command;
+using Application.Models.EmailLogs.Response;
 
 namespace Application.Interface.Infrastructure
 {

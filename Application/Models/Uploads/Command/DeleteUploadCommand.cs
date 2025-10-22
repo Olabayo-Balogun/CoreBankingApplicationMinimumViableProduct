@@ -1,4 +1,4 @@
-﻿namespace Application.Model.Uploads.Command
+﻿namespace Application.Models.Uploads.Command
 {
 	public class DeleteUploadCommand
 	{

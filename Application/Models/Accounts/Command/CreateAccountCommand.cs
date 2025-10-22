@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-using Application.Model;
 using Application.Models.Accounts.Response;
 
 using MediatR;

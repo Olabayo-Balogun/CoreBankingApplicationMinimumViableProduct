@@ -2,13 +2,12 @@
 
 using Application.Interface.Infrastructure;
 using Application.Interface.Persistence;
-using Application.Model;
-using Application.Model.AuditLogs.Command;
-using Application.Model.EmailRequests.Command;
-using Application.Model.EmailRequests.Queries;
-using Application.Model.EmailTemplates.Queries;
 using Application.Models;
+using Application.Models.AuditLogs.Command;
 using Application.Models.AuditLogs.Response;
+using Application.Models.EmailRequests.Command;
+using Application.Models.EmailRequests.Response;
+using Application.Models.EmailTemplates.Response;
 using Application.Models.Users.Command;
 
 using AutoMapper;

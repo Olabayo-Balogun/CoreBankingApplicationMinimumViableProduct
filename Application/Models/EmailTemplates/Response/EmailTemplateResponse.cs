@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Model.EmailTemplates.Queries
+namespace Application.Models.EmailTemplates.Response
 {
 	public class EmailTemplateResponse
 	{

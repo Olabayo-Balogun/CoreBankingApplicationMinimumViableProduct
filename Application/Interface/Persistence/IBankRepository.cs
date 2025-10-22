@@ -1,5 +1,5 @@
-﻿using Application.Model;
-using Application.Model.Banks.Command;
+﻿using Application.Models;
+using Application.Models.Banks.Command;
 using Application.Models.Banks.Response;
 
 using Domain.DTO;

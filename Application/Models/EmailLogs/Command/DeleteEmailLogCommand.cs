@@ -1,4 +1,4 @@
-﻿namespace Application.Model.EmailLogs.Command
+﻿namespace Application.Models.EmailLogs.Command
 {
 	public class DeleteEmailLogCommand
 	{

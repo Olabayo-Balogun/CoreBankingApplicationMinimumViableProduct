@@ -1,11 +1,8 @@
-﻿using Application.Model;
-using Application.Model.PaymentIntegration.Command;
+﻿using Application.Models;
+using Application.Models.PaymentIntegration.Paystack.Command;
+using Application.Models.PaymentIntegration.Paystack.Response;
 
-using ThirdPartyIntegrations.Models.PaymentIntegration.Paystack.Response;
-using ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegration.Request;
-using ThirdPartyIntegrations.Models.ViewModels.APIViewModels.PaymentIntegration.Response;
-
-namespace ThirdPartyIntegrations.Interface
+namespace Application.Interface.Infrastructure
 {
 	public interface IPaymentIntegrationService
 	{

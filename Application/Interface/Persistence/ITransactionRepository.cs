@@ -1,4 +1,4 @@
-﻿using Application.Model;
+﻿using Application.Models;
 using Application.Models.Transactions.Command;
 using Application.Models.Transactions.Response;
 

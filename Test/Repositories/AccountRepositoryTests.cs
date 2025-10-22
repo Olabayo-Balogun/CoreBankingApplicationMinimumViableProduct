@@ -1,9 +1,8 @@
 ﻿using Application.Interface.Persistence;
-using Application.Model;
-using Application.Model.AuditLogs.Command;
 using Application.Models;
 using Application.Models.Accounts.Command;
 using Application.Models.Accounts.Response;
+using Application.Models.AuditLogs.Command;
 using Application.Models.AuditLogs.Response;
 
 using AutoMapper;

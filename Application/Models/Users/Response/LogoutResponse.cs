@@ -1,4 +1,4 @@
-﻿namespace Application.Model.Users.Response
+﻿namespace Application.Models.Users.Response
 {
 	public class LogoutResponse
 	{

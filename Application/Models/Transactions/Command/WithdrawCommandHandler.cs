@@ -1,5 +1,4 @@
 ﻿using Application.Interface.Persistence;
-using Application.Model;
 using Application.Models.Accounts.Response;
 using Application.Models.Transactions.Response;
 using Application.Models.Users.Response;

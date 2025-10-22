@@ -1,6 +1,6 @@
-﻿using Application.Model;
-using Application.Model.Uploads.Command;
-using Application.Model.Uploads.Queries;
+﻿using Application.Models;
+using Application.Models.Uploads.Command;
+using Application.Models.Uploads.Response;
 
 using Domain.DTO;
 

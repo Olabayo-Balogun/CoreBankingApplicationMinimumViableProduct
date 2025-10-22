@@ -33,8 +33,6 @@ using Serilog;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
 
-using ThirdPartyIntegrations;
-
 var builder = WebApplication.CreateBuilder (args);
 
 builder.Services.AddHangfire (configuration => configuration
@@ -74,7 +72,6 @@ builder.Host.UseSerilog (Log.Logger);
 // Add services to the container.
 builder.Services.AddApplicationServices ();
 builder.Services.AddInfrastructureServices ();
-builder.Services.AddThirdPartyIntegrationServices ();
 builder.Services.AddPersistenceServices (builder.Configuration);
 builder.Services.Configure<AppSettings> (builder.Configuration.GetSection ("AppSettings"));
 

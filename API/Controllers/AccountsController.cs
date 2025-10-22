@@ -1,6 +1,6 @@
 ﻿using API.Middleware;
 
-using Application.Model;
+using Application.Models;
 using Application.Models.Accounts.Command;
 using Application.Models.Accounts.Queries;
 using Application.Models.Accounts.Response;

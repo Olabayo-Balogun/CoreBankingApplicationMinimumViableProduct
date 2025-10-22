@@ -1,4 +1,4 @@
-﻿namespace Application.Model.AuditLogs.Command
+﻿namespace Application.Models.AuditLogs.Command
 {
 	public class CreateAuditLogCommand
 	{

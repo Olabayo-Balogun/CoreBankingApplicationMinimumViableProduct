@@ -1,6 +1,5 @@
 ﻿using Application.Interface.Persistence;
-using Application.Model;
-using Application.Model.Users.Response;
+using Application.Models.Users.Response;
 
 using MediatR;
 

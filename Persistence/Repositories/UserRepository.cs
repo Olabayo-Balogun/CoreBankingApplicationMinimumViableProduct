@@ -5,12 +5,10 @@ using System.Text;
 
 using Application.Interface.Infrastructure;
 using Application.Interface.Persistence;
-using Application.Model;
-using Application.Model.AuditLogs.Command;
-using Application.Model.EmailRequests.Command;
-using Application.Model.Users.Response;
 using Application.Models;
+using Application.Models.AuditLogs.Command;
 using Application.Models.AuditLogs.Response;
+using Application.Models.EmailRequests.Command;
 using Application.Models.Users.Command;
 using Application.Models.Users.Response;
 

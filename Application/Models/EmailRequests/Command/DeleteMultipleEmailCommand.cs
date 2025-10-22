@@ -1,4 +1,4 @@
-﻿namespace Application.Model.EmailRequests.Command
+﻿namespace Application.Models.EmailRequests.Command
 {
 	public class DeleteMultipleEmailCommand
 	{

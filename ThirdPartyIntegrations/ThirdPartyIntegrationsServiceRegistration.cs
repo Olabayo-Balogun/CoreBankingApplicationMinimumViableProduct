@@ -1,6 +1,4 @@
-﻿using Application.Interface.Infrastructure;
-
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 using ThirdPartyIntegrations.Interface;
 using ThirdPartyIntegrations.Services;

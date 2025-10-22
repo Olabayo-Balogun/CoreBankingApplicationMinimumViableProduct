@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Application.Model.Uploads.Command
+namespace Application.Models.Uploads.Command
 {
 	public class CreateMultipleUploadsCommand
 	{

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-using Application.Model;
 using Application.Models.Transactions.Response;
 
 using MediatR;

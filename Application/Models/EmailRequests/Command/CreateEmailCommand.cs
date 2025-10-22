@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Model.EmailRequests.Command
+namespace Application.Models.EmailRequests.Command
 {
 	public class CreateEmailCommand
 	{

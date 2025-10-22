@@ -1,12 +1,12 @@
 ﻿using Application.Interface.Persistence;
-using Application.Model;
-using Application.Model.AuditLogs.Command;
-using Application.Model.Uploads.Queries;
+using Application.Models;
 using Application.Models.Accounts.Response;
+using Application.Models.AuditLogs.Command;
 using Application.Models.AuditLogs.Response;
 using Application.Models.Banks.Response;
 using Application.Models.Branches.Response;
 using Application.Models.Transactions.Response;
+using Application.Models.Uploads.Response;
 using Application.Models.Users.Response;
 
 using AutoMapper;
