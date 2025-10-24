@@ -398,7 +398,6 @@ namespace Persistence.Repositories
                         default:
                             break;
                     }
-
                 }
 
                 var auditLogResponse = RequestResponse<AuditLogsQueryResponse>.SearchSuccessful (result, count, "Audit logs");

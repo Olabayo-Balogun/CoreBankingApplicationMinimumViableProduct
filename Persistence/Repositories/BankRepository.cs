@@ -1,14 +1,23 @@
 ﻿using Application.Interface.Persistence;
 using Application.Models;
+using Application.Models.Accounts.Response;
 using Application.Models.AuditLogs.Command;
 using Application.Models.AuditLogs.Response;
 using Application.Models.Banks.Command;
 using Application.Models.Banks.Response;
+using Application.Utility;
 
 using AutoMapper;
+using AutoMapper.Internal;
+
+using Azure.Core;
+
+using CloudinaryDotNet;
 
 using Domain.DTO;
 using Domain.Entities;
+
+using MediatR;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -35,12 +44,15 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"CreateBank begins at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {bank.CreatedBy}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (CreateBankAsync), nameof (bank.Name), bank.Name, nameof (bank.CreatedBy), bank.CreatedBy);
+				_logger.LogInformation (openingLog);
 
 				if (bank == null)
 				{
 					var badRequest = RequestResponse<BankResponse>.NullPayload (null);
-					_logger.LogInformation ($"CreateBank ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+					
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateBankAsync), badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -50,7 +62,9 @@ namespace Persistence.Repositories
 				if (bankCheck > 0)
 				{
 					var badRequest = RequestResponse<BankResponse>.AlreadyExists (null, bankCheck, "Bank");
-					_logger.LogInformation ($"CreateBank ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by UserPublicId: {bank.CreatedBy}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateBankAsync), nameof (bank.Name), bank.Name, nameof (bank.CreatedBy), bank.CreatedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 					return badRequest;
 				}
 
@@ -69,13 +83,15 @@ namespace Persistence.Repositories
 				var response = _mapper.Map<BankResponse> (payload);
 				var result = RequestResponse<BankResponse>.Created (response, 1, "Bank");
 
-				_logger.LogInformation ($"CreateBank ends at {DateTime.UtcNow.AddHours (1)} with remark: {result.Remark} by UserPublicId: {bank.CreatedBy}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CreateBankAsync), nameof (bank.Name), bank.Name, nameof (bank.CreatedBy), bank.CreatedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"CreateBank by UserPublicId: {bank.CreatedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateBankAsync), nameof (bank.Name), bank.Name, nameof (bank.CreatedBy), bank.CreatedBy, ex.Message);
+				_logger.LogError (errorLog);
+				return RequestResponse<BankResponse>.Error (null);
 			}
 		}
 
@@ -83,15 +99,16 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"DeleteBank begins at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.DeletedBy} for Bank with ID: {request.Id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (DeleteBankAsync), nameof (request.Id), request.Id.ToString(), nameof (request.DeletedBy), request.DeletedBy);
+				_logger.LogInformation (openingLog);
 
 				var bankCheck = await _context.Banks.Where (x => x.Id == request.Id && x.IsDeleted == false).FirstOrDefaultAsync (request.CancellationToken);
 				if (bankCheck == null)
 				{
 					var badRequest = RequestResponse<BankResponse>.NotFound (null, "Bank");
 
-					_logger.LogInformation ($"DeleteBank ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.DeletedBy} with remark: {badRequest.Remark}");
-
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteBankAsync), nameof (request.Id), request.Id.ToString (), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 					return badRequest;
 				}
 
@@ -109,8 +126,8 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<BankResponse>.AuditLogFailed (null);
 
-					_logger.LogInformation ($"DeleteBank ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.DeletedBy} with remark: {badRequest.Remark}");
-
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteBankAsync), nameof (request.Id), request.Id.ToString (), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 					return badRequest;
 				}
 
@@ -123,14 +140,16 @@ namespace Persistence.Repositories
 
 				var result = RequestResponse<BankResponse>.Deleted (null, 1, "Bank");
 
-				_logger.LogInformation ($"DeleteBank ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.DeletedBy} with remark: {result.Remark}");
-
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (DeleteBankAsync), nameof (request.Id), request.Id.ToString (), nameof (request.DeletedBy), request.DeletedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"DeleteBank by UserPublicId: {request.DeletedBy} for Bank with ID: {request.Id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (DeleteBankAsync), nameof (request.Id), request.Id.ToString (), nameof (request.DeletedBy), request.DeletedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<BankResponse>.Error (null);
 			}
 		}
 
@@ -138,7 +157,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetBankByPublicId begins at {DateTime.UtcNow.AddHours (1)} for bank with publicId: {id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBankByPublicIdAsync), nameof (id), id.ToString ());
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Banks
 					.AsNoTracking ()
@@ -150,19 +170,23 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<BankResponse>.NotFound (null, "Bank");
 
-					_logger.LogInformation ($"GetBankByPublicId ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for id: {id}");
-
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBankByPublicIdAsync), nameof (id), id.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
 					return badRequest;
 				}
 
 				var response = RequestResponse<BankResponse>.SearchSuccessful (result, 1, "Bank");
-				_logger.LogInformation ($"GetBankByPublicId ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for id: {id}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetBankByPublicIdAsync), nameof (id), id.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetBankByPublicId for bank with publicId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBankByPublicIdAsync), nameof (id), id.ToString (), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<BankResponse>.Error (null);
 			}
 		}
 
@@ -170,7 +194,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetBankByUserId begins at {DateTime.UtcNow.AddHours (1)} for bank with userPublicId: {id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBanksByUserIdAsync), nameof (id), id.ToString ());
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Banks
 					.AsNoTracking ()
@@ -183,10 +208,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<BankResponse>>.NotFound (null, "Bank");
-					_logger.LogInformation ($"GetBankByUserId ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {result.Count}");
+					var badRequest = RequestResponse<List<BankResponse>>.NotFound (null, "Bank");
 
-					return badResponse;
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBanksByUserIdAsync), nameof (id), id.ToString (), nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Banks
@@ -196,14 +223,17 @@ namespace Persistence.Repositories
 
 				var response = RequestResponse<List<BankResponse>>.SearchSuccessful (result, count, "Banks");
 
-				_logger.LogInformation ($"GetBankByUserId ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetBanksByUserIdAsync), nameof (id), id.ToString (), nameof (response.TotalCount), result.Count.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetBankByUserId for bank with userPublicId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBanksByUserIdAsync), nameof (id), id.ToString (), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<BankResponse>>.Error (null);
 			}
 		}
 
@@ -211,20 +241,26 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetBankCount begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBankCountAsync));
+				_logger.LogInformation (openingLog);
+
 				long count = await _context.Banks
 					.AsNoTracking ()
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<BankResponse>.CountSuccessful (null, count, "Bank");
-				_logger.LogInformation ($"GetBankCount ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBankCountAsync), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetBankCount exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBankCountAsync), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<BankResponse>.Error (null);
 			}
 		}
 
@@ -232,21 +268,27 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetBankCountByUserId for userPublicId: {id} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBankCountByUserIdAsync), nameof (id), id.ToString ());
+				_logger.LogInformation (openingLog);
+
 				long count = await _context.Banks
 					.AsNoTracking ()
 					.Where (x => x.CreatedBy == id)
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<BankResponse>.CountSuccessful (null, count, "Bank");
-				_logger.LogInformation ($"GetBankCountByUserId for userPublicId: {id} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBankCountByUserIdAsync), nameof (id), id.ToString (), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetBankCountByUserId for userPublicId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBankCountByUserIdAsync), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<BankResponse>.Error (null);
 			}
 		}
 
@@ -254,12 +296,15 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"UpdateBank begins at {DateTime.UtcNow.AddHours (1)} for bank with publicId: {bank.Id} by UserPublicId: {bank.LastModifiedBy}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (UpdateBankAsync), nameof (bank.Name), bank.Name, nameof (bank.LastModifiedBy), bank.LastModifiedBy);
+				_logger.LogInformation (openingLog);
 
 				if (bank == null)
 				{
 					var badRequest = RequestResponse<BankResponse>.NullPayload (null);
-					_logger.LogInformation ($"UpdateBank ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateBankAsync), badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -271,7 +316,9 @@ namespace Persistence.Repositories
 				if (updateBankRequest == null)
 				{
 					var badRequest = RequestResponse<BankResponse>.NotFound (null, "Bank");
-					_logger.LogInformation ($"UpdateBank ends at {DateTime.UtcNow.AddHours (1)}  with remark: {badRequest.Remark} by UserPublicId: {bank.LastModifiedBy} for bank with Id: {bank.Id}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateBankAsync), nameof (bank.Name), bank.Name, nameof (bank.LastModifiedBy), bank.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 					return badRequest;
 				}
 
@@ -288,7 +335,9 @@ namespace Persistence.Repositories
 				if (createAuditLog.IsSuccessful == false)
 				{
 					var badRequest = RequestResponse<BankResponse>.AuditLogFailed (null);
-					_logger.LogInformation ($"UpdateBank ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by UserPublicId: {bank.LastModifiedBy} for bank with Id: {bank.Id}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateBankAsync), nameof (bank.Name), bank.Name, nameof (bank.LastModifiedBy), bank.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 					return badRequest;
 				}
 
@@ -303,14 +352,17 @@ namespace Persistence.Repositories
 
 				var result = _mapper.Map<BankResponse> (updateBankRequest);
 				var response = RequestResponse<BankResponse>.Updated (result, 1, "Bank");
-				_logger.LogInformation ($"UpdateBank at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} by UserPublicId: {bank.LastModifiedBy} for bank with Id: {bank.Id}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (UpdateBankAsync), nameof (bank.Name), bank.Name, nameof (bank.LastModifiedBy), bank.LastModifiedBy, response.Remark);
+				_logger.LogInformation (conclusionLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"UpdateBank for bank with publicId: {bank.Id} error occurred at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {bank.LastModifiedBy} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (UpdateBankAsync), nameof (bank.Name), bank.Name, nameof (bank.LastModifiedBy), bank.LastModifiedBy, ex.Message);
+				_logger.LogError (errorLog);
+				return RequestResponse<BankResponse>.Error (null);
 			}
 		}
 	}
