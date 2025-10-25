@@ -151,6 +151,8 @@ namespace Persistence.Repositories
 
 						string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateMultipleAuditLogAsync), nameof (request.Name), request.Name, nameof (request.CreatedBy), request.CreatedBy, badRequest.Remark);
 						_logger.LogInformation (closingLog);
+
+                        return badRequest;
                     }
 
                     var payload = new AuditLog

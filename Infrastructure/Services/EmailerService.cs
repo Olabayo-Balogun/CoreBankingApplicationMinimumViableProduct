@@ -44,7 +44,7 @@ namespace Infrastructure.Services
 							var isRecipientValidEmail = Utility.IsValidEmail (email.ToRecipient);
 							if (isRecipientValidEmail == false)
 							{
-								deleteEmailLogRequestViewModel.UserId = "SYSTEM";
+								deleteEmailLogRequestViewModel.DeletedBy = "SYSTEM";
 								deleteEmailLogRequestViewModel.CancellationToken = cancellationToken;
 								deleteEmailLogRequestViewModel.Id = email.Id;
 
@@ -57,7 +57,7 @@ namespace Infrastructure.Services
 
 								if (isValidCcEmail == false)
 								{
-									deleteEmailLogRequestViewModel.UserId = "SYSTEM";
+									deleteEmailLogRequestViewModel.DeletedBy = "SYSTEM";
 									deleteEmailLogRequestViewModel.CancellationToken = cancellationToken;
 									deleteEmailLogRequestViewModel.Id = email.Id;
 
@@ -71,7 +71,7 @@ namespace Infrastructure.Services
 
 								if (isValidBccEmail == false)
 								{
-									deleteEmailLogRequestViewModel.UserId = "SYSTEM";
+									deleteEmailLogRequestViewModel.DeletedBy = "SYSTEM";
 									deleteEmailLogRequestViewModel.CancellationToken = cancellationToken;
 									deleteEmailLogRequestViewModel.Id = email.Id;
 

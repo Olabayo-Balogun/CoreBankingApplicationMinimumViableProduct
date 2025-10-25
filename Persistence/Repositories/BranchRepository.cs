@@ -131,7 +131,6 @@ namespace Persistence.Repositories
 				branchCheck.DeletedBy = request.DeletedBy;
 				branchCheck.DateDeleted = DateTime.UtcNow.AddHours (1);
 
-				_context.Branches.Update (branchCheck);
 				await _context.SaveChangesAsync ();
 
 				var result = RequestResponse<BranchResponse>.Deleted (null, 1, "Branch");
@@ -411,7 +410,6 @@ namespace Persistence.Repositories
 				updateBranchRequest.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 				updateBranchRequest.LastModifiedBy = branch.LastModifiedBy;
 
-				_context.Branches.Update (updateBranchRequest);
 				await _context.SaveChangesAsync (branch.CancellationToken);
 
 				var result = _mapper.Map<BranchResponse> (updateBranchRequest);
