@@ -2,10 +2,13 @@
 using Application.Models;
 using Application.Models.AuditLogs.Command;
 using Application.Models.AuditLogs.Response;
+using Application.Models.Banks.Response;
 using Application.Models.Branches.Command;
 using Application.Models.Branches.Response;
+using Application.Utility;
 
 using AutoMapper;
+using AutoMapper.Internal;
 
 using Domain.DTO;
 using Domain.Entities;
@@ -35,12 +38,15 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"CreateBranch begins at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {branch.CreatedBy}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (CreateBranchAsync), nameof (branch.Name), branch.Name, nameof (branch.CreatedBy), branch.CreatedBy);
+				_logger.LogInformation (openingLog);
 
 				if (branch == null)
 				{
 					var badRequest = RequestResponse<BranchResponse>.NullPayload (null);
-					_logger.LogInformation ($"CreateBranch ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateBranchAsync), badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -50,7 +56,9 @@ namespace Persistence.Repositories
 				if (branchCheck > 0)
 				{
 					var badRequest = RequestResponse<BranchResponse>.AlreadyExists (null, branchCheck, "Branch");
-					_logger.LogInformation ($"CreateBranch ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by UserPublicId: {branch.CreatedBy}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateBranchAsync), nameof (branch.Name), branch.Name, nameof (branch.CreatedBy), branch.CreatedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 					return badRequest;
 				}
 
@@ -69,13 +77,15 @@ namespace Persistence.Repositories
 				var response = _mapper.Map<BranchResponse> (payload);
 				var result = RequestResponse<BranchResponse>.Created (response, 1, "Branch");
 
-				_logger.LogInformation ($"CreateBranch ends at {DateTime.UtcNow.AddHours (1)} with remark: {result.Remark} by UserPublicId: {branch.CreatedBy}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CreateBranchAsync), nameof (branch.Name), branch.Name, nameof (branch.CreatedBy), branch.CreatedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"CreateBranch by UserPublicId: {branch.CreatedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateBranchAsync), nameof (branch.Name), branch.Name, nameof (branch.CreatedBy), branch.CreatedBy, ex.Message);
+				_logger.LogError (errorLog);
+				return RequestResponse<BranchResponse>.Error (null);
 			}
 		}
 
@@ -83,14 +93,16 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"DeleteBranch begins at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.DeletedBy} for Branch with ID: {request.Id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId.ToString (), nameof (request.DeletedBy), request.DeletedBy);
+				_logger.LogInformation (openingLog);
 
-				var branchCheck = await _context.Branches.Where (x => x.PublicId == request.Id && x.IsDeleted == false).FirstOrDefaultAsync (request.CancellationToken);
+				var branchCheck = await _context.Branches.Where (x => x.PublicId == request.PublicId && x.IsDeleted == false).FirstOrDefaultAsync (request.CancellationToken);
 				if (branchCheck == null)
 				{
 					var badRequest = RequestResponse<BranchResponse>.NotFound (null, "Branch");
 
-					_logger.LogInformation ($"DeleteBranch ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.DeletedBy} with remark: {badRequest.Remark}");
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId.ToString (), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -109,7 +121,8 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<BranchResponse>.AuditLogFailed (null);
 
-					_logger.LogInformation ($"DeleteBranch ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.DeletedBy} with remark: {badRequest.Remark}");
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId.ToString (), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -123,14 +136,17 @@ namespace Persistence.Repositories
 
 				var result = RequestResponse<BranchResponse>.Deleted (null, 1, "Branch");
 
-				_logger.LogInformation ($"DeleteBranch ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.DeletedBy} with remark: {result.Remark}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId.ToString (), nameof (request.DeletedBy), request.DeletedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
 
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"DeleteBranch by UserPublicId: {request.DeletedBy} for Branch with ID: {request.Id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId.ToString (), nameof (request.DeletedBy), request.DeletedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<BranchResponse>.Error (null);
 			}
 		}
 
@@ -138,14 +154,16 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"CloseBranch begins at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.LastModifiedBy} for Branch with ID: {request.Id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id.ToString (), nameof (request.LastModifiedBy), request.LastModifiedBy);
+				_logger.LogInformation (openingLog);
 
 				var branchCheck = await _context.Branches.Where (x => x.PublicId == request.Id && x.IsDeleted == false).FirstOrDefaultAsync (request.CancellationToken);
 				if (branchCheck == null)
 				{
 					var badRequest = RequestResponse<BranchResponse>.NotFound (null, "Branch");
 
-					_logger.LogInformation ($"CloseBranch ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.LastModifiedBy} with remark: {badRequest.Remark}");
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id.ToString (), nameof (request.LastModifiedBy), request.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -164,7 +182,8 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<BranchResponse>.AuditLogFailed (null);
 
-					_logger.LogInformation ($"CloseBranch ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.LastModifiedBy} with remark: {badRequest.Remark}");
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id.ToString (), nameof (request.LastModifiedBy), request.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -178,14 +197,17 @@ namespace Persistence.Repositories
 
 				var result = RequestResponse<BranchResponse>.Deleted (null, 1, "Branch");
 
-				_logger.LogInformation ($"CloseBranch ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.LastModifiedBy} with remark: {result.Remark}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id.ToString (), nameof (request.LastModifiedBy), request.LastModifiedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
 
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"CloseBranch by UserPublicId: {request.LastModifiedBy} for Branch with ID: {request.Id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id.ToString (), nameof (request.LastModifiedBy), request.LastModifiedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<BranchResponse>.Error (null);
 			}
 		}
 
@@ -193,7 +215,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetBranchByPublicId begins at {DateTime.UtcNow.AddHours (1)} for branch with publicId: {id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBranchByPublicIdAsync), nameof (id), id.ToString ());
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Branches
 					.AsNoTracking ()
@@ -205,19 +228,24 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<BranchResponse>.NotFound (null, "Branch");
 
-					_logger.LogInformation ($"GetBranchByPublicId ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for id: {id}");
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchByPublicIdAsync), nameof (id), id.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
 
 				var response = RequestResponse<BranchResponse>.SearchSuccessful (result, 1, "Branch");
-				_logger.LogInformation ($"GetBranchByPublicId ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for id: {id}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchByPublicIdAsync), nameof (id), id.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetBranchByPublicId for branch with publicId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBranchByPublicIdAsync), nameof (id), id.ToString (), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<BranchResponse>.Error (null);
 			}
 		}
 
@@ -225,7 +253,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetBranchByUserId begins at {DateTime.UtcNow.AddHours (1)} for branch with userPublicId: {id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBranchesByUserIdAsync), nameof (id), id.ToString ());
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Branches
 					.AsNoTracking ()
@@ -238,10 +267,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<BranchResponse>>.NotFound (null, "Branch");
-					_logger.LogInformation ($"GetBranchByUserId ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {result.Count}");
+					var badRequest = RequestResponse<List<BranchResponse>>.NotFound (null, "Branch");
 
-					return badResponse;
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchesByUserIdAsync), nameof (id), id.ToString (), nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Branches
@@ -251,14 +282,17 @@ namespace Persistence.Repositories
 
 				var response = RequestResponse<List<BranchResponse>>.SearchSuccessful (result, count, "Branches");
 
-				_logger.LogInformation ($"GetBranchByUserId ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchesByUserIdAsync), nameof (id), id.ToString (), nameof (response.TotalCount), result.Count.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetBranchByUserId for branch with userPublicId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBranchesByUserIdAsync), nameof (id), id.ToString (), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<BranchResponse>>.Error (null);
 			}
 		}
 
@@ -266,20 +300,26 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetBranchCount begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBranchCountAsync));
+				_logger.LogInformation (openingLog);
+
 				long count = await _context.Branches
 					.AsNoTracking ()
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<BranchResponse>.CountSuccessful (null, count, "Branch");
-				_logger.LogInformation ($"GetBranchCount ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchCountAsync), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetBranchCount exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBranchCountAsync), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<BranchResponse>.Error (null);
 			}
 		}
 
@@ -287,21 +327,27 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetBranchCountByUserId for userPublicId: {id} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBranchCountByUserIdAsync), nameof (id), id.ToString ());
+				_logger.LogInformation (openingLog);
+
 				long count = await _context.Branches
 					.AsNoTracking ()
 					.Where (x => x.CreatedBy == id)
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<BranchResponse>.CountSuccessful (null, count, "Branch");
-				_logger.LogInformation ($"GetBranchCountByUserId for userPublicId: {id} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchCountByUserIdAsync), nameof (id), id.ToString (), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetBranchCountByUserId for userPublicId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBranchCountByUserIdAsync), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<BranchResponse>.Error (null);
 			}
 		}
 
@@ -309,12 +355,15 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"UpdateBranch begins at {DateTime.UtcNow.AddHours (1)} for branch with publicId: {branch.PublicId} by UserPublicId: {branch.LastModifiedBy}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (UpdateBranchAsync), nameof (branch.PublicId), branch.PublicId, nameof (branch.LastModifiedBy), branch.LastModifiedBy);
+				_logger.LogInformation (openingLog);
 
 				if (branch == null)
 				{
 					var badRequest = RequestResponse<BranchResponse>.NullPayload (null);
-					_logger.LogInformation ($"UpdateBranch ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateBranchAsync), badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -326,7 +375,10 @@ namespace Persistence.Repositories
 				if (updateBranchRequest == null)
 				{
 					var badRequest = RequestResponse<BranchResponse>.NotFound (null, "Branch");
-					_logger.LogInformation ($"UpdateBranch ends at {DateTime.UtcNow.AddHours (1)}  with remark: {badRequest.Remark} by UserPublicId: {branch.LastModifiedBy} for branch with Id: {branch.Id}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateBranchAsync), nameof (branch.PublicId), branch.PublicId, nameof (branch.LastModifiedBy), branch.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -343,7 +395,10 @@ namespace Persistence.Repositories
 				if (createAuditLog.IsSuccessful == false)
 				{
 					var badRequest = RequestResponse<BranchResponse>.AuditLogFailed (null);
-					_logger.LogInformation ($"UpdateBranch ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by UserPublicId: {branch.LastModifiedBy} for branch with Id: {branch.Id}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateBranchAsync), nameof (branch.PublicId), branch.PublicId, nameof (branch.LastModifiedBy), branch.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -361,14 +416,17 @@ namespace Persistence.Repositories
 
 				var result = _mapper.Map<BranchResponse> (updateBranchRequest);
 				var response = RequestResponse<BranchResponse>.Updated (result, 1, "Branch");
-				_logger.LogInformation ($"UpdateBranch at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} by UserPublicId: {branch.LastModifiedBy} for branch with Id: {branch.Id}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (UpdateBranchAsync), nameof (branch.PublicId), branch.PublicId, nameof (branch.LastModifiedBy), branch.LastModifiedBy, response.Remark);
+				_logger.LogInformation (conclusionLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"UpdateBranch for branch with publicId: {branch.Id} error occurred at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {branch.LastModifiedBy} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (UpdateBranchAsync), nameof (branch.PublicId), branch.PublicId, nameof (branch.LastModifiedBy), branch.LastModifiedBy, ex.Message);
+				_logger.LogError (errorLog);
+				return RequestResponse<BranchResponse>.Error (null);
 			}
 		}
 	}

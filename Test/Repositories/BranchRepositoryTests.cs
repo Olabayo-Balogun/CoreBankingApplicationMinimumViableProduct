@@ -127,7 +127,7 @@ namespace Test.Repositories
 
 			var request = new DeleteBranchCommand
 			{
-				Id = "nonexistent",
+				PublicId = "nonexistent",
 				DeletedBy = "user1",
 				CancellationToken = CancellationToken.None
 			};
@@ -164,7 +164,7 @@ namespace Test.Repositories
 
 			var request = new DeleteBranchCommand
 			{
-				Id = "branch1",
+				PublicId = "branch1",
 				DeletedBy = "user1",
 				CancellationToken = CancellationToken.None
 			};
@@ -201,7 +201,7 @@ namespace Test.Repositories
 
 			var request = new DeleteBranchCommand
 			{
-				Id = "branch1",
+				PublicId = "branch1",
 				DeletedBy = "user1",
 				CancellationToken = CancellationToken.None
 			};
@@ -422,7 +422,7 @@ namespace Test.Repositories
 
 			var request = new DeleteBranchCommand
 			{
-				Id = "nonexistent",
+				PublicId = "nonexistent",
 				DeletedBy = "user1",
 				CancellationToken = CancellationToken.None
 			};
@@ -459,7 +459,7 @@ namespace Test.Repositories
 
 			var request = new DeleteBranchCommand
 			{
-				Id = "branch1",
+				PublicId = "branch1",
 				DeletedBy = "user1",
 				CancellationToken = CancellationToken.None
 			};
@@ -496,7 +496,7 @@ namespace Test.Repositories
 
 			var request = new DeleteBranchCommand
 			{
-				Id = "branch1",
+				PublicId = "branch1",
 				DeletedBy = "user1",
 				CancellationToken = CancellationToken.None
 			};

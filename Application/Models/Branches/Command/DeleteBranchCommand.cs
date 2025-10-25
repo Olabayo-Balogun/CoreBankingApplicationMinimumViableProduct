@@ -8,7 +8,7 @@ namespace Application.Models.Branches.Command
 		/// Id of the branch
 		/// </summary>
 		[Required (ErrorMessage = "Id is required")]
-		public string Id { get; set; }
+		public string PublicId { get; set; }
 		/// <summary>
 		/// Id of the user who is deleting the branch
 		/// </summary>
