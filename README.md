@@ -11,8 +11,7 @@ A robust backend system built with .NET 8 to manage banking operations including
 - 📄 Monthly transaction statements  
 - 🔐 Role-based access control (RBAC)  
 - 🔄 CQRS pattern for command/query separation  
-- 🔗 External payment integration (Paystack)  
-- 🧠 Caching with Redis  
+- 🔗 External payment integration (Paystack) 
 - 📊 Structured logging and monitoring  
 - 🧪 Unit testing with xUnit  
 - 🔁 Idempotency support for critical operations  
