@@ -86,7 +86,7 @@ namespace Test.Repositories
 			var command = new DeleteEmailTemplateCommand
 			{
 				Id = 1,
-				UserId = "admin",
+				DeletedBy = "admin",
 				CancellationToken = CancellationToken.None
 			};
 
@@ -127,7 +127,7 @@ namespace Test.Repositories
 			var command = new DeleteMultipleEmailTemplatesCommand
 			{
 				Ids = [1, 2],
-				UserId = "admin",
+				DeletedBy = "admin",
 				CancellationToken = CancellationToken.None
 			};
 

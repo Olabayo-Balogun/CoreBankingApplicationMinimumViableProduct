@@ -106,7 +106,7 @@ namespace Test.Repositories
 			var command = new DeleteEmailCommand
 			{
 				Id = 1,
-				UserId = "user123",
+				DeletedBy = "user123",
 				CancellationToken = CancellationToken.None
 			};
 
@@ -138,7 +138,7 @@ namespace Test.Repositories
 			var command = new DeleteMultipleEmailCommand
 			{
 				Ids = [1, 2],
-				UserId = "user123",
+				DeletedBy = "user123",
 				CancellationToken = CancellationToken.None
 			};
 

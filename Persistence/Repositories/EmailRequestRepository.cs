@@ -1,7 +1,9 @@
 ﻿using Application.Interface.Persistence;
 using Application.Models;
+using Application.Models.EmailLogs.Response;
 using Application.Models.EmailRequests.Command;
 using Application.Models.EmailRequests.Response;
+using Application.Utility;
 
 using AutoMapper;
 
@@ -10,6 +12,8 @@ using Domain.Entities;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
+using System.Net.NetworkInformation;
 
 namespace Persistence.Repositories
 {
@@ -28,7 +32,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"CreateEmailRequest begins at {DateTime.UtcNow.AddHours (1)} by userId: {emailRequest.CreatedBy}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (CreateEmailRequestAsync), nameof (emailRequest.CreatedBy), emailRequest.CreatedBy);
+				_logger.LogInformation (openingLog);
 
 				var payload = _mapper.Map<EmailRequest> (emailRequest);
 
@@ -47,13 +52,16 @@ namespace Persistence.Repositories
 
 				var response = _mapper.Map<EmailRequestResponse> (payload);
 				var result = RequestResponse<EmailRequestResponse>.Created (response, 1, "Email request");
-				_logger.LogInformation ($"CreateEmailRequest at {DateTime.UtcNow.AddHours (1)} by userId: {emailRequest.CreatedBy} with remark: {result.Remark}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CreateEmailRequestAsync), nameof (emailRequest.CreatedBy), emailRequest.CreatedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"CreateEmailRequest by UserPublicId: {emailRequest.CreatedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateEmailRequestAsync), nameof (emailRequest.CreatedBy), emailRequest.CreatedBy, ex.Message);
+				_logger.LogError (errorLog);
+				return RequestResponse<EmailRequestResponse>.Error (null);
 			}
 		}
 
@@ -61,7 +69,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"CreateMultipleEmailRequest begins at {DateTime.UtcNow.AddHours (1)} by userId: {emailRequests.First ().CreatedBy}");
+				string initiationLog = Utility.GenerateMethodInitiationLog (nameof (CreateMultipleEmailRequestAsync));
+				_logger.LogInformation (initiationLog);
+
 				emailRequests.ForEach (x => x.DateCreated = DateTime.UtcNow.AddHours (1));
 				var payload = _mapper.Map<List<EmailRequest>> (emailRequests);
 
@@ -70,13 +80,16 @@ namespace Persistence.Repositories
 
 				var response = _mapper.Map<List<EmailRequestResponse>> (payload);
 				var result = RequestResponse<List<EmailRequestResponse>>.Created (response, response.Count, "Email requests");
-				_logger.LogInformation ($"CreateMultipleEmailRequest at {DateTime.UtcNow.AddHours (1)} by userId: {emailRequests.First ().CreatedBy} with remark: {result.Remark}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CreateMultipleEmailRequestAsync), result.Remark);
+				_logger.LogInformation (conclusionLog);
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"CreateMultipleEmailRequest by userId: {emailRequests.First ().CreatedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateMultipleEmailRequestAsync), ex.Message);
+				_logger.LogError (errorLog);
+				return RequestResponse<List<EmailRequestResponse>>.Error (null);
 			}
 		}
 
@@ -84,7 +97,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"DeleteEmailRequest begins at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (DeleteEmailRequestAsync), nameof (request.Id), request.Id.ToString (), nameof (request.DeletedBy), request.DeletedBy);
+				_logger.LogInformation (openingLog);
+
 				var check = await _context.EmailRequests
 					.Where (x => x.Id == request.Id && x.IsDeleted == false)
 					.FirstOrDefaultAsync (request.CancellationToken);
@@ -92,25 +107,33 @@ namespace Persistence.Repositories
 				if (check == null)
 				{
 					var badRequest = RequestResponse<EmailRequestResponse>.NotFound (null, "Email request");
-					_logger.LogInformation ($"DeleteEmailRequest ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId} with remark: {badRequest.Remark}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteEmailRequestAsync), nameof (request.Id), request.Id.ToString (), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
 				check.IsDeleted = true;
-				check.DeletedBy = request.UserId;
+				check.DeletedBy = request.DeletedBy;
 				check.DateDeleted = DateTime.UtcNow.AddHours (1);
 
 				_context.EmailRequests.Update (check);
 				await _context.SaveChangesAsync (request.CancellationToken);
 
 				var result = RequestResponse<EmailRequestResponse>.Deleted (null, 1, "Email request");
-				_logger.LogInformation ($"DeleteEmailRequest ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId} with remark: {result.Remark}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (DeleteEmailRequestAsync), nameof (request.Id), request.Id.ToString (), nameof (request.DeletedBy), request.DeletedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"DeleteEmailRequest by UserPublicId: {request.UserId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (DeleteEmailRequestAsync), nameof (request.Id), request.Id.ToString (), nameof (request.DeletedBy), request.DeletedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<EmailRequestResponse>.Error (null);
 			}
 		}
 
@@ -118,7 +141,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"DeleteMultipleEmailRequests begins at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId}");
+				string initiationLog = Utility.GenerateMethodInitiationLog (nameof (DeleteMultipleEmailRequestsAsync), nameof (request.DeletedBy), request.DeletedBy);
+				_logger.LogInformation (initiationLog);
+
 				List<EmailRequest> emailRequests = [];
 				foreach (long id in request.Ids)
 				{
@@ -129,27 +154,45 @@ namespace Persistence.Repositories
 					if (check == null)
 					{
 						var badRequest = RequestResponse<EmailRequestResponse>.NotFound (null, "Email requests");
-						_logger.LogInformation ($"DeleteMultipleEmailRequests ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId} with remark: {badRequest.Remark}");
+
+						string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteMultipleEmailRequestsAsync), nameof (id), id.ToString (), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+						_logger.LogInformation (closingLog);
+
 						return badRequest;
 					}
 					check.IsDeleted = true;
-					check.DeletedBy = request.UserId;
+					check.DeletedBy = request.DeletedBy;
 					check.DateDeleted = DateTime.UtcNow.AddHours (1);
 
 					emailRequests.Add (check);
+				}
+
+				if (emailRequests.Count < 1)
+				{
+					var badRequest = RequestResponse<EmailRequestResponse>.NotFound (null, "Email logs");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteMultipleEmailRequestsAsync), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				_context.EmailRequests.UpdateRange (emailRequests);
 				await _context.SaveChangesAsync (request.CancellationToken);
 
 				var result = RequestResponse<EmailRequestResponse>.Deleted (null, emailRequests.Count, "Email requests");
-				_logger.LogInformation ($"DeleteMultipleEmailRequests ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId} with remark: {result.Remark}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (DeleteMultipleEmailRequestsAsync), nameof (request.DeletedBy), request.DeletedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"DeleteMultipleEmailRequests by UserPublicId: {request.UserId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (DeleteMultipleEmailRequestsAsync), nameof (request.DeletedBy), request.DeletedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<EmailRequestResponse>.Error (null);
 			}
 		}
 
@@ -157,20 +200,27 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetAllEmailRequestCount begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAllEmailRequestCountAsync));
+				_logger.LogInformation (openingLog);
+
 				long count = await _context.EmailRequests
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false)
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<EmailRequestResponse>.CountSuccessful (null, count, "Email requests");
-				_logger.LogInformation ($"GetAllEmailRequestCount ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAllEmailRequestCountAsync), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetAllEmailRequestCount exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAllEmailRequestCountAsync), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<EmailRequestResponse>.Error (null);
 			}
 		}
 
@@ -178,7 +228,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetEmailRequestByHtmlStatus begins at {DateTime.UtcNow.AddHours (1)} for status: {status}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetEmailRequestByHtmlStatusAsync), nameof (status), status.ToString ());
+				_logger.LogInformation (openingLog);
+
 				var result = await _context.EmailRequests
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && x.IsHtml == status)
@@ -191,7 +243,10 @@ namespace Persistence.Repositories
 				if (result.Count < 1)
 				{
 					var badRequest = RequestResponse<List<EmailRequestResponse>>.NotFound (null, "Email requests");
-					_logger.LogInformation ($"GetEmailRequestByHtmlStatus ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for status {status}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailRequestByHtmlStatusAsync), nameof (status), status.ToString (), nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -200,13 +255,18 @@ namespace Persistence.Repositories
 				.Where (x => x.IsDeleted == false && x.IsHtml == status).LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<EmailRequestResponse>>.SearchSuccessful (result, count, "Email requests");
-				_logger.LogInformation ($"GetEmailRequestByHtmlStatus ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for status: {status}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailRequestByHtmlStatusAsync), nameof (status), status.ToString (), nameof (response.TotalCount), result.Count.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetEmailRequestByHtmlStatus exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message} for status: {status}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetEmailRequestByHtmlStatusAsync), nameof (status), status.ToString (), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<EmailRequestResponse>>.Error (null);
 			}
 		}
 
@@ -214,7 +274,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetEmailRequestById begins at {DateTime.UtcNow.AddHours (1)} for Id: {id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetEmailRequestByIdAsync), nameof (id), id.ToString ());
+				_logger.LogInformation (openingLog);
+
 				var result = await _context.EmailRequests
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && x.Id == id)
@@ -225,18 +287,26 @@ namespace Persistence.Repositories
 				if (result == null)
 				{
 					var badRequest = RequestResponse<EmailRequestResponse>.NotFound (null, "Email request");
-					_logger.LogInformation ($"GetEmailRequestById ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for Id: {id}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailRequestByIdAsync), nameof (id), id.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
 				var response = RequestResponse<EmailRequestResponse>.SearchSuccessful (result, 1, "Email request");
-				_logger.LogInformation ($"GetEmailRequestById ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for Id: {id}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailRequestByIdAsync), nameof (id), id.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetEmailRequestById exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message} for Id: {id}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetEmailRequestByIdAsync), nameof (id), id.ToString (), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<EmailRequestResponse>.Error (null);
 			}
 
 		}
@@ -245,7 +315,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetEmailRequestByRecipient begins at {DateTime.UtcNow.AddHours (1)} for recipient with email: {recipientEmailAddress}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetEmailRequestByRecipientAsync), nameof (recipientEmailAddress), recipientEmailAddress);
+				_logger.LogInformation (openingLog);
+
 				var result = await _context.EmailRequests
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && (x.ToRecipient == recipientEmailAddress.ToLower ().Trim () || x.CcRecipient == recipientEmailAddress.ToLower ().Trim () || x.BccRecipient == recipientEmailAddress.ToLower ().Trim ()))
@@ -258,7 +330,10 @@ namespace Persistence.Repositories
 				if (result.Count < 1)
 				{
 					var badRequest = RequestResponse<List<EmailRequestResponse>>.NotFound (null, "Email requests");
-					_logger.LogInformation ($"GetEmailRequestByRecipient ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}  for recipient with email: {recipientEmailAddress}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailRequestByRecipientAsync), nameof (recipientEmailAddress), recipientEmailAddress, nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -267,13 +342,18 @@ namespace Persistence.Repositories
 				.Where (x => x.IsDeleted == false && (x.ToRecipient == recipientEmailAddress.ToLower ().Trim () || x.CcRecipient == recipientEmailAddress.ToLower ().Trim () || x.BccRecipient == recipientEmailAddress.ToLower ().Trim ())).LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<EmailRequestResponse>>.SearchSuccessful (result, count, "Email requests");
-				_logger.LogInformation ($"GetEmailRequestByRecipient ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark}  for recipient with email: {recipientEmailAddress}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailRequestByRecipientAsync), nameof (recipientEmailAddress), recipientEmailAddress, nameof (response.TotalCount), result.Count.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetEmailRequestByRecipient exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}  for recipient with email: {recipientEmailAddress}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetEmailRequestByRecipientAsync), nameof (recipientEmailAddress), recipientEmailAddress, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<EmailRequestResponse>>.Error (null);
 			}
 		}
 
@@ -281,7 +361,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetEmailRequestByUserId begins at {DateTime.UtcNow.AddHours (1)} for Id: {id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetEmailRequestByUserIdAsync), nameof (id), id);
+				_logger.LogInformation (openingLog);
+
 				var result = await _context.EmailRequests
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && x.CreatedBy == id)
@@ -294,7 +376,10 @@ namespace Persistence.Repositories
 				if (result.Count < 1)
 				{
 					var badRequest = RequestResponse<List<EmailRequestResponse>>.NotFound (null, "Email requests");
-					_logger.LogInformation ($"GetEmailRequestByUserId ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for Id: {id}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailRequestByUserIdAsync), nameof (id), id, nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -303,13 +388,18 @@ namespace Persistence.Repositories
 				.Where (x => x.IsDeleted == false && x.CreatedBy == id).LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<EmailRequestResponse>>.SearchSuccessful (result, count, "Email logs");
-				_logger.LogInformation ($"GetEmailRequestByUserId ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for Id: {id}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailRequestByUserIdAsync), nameof (id), id, nameof (response.TotalCount), result.Count.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetEmailRequestByUserId exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message} for Id: {id}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetEmailRequestByUserIdAsync), nameof (id), id, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<EmailRequestResponse>>.Error (null);
 			}
 		}
 
@@ -317,12 +407,16 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"UpdateEmailRequest begins at {DateTime.UtcNow.AddHours (1)} by userId: {emailRequest.LastModifiedBy} for email log with Id: {emailRequest.Id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (UpdateEmailRequestAsync), nameof (emailRequest.Id), emailRequest.Id.GetValueOrDefault ().ToString (), nameof (emailRequest.LastModifiedBy), emailRequest.LastModifiedBy);
+				_logger.LogInformation (openingLog);
 
 				if (emailRequest == null)
 				{
 					var badRequest = RequestResponse<EmailRequestResponse>.NullPayload (null);
-					_logger.LogInformation ($"UpdateEmailRequest ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateEmailRequestAsync), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -333,7 +427,10 @@ namespace Persistence.Repositories
 				if (updateRequest == null)
 				{
 					var badRequest = RequestResponse<EmailRequestResponse>.NotFound (null, "Email request");
-					_logger.LogInformation ($"UpdateEmailRequest ends at {DateTime.UtcNow.AddHours (1)} by userId: {emailRequest.LastModifiedBy} for email request with Id: {emailRequest.Id} with remark: {badRequest.Remark}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateEmailRequestAsync), nameof (emailRequest.Id), emailRequest.Id.GetValueOrDefault ().ToString (), nameof (emailRequest.LastModifiedBy), emailRequest.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -351,14 +448,19 @@ namespace Persistence.Repositories
 
 				var result = _mapper.Map<EmailRequestResponse> (updateRequest);
 				var response = RequestResponse<EmailRequestResponse>.Updated (result, 1, "Email request");
-				_logger.LogInformation ($"UpdateEmailRequest at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} by userId: {emailRequest.LastModifiedBy} for email request with Id: {emailRequest.Id}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (UpdateEmailRequestAsync), nameof (emailRequest.Id), emailRequest.Id.GetValueOrDefault ().ToString (), nameof (emailRequest.LastModifiedBy), emailRequest.LastModifiedBy, response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"UpdateEmailRequest exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (UpdateEmailRequestAsync), nameof (emailRequest.Id), emailRequest.Id.GetValueOrDefault ().ToString (), nameof (emailRequest.LastModifiedBy), emailRequest.LastModifiedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<EmailRequestResponse>.Error (null);
 			}
 		}
 	}

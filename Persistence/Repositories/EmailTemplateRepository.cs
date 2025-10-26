@@ -1,7 +1,10 @@
 ﻿using Application.Interface.Persistence;
 using Application.Models;
+using Application.Models.EmailLogs.Response;
+using Application.Models.EmailRequests.Response;
 using Application.Models.EmailTemplates.Command;
 using Application.Models.EmailTemplates.Response;
+using Application.Utility;
 
 using AutoMapper;
 
@@ -29,7 +32,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"CreateEmailTemplate begins at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {emailTemplate.CreatedBy}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (CreateEmailTemplateAsync), nameof (emailTemplate.CreatedBy), emailTemplate.CreatedBy);
+				_logger.LogInformation (openingLog);
 
 				var payload = _mapper.Map<EmailTemplate> (emailTemplate);
 
@@ -45,13 +49,17 @@ namespace Persistence.Repositories
 
 				var response = _mapper.Map<EmailTemplateResponse> (payload);
 				var result = RequestResponse<EmailTemplateResponse>.Created (response, 1, "Email template");
-				_logger.LogInformation ($"CreateEmailTemplate at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {emailTemplate.CreatedBy} with remark: {result.Remark}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CreateEmailTemplateAsync), nameof (emailTemplate.CreatedBy), emailTemplate.CreatedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"CreateEmailTemplate by UserPublicId: {emailTemplate.CreatedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateEmailTemplateAsync), nameof (emailTemplate.CreatedBy), emailTemplate.CreatedBy, ex.Message);
+				_logger.LogError (errorLog);
+				return RequestResponse<EmailTemplateResponse>.Error (null);
 			}
 		}
 
@@ -59,7 +67,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"DeleteEmailTemplate begins at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (DeleteEmailTemplateAsync), nameof (request.Id), request.Id.ToString (), nameof (request.DeletedBy), request.DeletedBy);
+				_logger.LogInformation (openingLog);
+
 				var check = await _context.EmailTemplates
 					.Where (x => x.Id == request.Id && x.IsDeleted == false)
 					.FirstOrDefaultAsync (request.CancellationToken);
@@ -67,25 +77,33 @@ namespace Persistence.Repositories
 				if (check == null)
 				{
 					var badRequest = RequestResponse<EmailTemplateResponse>.NotFound (null, "Email template");
-					_logger.LogInformation ($"DeleteEmailTemplate ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId} with remark: {badRequest.Remark}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteEmailTemplateAsync), nameof (request.Id), request.Id.ToString (), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
 				check.IsDeleted = true;
-				check.DeletedBy = request.UserId;
+				check.DeletedBy = request.DeletedBy;
 				check.DateDeleted = DateTime.UtcNow.AddHours (1);
 
 				_context.EmailTemplates.Update (check);
 				await _context.SaveChangesAsync ();
 
 				var result = RequestResponse<EmailTemplateResponse>.Deleted (null, 1, "Email template");
-				_logger.LogInformation ($"DeleteEmailTemplate ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId} with remark: {result.Remark}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (DeleteEmailTemplateAsync), nameof (request.Id), request.Id.ToString (), nameof (request.DeletedBy), request.DeletedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"DeleteEmailTemplate by UserPublicId: {request.UserId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (DeleteEmailTemplateAsync), nameof (request.Id), request.Id.ToString (), nameof (request.DeletedBy), request.DeletedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<EmailTemplateResponse>.Error (null);
 			}
 		}
 
@@ -93,7 +111,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"DeleteMultipleEmailTemplates begins at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId}");
+				string initiationLog = Utility.GenerateMethodInitiationLog (nameof (DeleteMultipleEmailTemplatesAsync), nameof (request.DeletedBy), request.DeletedBy);
+				_logger.LogInformation (initiationLog);
+
 				List<EmailTemplate> emailTemplates = [];
 				foreach (long id in request.Ids)
 				{
@@ -104,11 +124,15 @@ namespace Persistence.Repositories
 					if (check == null)
 					{
 						var badRequest = RequestResponse<EmailTemplateResponse>.NotFound (null, "Email templates");
-						_logger.LogInformation ($"DeleteMultipleEmailTemplates ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId} with remark: {badRequest.Remark}");
+
+						string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteMultipleEmailTemplatesAsync), nameof (id), id.ToString (), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+						_logger.LogInformation (closingLog);
+
 						return badRequest;
 					}
+
 					check.IsDeleted = true;
-					check.DeletedBy = request.UserId;
+					check.DeletedBy = request.DeletedBy;
 					check.DateDeleted = DateTime.UtcNow.AddHours (1);
 
 					emailTemplates.Add (check);
@@ -117,7 +141,10 @@ namespace Persistence.Repositories
 				if (emailTemplates.Count < 1)
 				{
 					var badRequest = RequestResponse<EmailTemplateResponse>.NotFound (null, "Email templates");
-					_logger.LogInformation ($"DeleteMultipleEmailTemplates ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId} with remark: {badRequest.Remark}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteMultipleEmailTemplatesAsync), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -125,13 +152,18 @@ namespace Persistence.Repositories
 				await _context.SaveChangesAsync (request.CancellationToken);
 
 				var result = RequestResponse<EmailTemplateResponse>.Deleted (null, emailTemplates.Count, "Email templates");
-				_logger.LogInformation ($"DeleteMultipleEmailTemplates ends at {DateTime.UtcNow.AddHours (1)} by UserPublicId: {request.UserId}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (DeleteMultipleEmailTemplatesAsync), nameof (request.DeletedBy), request.DeletedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"DeleteMultipleEmailTemplates by UserPublicId: {request.UserId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (DeleteMultipleEmailTemplatesAsync), nameof (request.DeletedBy), request.DeletedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<EmailTemplateResponse>.Error (null);
 			}
 		}
 
@@ -139,20 +171,27 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetAllEmailTemplateCount begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAllEmailTemplateCountAsync));
+				_logger.LogInformation (openingLog);
+
 				long count = await _context.EmailTemplates
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false)
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<EmailTemplateResponse>.CountSuccessful (null, count, "Email templates");
-				_logger.LogInformation ($"GetAllEmailTemplateCount ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAllEmailTemplateCountAsync), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetAllEmailTemplateCount exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAllEmailTemplateCountAsync), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<EmailTemplateResponse>.Error (null);
 			}
 		}
 
@@ -160,7 +199,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetEmailTemplateById begins at {DateTime.UtcNow.AddHours (1)} for channel name: {name}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetEmailTemplateByChannelNameAsync), nameof (name), name);
+				_logger.LogInformation (openingLog);
+
 				var result = await _context.EmailTemplates
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && x.Channel == name)
@@ -173,7 +214,10 @@ namespace Persistence.Repositories
 				if (result.Count < 1)
 				{
 					var badRequest = RequestResponse<List<EmailTemplateResponse>>.NotFound (null, "Email templates");
-					_logger.LogInformation ($"GetEmailTemplateById ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for channel name: {name}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailTemplateByChannelNameAsync), nameof (name), name, nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -182,13 +226,18 @@ namespace Persistence.Repositories
 				.Where (x => x.IsDeleted == false && x.Channel == name).LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<EmailTemplateResponse>>.SearchSuccessful (result, count, "Email templates");
-				_logger.LogInformation ($"GetEmailTemplateById ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for channel name: {name}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailTemplateByChannelNameAsync), nameof (name), name, nameof (response.TotalCount), result.Count.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetEmailTemplateById exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message} for channel name: {name}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetEmailTemplateByChannelNameAsync), nameof (name), name, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<EmailTemplateResponse>>.Error (null);
 			}
 		}
 
@@ -196,7 +245,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetEmailTemplateById begins at {DateTime.UtcNow.AddHours (1)} for Id: {id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetEmailTemplateByIdAsync), nameof (id), id.ToString ());
+				_logger.LogInformation (openingLog);
+
 				var result = await _context.EmailTemplates
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && x.Id == id)
@@ -207,18 +258,26 @@ namespace Persistence.Repositories
 				if (result == null)
 				{
 					var badRequest = RequestResponse<EmailTemplateResponse>.NotFound (null, "Email templates");
-					_logger.LogInformation ($"GetEmailTemplateById ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for Id: {id}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailTemplateByIdAsync), nameof (id), id.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
 				var response = RequestResponse<EmailTemplateResponse>.SearchSuccessful (result, 1, "Email templates");
-				_logger.LogInformation ($"GetEmailTemplateById ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for Id: {id}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailTemplateByIdAsync), nameof (id), id.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetEmailTemplateById exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message} for Id: {id}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetEmailTemplateByIdAsync), nameof (id), id.ToString (), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<EmailTemplateResponse>.Error (null);
 			}
 		}
 
@@ -226,7 +285,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetEmailTemplateByTemplateName begins at {DateTime.UtcNow.AddHours (1)} for template name: {name}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetEmailTemplateByTemplateNameAsync), nameof (name), name);
+				_logger.LogInformation (openingLog);
+
 				var result = await _context.EmailTemplates
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && x.TemplateName == name)
@@ -237,18 +298,26 @@ namespace Persistence.Repositories
 				if (result == null)
 				{
 					var badRequest = RequestResponse<EmailTemplateResponse>.NotFound (null, "Email template");
-					_logger.LogInformation ($"GetEmailTemplateByTemplateName ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for template name: {name}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailTemplateByTemplateNameAsync), nameof (name), name, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
 				var response = RequestResponse<EmailTemplateResponse>.SearchSuccessful (result, 1, "Email template");
-				_logger.LogInformation ($"GetEmailTemplateByTemplateName ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for template name: {name}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailTemplateByTemplateNameAsync), nameof (name), name, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetEmailTemplateByTemplateName exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message} for template name: {name}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetEmailTemplateByTemplateNameAsync), nameof (name), name, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<EmailTemplateResponse>.Error (null);
 			}
 		}
 
@@ -256,7 +325,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetEmailTemplateByUserId begins at {DateTime.UtcNow.AddHours (1)} for Id: {id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetEmailTemplateByUserIdAsync), nameof (id), id);
+				_logger.LogInformation (openingLog);
+
 				var result = await _context.EmailTemplates
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false && x.CreatedBy == id)
@@ -269,7 +340,10 @@ namespace Persistence.Repositories
 				if (result.Count < 1)
 				{
 					var badRequest = RequestResponse<List<EmailTemplateResponse>>.NotFound (null, "Email templates");
-					_logger.LogInformation ($"GetEmailTemplateByUserId ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} for Id: {id}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailTemplateByUserIdAsync), nameof (id), id, nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -278,13 +352,18 @@ namespace Persistence.Repositories
 				.Where (x => x.IsDeleted == false && x.CreatedBy == id).LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<EmailTemplateResponse>>.SearchSuccessful (result, count, "Email templates");
-				_logger.LogInformation ($"GetEmailTemplateByUserId ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} for Id: {id}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetEmailTemplateByUserIdAsync), nameof (id), id, nameof (response.TotalCount), result.Count.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetEmailTemplateByUserId exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message} for Id: {id}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetEmailTemplateByUserIdAsync), nameof (id), id, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<EmailTemplateResponse>>.Error (null);
 			}
 		}
 
@@ -292,7 +371,9 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetAllEmailTemplate begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAllEmailTemplateAsync));
+				_logger.LogInformation (openingLog);
+
 				var result = await _context.EmailTemplates
 					.AsNoTracking ()
 					.Where (x => x.IsDeleted == false)
@@ -305,7 +386,10 @@ namespace Persistence.Repositories
 				if (result.Count < 1)
 				{
 					var badRequest = RequestResponse<List<EmailTemplateResponse>>.NotFound (null, "Email templates");
-					_logger.LogInformation ($"GetAllEmailTemplate ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAllEmailTemplateAsync), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -314,13 +398,18 @@ namespace Persistence.Repositories
 				.Where (x => x.IsDeleted == false).LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<EmailTemplateResponse>>.SearchSuccessful (result, count, "Email templates");
-				_logger.LogInformation ($"GetAllEmailTemplate ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAllEmailTemplateAsync), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetAllEmailTemplate exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAllEmailTemplateAsync), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<EmailTemplateResponse>>.Error (null);
 			}
 		}
 
@@ -328,11 +417,16 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"UpdateEmailTemplate begins at {DateTime.UtcNow.AddHours (1)} by userId: {emailTemplate.LastModifiedBy} for email log with Id: {emailTemplate.Id}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (UpdateEmailTemplateAsync), nameof (emailTemplate.Id), emailTemplate.Id.GetValueOrDefault ().ToString (), nameof (emailTemplate.LastModifiedBy), emailTemplate.LastModifiedBy);
+				_logger.LogInformation (openingLog);
+
 				if (emailTemplate == null)
 				{
 					var badRequest = RequestResponse<EmailTemplateResponse>.NullPayload (null);
-					_logger.LogInformation ($"UpdateEmailTemplate ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateEmailTemplateAsync), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -343,7 +437,10 @@ namespace Persistence.Repositories
 				if (updateTemplate == null)
 				{
 					var badRequest = RequestResponse<EmailTemplateResponse>.NotFound (null, "Email template");
-					_logger.LogInformation ($"UpdateEmailTemplate ends at {DateTime.UtcNow.AddHours (1)} by userId: {emailTemplate.LastModifiedBy} for email Template with Id: {emailTemplate.Id}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateEmailTemplateAsync), nameof (emailTemplate.Id), emailTemplate.Id.GetValueOrDefault ().ToString (), nameof (emailTemplate.LastModifiedBy), emailTemplate.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -358,12 +455,17 @@ namespace Persistence.Repositories
 
 				var result = _mapper.Map<EmailTemplateResponse> (updateTemplate);
 				var response = RequestResponse<EmailTemplateResponse>.Updated (result, 1, "Email template");
-				_logger.LogInformation ($"UpdateEmailTemplate at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} by userId: {emailTemplate.LastModifiedBy} for email Template with Id: {emailTemplate.Id}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (UpdateEmailTemplateAsync), nameof (emailTemplate.Id), emailTemplate.Id.GetValueOrDefault ().ToString (), nameof (emailTemplate.LastModifiedBy), emailTemplate.LastModifiedBy, response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"UpdateEmailTemplate exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (UpdateEmailTemplateAsync), nameof (emailTemplate.Id), emailTemplate.Id.GetValueOrDefault ().ToString (), nameof (emailTemplate.LastModifiedBy), emailTemplate.LastModifiedBy, ex.Message);
+				_logger.LogError (errorLog);
+
 				throw;
 			}
 		}
