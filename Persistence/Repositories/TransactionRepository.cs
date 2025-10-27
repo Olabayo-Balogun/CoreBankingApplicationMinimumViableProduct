@@ -2,19 +2,31 @@
 using Application.Models;
 using Application.Models.AuditLogs.Command;
 using Application.Models.AuditLogs.Response;
+using Application.Models.Branches.Response;
 using Application.Models.Transactions.Command;
 using Application.Models.Transactions.Response;
+using Application.Utility;
 
 using AutoMapper;
+using AutoMapper.Internal;
+
+using Azure.Core;
+
+using CloudinaryDotNet;
 
 using Domain.DTO;
 using Domain.Entities;
 using Domain.Enums;
 
+using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
+
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Persistence.Repositories
 {
@@ -36,7 +48,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionByBankName begins at {DateTime.UtcNow.AddHours (1)} for bank name: {bankName}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsByBankNameAsync), nameof (bankName), bankName);
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -49,9 +62,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetTransactionByBankName for bank name: {bankName} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByBankNameAsync), nameof (bankName), bankName, nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
@@ -60,13 +76,18 @@ namespace Persistence.Repositories
 					.LongCountAsync ();
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetTransactionByBankName for bank name: {bankName} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByBankNameAsync), nameof (bankName), bankName, nameof (response.TotalCount), result.Count.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionByBankName for bank name: {bankName} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsByBankNameAsync), nameof (bankName), bankName, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
 
@@ -74,7 +95,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsById begins at {DateTime.UtcNow.AddHours (1)} for publicId: {publicId}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsByIdAsync), nameof (publicId), publicId);
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -85,19 +107,27 @@ namespace Persistence.Repositories
 
 				if (result == null)
 				{
-					var badResponse = RequestResponse<TransactionResponse>.NotFound (null, "Transaction");
-					_logger.LogInformation ($"GetTransactionsById for publicId: {publicId} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Transaction");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByIdAsync), nameof (publicId), publicId, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var response = RequestResponse<TransactionResponse>.SearchSuccessful (result, 1, "Transaction");
-				_logger.LogInformation ($"GetTransactionsById for publicId: {publicId} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByIdAsync), nameof (publicId), publicId, response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsById for publicId: {publicId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsByIdAsync), nameof (publicId), publicId, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -105,16 +135,26 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"CreateTransaction begins at {DateTime.UtcNow.AddHours (1)} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (CreateTransactionAsync), nameof (createTransaction.Amount), createTransaction.Amount.ToString(), nameof (createTransaction.CreatedBy), createTransaction.CreatedBy);
+				_logger.LogInformation (openingLog);
+
 				if (createTransaction == null)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.NullPayload (null);
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateTransactionAsync), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
 				if (!createTransaction.TransactionType.Equals (TransactionType.Credit, StringComparison.OrdinalIgnoreCase) && !createTransaction.TransactionType.Equals (TransactionType.Debit, StringComparison.OrdinalIgnoreCase))
 				{
 					var badRequest = RequestResponse<TransactionResponse>.Failed (null, 400, "Specify transaction type as either debit or credit");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateTransactionAsync), nameof (createTransaction.Amount), createTransaction.Amount.ToString (), nameof (createTransaction.CreatedBy), createTransaction.CreatedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -130,19 +170,22 @@ namespace Persistence.Repositories
 				payload.PublicId = Guid.NewGuid ().ToString ();
 
 				await _context.Transactions.AddAsync (payload, createTransaction.CancellationToken);
-
 				await _context.SaveChangesAsync (createTransaction.CancellationToken);
 
 				var response = _mapper.Map<TransactionResponse> (payload);
 				var result = RequestResponse<TransactionResponse>.Created (response, 1, "Transaction");
 
-				_logger.LogInformation ($"CreateTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {result.Remark} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CreateTransactionAsync), nameof (createTransaction.Amount), createTransaction.Amount.ToString (), nameof (createTransaction.CreatedBy), createTransaction.CreatedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"CreateTransaction by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateTransactionAsync), nameof (createTransaction.Amount), createTransaction.Amount.ToString (), nameof (createTransaction.CreatedBy), createTransaction.CreatedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -150,16 +193,26 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"CreateWithdrawalTransaction begins at {DateTime.UtcNow.AddHours (1)} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (CreateWithdrawalTransactionAsync), nameof (createTransaction.Amount), createTransaction.Amount.ToString (), nameof (createTransaction.CreatedBy), createTransaction.CreatedBy);
+				_logger.LogInformation (openingLog);
+
 				if (createTransaction == null)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.NullPayload (null);
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateWithdrawalTransactionAsync), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
 				if (!createTransaction.TransactionType.Equals (TransactionType.Credit, StringComparison.OrdinalIgnoreCase) && !createTransaction.TransactionType.Equals (TransactionType.Debit, StringComparison.OrdinalIgnoreCase))
 				{
 					var badRequest = RequestResponse<TransactionResponse>.Failed (null, 400, "Specify transaction type as either debit or credit");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateWithdrawalTransactionAsync), nameof (createTransaction.Amount), createTransaction.Amount.ToString (), nameof (createTransaction.CreatedBy), createTransaction.CreatedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -182,7 +235,10 @@ namespace Persistence.Repositories
 				if (updateAccountDetails == null)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Sender bank account details");
-					_logger.LogInformation ($"CreateWithdrawalTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateWithdrawalTransactionAsync), nameof (createTransaction.Amount), createTransaction.Amount.ToString (), nameof (createTransaction.CreatedBy), createTransaction.CreatedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -198,14 +254,15 @@ namespace Persistence.Repositories
 				updateAccountDetails.LastModifiedBy = "SYSTEM";
 				updateAccountDetails.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 
-				_context.Accounts.Update (updateAccountDetails);
-
 				RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
 
 				if (!createAuditLog.IsSuccessful)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
-					_logger.LogInformation ($"CreateWithdrawalTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateWithdrawalTransactionAsync), nameof (createTransaction.Amount), createTransaction.Amount.ToString (), nameof (createTransaction.CreatedBy), createTransaction.CreatedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -214,13 +271,17 @@ namespace Persistence.Repositories
 				var response = _mapper.Map<TransactionResponse> (payload);
 				var result = RequestResponse<TransactionResponse>.Created (response, 1, "Transaction");
 
-				_logger.LogInformation ($"CreateWithdrawalTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {result.Remark} by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CreateWithdrawalTransactionAsync), nameof (createTransaction.Amount), createTransaction.Amount.ToString (), nameof (createTransaction.CreatedBy), createTransaction.CreatedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"CreateWithdrawalTransaction by User PublicId: {createTransaction.CreatedBy} for amount: {createTransaction.Amount} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateWithdrawalTransactionAsync), nameof (createTransaction.Amount), createTransaction.Amount.ToString (), nameof (createTransaction.CreatedBy), createTransaction.CreatedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -228,11 +289,15 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"UpdateTransaction begins at {DateTime.UtcNow.AddHours (1)} by User PublicId: {updateTransactionRequest.LastModifiedBy} for amount: {updateTransactionRequest.Amount}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (UpdateTransactionAsync), nameof (updateTransactionRequest.Amount), updateTransactionRequest.Amount.ToString (), nameof (updateTransactionRequest.LastModifiedBy), updateTransactionRequest.LastModifiedBy);
+				_logger.LogInformation (openingLog);
+
 				if (updateTransactionRequest == null)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.NullPayload (null);
-					_logger.LogInformation ($"UpdateTransaction ends at {DateTime.UtcNow.AddHours (1)}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateTransactionAsync), badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -242,7 +307,10 @@ namespace Persistence.Repositories
 				if (updateTransaction == null)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Transaction");
-					_logger.LogInformation ($"UpdateTransaction ends at {DateTime.UtcNow.AddHours (1)} by User PublicId: {updateTransactionRequest.LastModifiedBy} for amount: {updateTransactionRequest.Amount}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateTransactionAsync), nameof (updateTransactionRequest.Amount), updateTransactionRequest.Amount.ToString (), nameof (updateTransactionRequest.LastModifiedBy), updateTransactionRequest.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -253,15 +321,6 @@ namespace Persistence.Repositories
 					Name = "Transaction",
 					Payload = JsonConvert.SerializeObject (updateTransaction)
 				};
-
-				RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
-
-				if (!createAuditLog.IsSuccessful)
-				{
-					var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
-					_logger.LogInformation ($"UpdateTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by User PublicId: {updateTransactionRequest.LastModifiedBy} for amount: {updateTransactionRequest.Amount}");
-					return badRequest;
-				}
 
 				updateTransaction.Amount = updateTransactionRequest.Amount;
 				updateTransaction.Notes = updateTransactionRequest.Notes;
@@ -274,19 +333,34 @@ namespace Persistence.Repositories
 				updateTransaction.LastModifiedBy = updateTransactionRequest.LastModifiedBy;
 				updateTransaction.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 
-				_context.Entry (updateTransaction).State = EntityState.Modified;
-				_context.Transactions.Update (updateTransaction);
+				RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
+
+				if (!createAuditLog.IsSuccessful)
+				{
+					var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateTransactionAsync), nameof (updateTransactionRequest.Amount), updateTransactionRequest.Amount.ToString (), nameof (updateTransactionRequest.LastModifiedBy), updateTransactionRequest.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
+				}
+
 				await _context.SaveChangesAsync (updateTransactionRequest.CancellationToken);
 
 				var result = _mapper.Map<TransactionResponse> (updateTransaction);
 				var response = RequestResponse<TransactionResponse>.Updated (result, 1, "Transaction");
-				_logger.LogInformation ($"UpdateTransaction at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} by User PublicId: {updateTransactionRequest.LastModifiedBy} for amount: {updateTransactionRequest.Amount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (UpdateTransactionAsync), nameof (updateTransactionRequest.Amount), updateTransactionRequest.Amount.ToString (), nameof (updateTransactionRequest.LastModifiedBy), updateTransactionRequest.LastModifiedBy, response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"UpdateTransaction by User PublicId: {updateTransactionRequest.LastModifiedBy} for amount: {updateTransactionRequest.Amount} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (UpdateTransactionAsync), nameof (updateTransactionRequest.Amount), updateTransactionRequest.Amount.ToString (), nameof (updateTransactionRequest.LastModifiedBy), updateTransactionRequest.LastModifiedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -294,11 +368,15 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"ConfirmTransaction begins at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (ConfirmTransactionAsync), nameof (updateTransactionRequest.PaymentReferenceId), updateTransactionRequest.PaymentReferenceId, nameof (updateTransactionRequest.LastModifiedBy), updateTransactionRequest.LastModifiedBy);
+				_logger.LogInformation (openingLog);
+
 				if (updateTransactionRequest == null)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.NullPayload (null);
-					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (ConfirmTransactionAsync), badRequest.Remark);
+					_logger.LogInformation (closingLog);
 
 					return badRequest;
 				}
@@ -308,11 +386,14 @@ namespace Persistence.Repositories
 				if (updateTransaction == null)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Transaction");
-					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (ConfirmTransactionAsync), nameof (updateTransactionRequest.PaymentReferenceId), updateTransactionRequest.PaymentReferenceId, nameof (updateTransactionRequest.LastModifiedBy), updateTransactionRequest.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
-				CreateAuditLogCommand createAuditLogRequest = new ()
+				CreateAuditLogCommand createUpdateTransactionAuditLogRequest = new ()
 				{
 					CancellationToken = updateTransactionRequest.CancellationToken,
 					CreatedBy = updateTransaction.CreatedBy,
@@ -320,17 +401,8 @@ namespace Persistence.Repositories
 					Payload = JsonConvert.SerializeObject (updateTransaction)
 				};
 
-				RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
-
-				if (!createAuditLog.IsSuccessful)
-				{
-					var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
-					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
-					return badRequest;
-				}
-
 				updateTransaction.IsReconciled = true;
-				updateTransaction.LastModifiedBy = "SYSTEM";
+				updateTransaction.LastModifiedBy = updateTransactionRequest.LastModifiedBy;
 				updateTransaction.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 
 				var updateSenderAccountDetails = await _context.Accounts.Where (x => x.AccountNumber == updateTransaction.RecipientAccountNumber && x.IsDeleted == false).FirstOrDefaultAsync (updateTransactionRequest.CancellationToken);
@@ -338,7 +410,10 @@ namespace Persistence.Repositories
 				if (updateSenderAccountDetails == null)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Recipient Bank account details");
-					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (ConfirmTransactionAsync), nameof (updateTransactionRequest.PaymentReferenceId), updateTransactionRequest.PaymentReferenceId, nameof (updateTransactionRequest.LastModifiedBy), updateTransactionRequest.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -351,34 +426,43 @@ namespace Persistence.Repositories
 				};
 
 				updateSenderAccountDetails.Balance += updateTransactionRequest.Amount;
-				updateSenderAccountDetails.LastModifiedBy = "SYSTEM";
+				updateSenderAccountDetails.LastModifiedBy = updateTransactionRequest.LastModifiedBy;
 				updateSenderAccountDetails.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 
-				_context.Accounts.Update (updateSenderAccountDetails);
+				var auditPayloads = new List<CreateAuditLogCommand>
+				{
+					createUpdateTransactionAuditLogRequest,
+					createAuditLogRequestForAccount
+				};
 
-				_context.Transactions.Update (updateTransaction);
-
-				RequestResponse<AuditLogResponse> createAuditLogForAccount = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
+				RequestResponse<AuditLogsQueryResponse> createAuditLog = await _auditLogRepository.CreateMultipleAuditLogAsync (auditPayloads);
 
 				if (!createAuditLog.IsSuccessful)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
-					_logger.LogInformation ($"ConfirmTransaction ends at {DateTime.UtcNow.AddHours (1)} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (ConfirmTransactionAsync), nameof (updateTransactionRequest.PaymentReferenceId), updateTransactionRequest.PaymentReferenceId, nameof (updateTransactionRequest.LastModifiedBy), updateTransactionRequest.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
-
 
 				await _context.SaveChangesAsync (updateTransactionRequest.CancellationToken);
 
 				var result = _mapper.Map<TransactionResponse> (updateTransaction);
 				var response = RequestResponse<TransactionResponse>.Updated (result, 1, "Transaction");
-				_logger.LogInformation ($"ConfirmTransaction at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (ConfirmTransactionAsync), nameof (updateTransactionRequest.PaymentReferenceId), updateTransactionRequest.PaymentReferenceId, nameof (updateTransactionRequest.LastModifiedBy), updateTransactionRequest.LastModifiedBy, response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"ConfirmTransaction by System for paymentReferenceId: {updateTransactionRequest.PaymentReferenceId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (ConfirmTransactionAsync), nameof (updateTransactionRequest.PaymentReferenceId), updateTransactionRequest.PaymentReferenceId, nameof (updateTransactionRequest.LastModifiedBy), updateTransactionRequest.LastModifiedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -386,18 +470,28 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"DeleteTransaction begins at {DateTime.UtcNow.AddHours (1)} by UserId: {deleteTransaction.DeletedBy} for publicId: {deleteTransaction.PublicId}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (DeleteTransactionAsync), nameof (deleteTransaction.PublicId), deleteTransaction.PublicId, nameof (deleteTransaction.DeletedBy), deleteTransaction.DeletedBy);
+				_logger.LogInformation (openingLog);
+
 				if (deleteTransaction == null)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.NullPayload (null);
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteTransactionAsync), nameof (deleteTransaction.DeletedBy), deleteTransaction.DeletedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
 				var transactionCheck = await _context.Transactions.Where (x => x.PublicId == deleteTransaction.PublicId && x.IsDeleted == false).FirstOrDefaultAsync (deleteTransaction.CancellationToken);
+
 				if (transactionCheck == null)
 				{
-					_logger.LogInformation ($"DeleteTransaction ends at {DateTime.UtcNow.AddHours (1)} by UserId: {deleteTransaction.DeletedBy} for publicId: {deleteTransaction.PublicId}");
 					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Transaction");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteTransactionAsync), nameof (deleteTransaction.PublicId), deleteTransaction.PublicId, nameof (deleteTransaction.DeletedBy), deleteTransaction.DeletedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -409,31 +503,37 @@ namespace Persistence.Repositories
 					Payload = JsonConvert.SerializeObject (transactionCheck)
 				};
 
-				RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
-
-				if (!createAuditLog.IsSuccessful)
-				{
-					var badResult = RequestResponse<TransactionResponse>.AuditLogFailed (null);
-					_logger.LogInformation ($"DeleteTransaction ends at {DateTime.UtcNow.AddHours (1)} by UserId: {deleteTransaction.DeletedBy} for publicId: {deleteTransaction.PublicId}");
-					return badResult;
-				}
-
 				transactionCheck.IsDeleted = true;
 				transactionCheck.DeletedBy = deleteTransaction.DeletedBy;
 				transactionCheck.DateDeleted = DateTime.UtcNow.AddHours (1);
 
-				_context.Entry (transactionCheck).State = EntityState.Modified;
-				_context.Update (transactionCheck);
+				RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
+
+				if (!createAuditLog.IsSuccessful)
+				{
+					var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteTransactionAsync), nameof (deleteTransaction.PublicId), deleteTransaction.PublicId, nameof (deleteTransaction.DeletedBy), deleteTransaction.DeletedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
+				}				
+
 				await _context.SaveChangesAsync (deleteTransaction.CancellationToken);
 
-				_logger.LogInformation ($"DeleteTransaction ends at {DateTime.UtcNow.AddHours (1)} by UserId: {deleteTransaction.DeletedBy} for publicId: {deleteTransaction.PublicId}");
 				var result = RequestResponse<TransactionResponse>.Deleted (null, 1, "Transaction");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (DeleteTransactionAsync), nameof (deleteTransaction.PublicId), deleteTransaction.PublicId, nameof (deleteTransaction.DeletedBy), deleteTransaction.DeletedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"DeleteTransaction by UserId: {deleteTransaction.DeletedBy} for publicId: {deleteTransaction.PublicId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (DeleteTransactionAsync), nameof (deleteTransaction.PublicId), deleteTransaction.PublicId, nameof (deleteTransaction.DeletedBy), deleteTransaction.DeletedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -441,18 +541,27 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"FlagTransaction begins at {DateTime.UtcNow.AddHours (1)} by UserId: {flagTransaction.LastModifiedBy} for publicId: {flagTransaction.PublicId}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (FlagTransactionAsync), nameof (flagTransaction.PublicId), flagTransaction.PublicId, nameof (flagTransaction.LastModifiedBy), flagTransaction.LastModifiedBy);
+				_logger.LogInformation (openingLog);
+
 				if (flagTransaction == null)
 				{
 					var badRequest = RequestResponse<TransactionResponse>.NullPayload (null);
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (FlagTransactionAsync), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
 				var transactionCheck = await _context.Transactions.Where (x => x.PublicId == flagTransaction.PublicId && x.IsDeleted == false).FirstOrDefaultAsync (flagTransaction.CancellationToken);
 				if (transactionCheck == null)
 				{
-					_logger.LogInformation ($"FlagTransaction ends at {DateTime.UtcNow.AddHours (1)} by UserId: {flagTransaction.LastModifiedBy} for publicId: {flagTransaction.PublicId}");
 					var badRequest = RequestResponse<TransactionResponse>.NotFound (null, "Transaction");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (FlagTransactionAsync), nameof (flagTransaction.PublicId), flagTransaction.PublicId, nameof (flagTransaction.LastModifiedBy), flagTransaction.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
 					return badRequest;
 				}
 
@@ -464,43 +573,50 @@ namespace Persistence.Repositories
 					Payload = JsonConvert.SerializeObject (transactionCheck)
 				};
 
-				RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
-
-				if (!createAuditLog.IsSuccessful)
-				{
-					var badResult = RequestResponse<TransactionResponse>.AuditLogFailed (null);
-					_logger.LogInformation ($"FlagTransaction ends at {DateTime.UtcNow.AddHours (1)} by UserId: {flagTransaction.LastModifiedBy} for publicId: {flagTransaction.PublicId}");
-					return badResult;
-				}
-
 				transactionCheck.IsFlagged = true;
 				transactionCheck.LastModifiedBy = flagTransaction.LastModifiedBy;
 				transactionCheck.DateDeleted = DateTime.UtcNow.AddHours (1);
 
-				_context.Entry (transactionCheck).State = EntityState.Modified;
-				_context.Update (transactionCheck);
+				RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequest);
+
+				if (!createAuditLog.IsSuccessful)
+				{
+					var badRequest = RequestResponse<TransactionResponse>.AuditLogFailed (null);
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (FlagTransactionAsync), nameof (flagTransaction.PublicId), flagTransaction.PublicId, nameof (flagTransaction.LastModifiedBy), flagTransaction.LastModifiedBy, badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
+				}
+
 				await _context.SaveChangesAsync (flagTransaction.CancellationToken);
 
-				_logger.LogInformation ($"FlagTransaction ends at {DateTime.UtcNow.AddHours (1)} by UserId: {flagTransaction.LastModifiedBy} for publicId: {flagTransaction.PublicId}");
 				var result = RequestResponse<TransactionResponse>.Deleted (null, 1, "Transaction");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (FlagTransactionAsync), nameof (flagTransaction.PublicId), flagTransaction.PublicId, nameof (flagTransaction.LastModifiedBy), flagTransaction.LastModifiedBy, result.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return result;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"FlagTransaction by UserId: {flagTransaction.LastModifiedBy} for publicId: {flagTransaction.PublicId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (FlagTransactionAsync), nameof (flagTransaction.PublicId), flagTransaction.PublicId, nameof (flagTransaction.LastModifiedBy), flagTransaction.LastModifiedBy, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
-		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByAmountPaidAsync (decimal amountPaid, CancellationToken cancellationToken, int pageNumber, int pageSize)
+		public async Task<RequestResponse<List<TransactionResponse>>> GetTransactionsByAmountPaidAsync (decimal amount, CancellationToken cancellationToken, int pageNumber, int pageSize)
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsByAmountPaid begins at {DateTime.UtcNow.AddHours (1)} for Amount paid: {amountPaid}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsByAmountPaidAsync), nameof (amount), amount.ToString ());
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
-					.Where (x => x.IsDeleted == false && x.Amount == amountPaid)
+					.Where (x => x.IsDeleted == false && x.Amount == amount)
 					.OrderByDescending (x => x.DateCreated)
 					.Select (x => new TransactionResponse { Amount = x.Amount, Description = x.Description, IsFlagged = x.IsFlagged, IsReconciled = x.IsReconciled, Notes = x.Notes, PublicId = x.PublicId, RecipientAccountName = x.RecipientAccountName, RecipientAccountNumber = x.RecipientAccountNumber, RecipientBankName = x.RecipientBankName, SenderAccountName = x.SenderAccountName, SenderAccountNumber = x.SenderAccountNumber, SenderBankName = x.SenderBankName, TransactionType = x.TransactionType, Currency = x.Currency })
 					.Skip ((pageNumber - 1) * pageSize)
@@ -509,32 +625,41 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetTransactionsByAmountPaid for Amount paid: {amountPaid} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByAmountPaidAsync), nameof (amount), amount.ToString (), nameof(badRequest.TotalCount), badRequest.TotalCount.ToString(), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
-				.AsNoTracking ()
-				.Where (x => x.IsDeleted == false && x.Amount == amountPaid).LongCountAsync (cancellationToken);
+					.AsNoTracking ()
+					.Where (x => x.IsDeleted == false && x.Amount == amount)
+					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetTransactionsByAmountPaid for Amount paid: {amountPaid} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByAmountPaidAsync), nameof (amount), amount.ToString (), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsByAmountPaid for Amount paid: {amountPaid} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsByAmountPaidAsync), nameof (amount), amount.ToString (), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
-
 
 		public async Task<RequestResponse<List<TransactionResponse>>> GetAllTransactionsAsync (bool isDeleted, CancellationToken cancellationToken, int pageNumber, int pageSize)
 		{
 			try
 			{
-				_logger.LogInformation ($"GetAllTransactions for isDeleted: {isDeleted} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAllTransactionsAsync), nameof (isDeleted), isDeleted.ToString ());
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -547,9 +672,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetAllTransactions for isDeleted: {isDeleted} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAllTransactionsAsync), nameof (isDeleted), isDeleted.ToString (), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
@@ -557,13 +685,17 @@ namespace Persistence.Repositories
 				.Where (x => x.IsDeleted == isDeleted).LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetAllTransactions for isDeleted: {isDeleted} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAllTransactionsAsync), nameof (isDeleted), isDeleted.ToString (), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetAllTransactions for isDeleted: {isDeleted} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAllTransactionsAsync), nameof (isDeleted), isDeleted.ToString (), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
 
@@ -571,7 +703,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsCountByCustomDate begins at {DateTime.UtcNow.AddHours (1)} for fromDate: {fromDate:dd/MM/yyyy} to toDate: {toDate:dd/MM/yyyy} by user ID: {userId}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsCountByCustomDateAsync), nameof (userId), userId, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var count = await _context.Transactions
 					.AsNoTracking ()
@@ -579,13 +712,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<TransactionResponse>.CountSuccessful (null, count, "Transaction");
-				_logger.LogInformation ($"GetTransactionsCountByCustomDate ends at {DateTime.UtcNow.AddHours (1)} for fromDate: {fromDate:dd/MM/yyyy} to toDate: {toDate:dd/MM/yyyy} by user ID: {userId}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsCountByCustomDateAsync), nameof (userId), userId, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsCountByCustomDate for fromDate: {fromDate:dd/MM/yyyy} to toDate: {toDate:dd/MM/yyyy} by user ID: {userId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsCountByCustomDateAsync), nameof (userId), userId, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -593,7 +731,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsCountByDate begins at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by user ID: {userId}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsCountByDateAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var count = await _context.Transactions
 					.AsNoTracking ()
@@ -601,14 +740,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<TransactionResponse>.CountSuccessful (null, count, "Transaction");
-				_logger.LogInformation ($"GetTransactionsCountByDate ends at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by user ID: {userId}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsCountByDateAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsCountByDate for date: {date:dd/MM/yyyy} by user ID: {userId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsCountByDateAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -616,9 +759,11 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsCountByWeek begins at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by user ID: {userId}");
 				DateTime startOfWeek = date.AddDays (-1 * (int)date.DayOfWeek);
 				DateTime endOfWeek = startOfWeek.AddDays (7);
+
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsCountByWeekAsync), nameof (userId), userId, nameof (startOfWeek), startOfWeek.ToString ("dd/MM/yyyy"), nameof (endOfWeek), endOfWeek.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var count = await _context.Transactions
 					.AsNoTracking ()
@@ -627,13 +772,17 @@ namespace Persistence.Repositories
 
 				var response = RequestResponse<TransactionResponse>.CountSuccessful (null, count, "Transaction");
 
-				_logger.LogInformation ($"GetTransactionsCountByWeek ends at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by user ID: {userId}");
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsCountByWeekAsync), nameof (userId), userId, nameof (startOfWeek), startOfWeek.ToString ("dd/MM/yyyy"), nameof (endOfWeek), endOfWeek.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsCountByWeek for date: {date:dd/MM/yyyy} by user ID: {userId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsCountByWeekAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -641,7 +790,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsCountByMonth begins at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by user ID: {userId}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsCountByMonthAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var count = await _context.Transactions
 					.AsNoTracking ()
@@ -649,13 +799,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<TransactionResponse>.CountSuccessful (null, count, "Transaction");
-				_logger.LogInformation ($"GetTransactionsCountByMonth ends at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by user ID: {userId}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsCountByMonthAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsCountByMonth for date: {date:dd/MM/yyyy} by user ID: {userId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsCountByMonthAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -663,7 +818,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsCountByYear begins at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by user ID: {userId}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsCountByYearAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var count = await _context.Transactions
 					.AsNoTracking ()
@@ -671,13 +827,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<TransactionResponse>.CountSuccessful (null, count, "Transaction");
-				_logger.LogInformation ($"GetTransactionsCountByYear ends at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by user ID: {userId}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsCountByYearAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsCountByYear for date: {date:dd/MM/yyyy} by user ID: {userId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsCountByYearAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -685,7 +846,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsByCustomDate for user ID: {userId}, fromDate: {fromDate}, and toDate: {toDate} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsByCustomDateAsync), nameof (userId), userId, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -698,9 +860,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetTransactionsByCustomDate for user ID: {userId}, fromDate: {fromDate}, and toDate: {toDate} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByCustomDateAsync), nameof (userId), userId, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString(), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
@@ -709,13 +874,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetTransactionsByCustomDate for user ID: {userId}, fromDate: {fromDate}, and toDate: {toDate} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByCustomDateAsync), nameof (userId), userId, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsByCustomDate for user ID: {userId}, fromDate: {fromDate}, and toDate: {toDate} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsByCustomDateAsync), nameof (userId), userId, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
 
@@ -723,7 +893,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionByDate for user ID: {userId} and date: {date} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsByDateAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -736,9 +907,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetTransactionByDate for user ID: {userId} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByDateAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
@@ -747,13 +921,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetTransactionByDate for user ID: {userId} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByDateAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionByDate for user ID: {userId} and date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsByDateAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
 
@@ -761,10 +940,11 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsByWeek for user ID: {userId} and date: {date} begins at {DateTime.UtcNow.AddHours (1)}");
-
 				DateTime startOfWeek = date.AddDays (-1 * (int)date.DayOfWeek);
 				DateTime endOfWeek = startOfWeek.AddDays (7);
+
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsByWeekAsync), nameof (userId), userId, nameof (startOfWeek), startOfWeek.ToString ("dd/MM/yyyy"), nameof (endOfWeek), endOfWeek.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -777,9 +957,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetTransactionsByWeek for user ID: {userId} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByWeekAsync), nameof (userId), userId, nameof (startOfWeek), startOfWeek.ToString ("dd/MM/yyyy"), nameof (endOfWeek), endOfWeek.ToString ("dd/MM/yyyy"), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
@@ -788,13 +971,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetTransactionsByWeek for user ID: {userId} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByWeekAsync), nameof (userId), userId, nameof (startOfWeek), startOfWeek.ToString ("dd/MM/yyyy"), nameof (endOfWeek), endOfWeek.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsByWeek for user ID: {userId} and date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsByWeekAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
 
@@ -802,7 +990,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsByMonth for user ID: {userId} and date: {date} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsByMonthAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -815,9 +1004,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetTransactionsByMonth for user ID: {userId} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByMonthAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
@@ -826,13 +1018,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetTransactionsByMonth for user ID: {userId} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByMonthAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsByMonth for user ID: {userId} and date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsByMonthAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
 
@@ -840,7 +1037,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsByYear for user ID: {userId} and date: {date} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsByYearAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -853,9 +1051,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetTransactionsByYear for user ID: {userId} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByYearAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
@@ -864,13 +1065,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetTransactionsByYear for user ID: {userId} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByYearAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsByYear for user ID: {userId} and date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsByYearAsync), nameof (userId), userId, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
 
@@ -878,7 +1084,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsCountByAccountNumberAndDate begins at {DateTime.UtcNow.AddHours (1)} for fromDate: {fromDate:dd/MM/yyyy} to toDate: {toDate:dd/MM/yyyy} by account number: {accountNumber}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsCountByAccountNumberAndDateAsync), nameof (accountNumber), accountNumber, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var count = await _context.Transactions
 					.AsNoTracking ()
@@ -886,13 +1093,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<TransactionResponse>.CountSuccessful (null, count, "Transaction");
-				_logger.LogInformation ($"GetTransactionsCountByAccountNumberAndDate ends at {DateTime.UtcNow.AddHours (1)} for fromDate: {fromDate:dd/MM/yyyy} to toDate: {toDate:dd/MM/yyyy} by account number: {accountNumber}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsCountByAccountNumberAndDateAsync), nameof (accountNumber), accountNumber, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsCountByAccountNumberAndDate for fromDate: {fromDate:dd/MM/yyyy} to toDate: {toDate:dd/MM/yyyy} by account number: {accountNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsCountByAccountNumberAndDateAsync), nameof (accountNumber), accountNumber, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -900,7 +1112,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsCountByAccountNumberAndDate begins at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by account number: {accountNumber}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsCountByAccountNumberAndDateAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var count = await _context.Transactions
 					.AsNoTracking ()
@@ -908,14 +1121,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<TransactionResponse>.CountSuccessful (null, count, "Transaction");
-				_logger.LogInformation ($"GetTransactionsCountByAccountNumberAndDate ends at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by account number: {accountNumber}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsCountByAccountNumberAndDateAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsCountByAccountNumberAndDate for date: {date:dd/MM/yyyy} by account number: {accountNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsCountByAccountNumberAndDateAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -923,9 +1140,11 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsCountByAccountNumberAndWeek begins at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by account number: {accountNumber}");
 				DateTime startOfWeek = date.AddDays (-1 * (int)date.DayOfWeek);
 				DateTime endOfWeek = startOfWeek.AddDays (7);
+
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsCountByAccountNumberAndWeekAsync), nameof (accountNumber), accountNumber, nameof (startOfWeek), startOfWeek.ToString ("dd/MM/yyyy"), nameof (endOfWeek), endOfWeek.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var count = await _context.Transactions
 					.AsNoTracking ()
@@ -934,13 +1153,17 @@ namespace Persistence.Repositories
 
 				var response = RequestResponse<TransactionResponse>.CountSuccessful (null, count, "Transaction");
 
-				_logger.LogInformation ($"GetTransactionsCountByAccountNumberAndWeek ends at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by account number: {accountNumber}");
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsCountByAccountNumberAndWeekAsync), nameof (accountNumber), accountNumber, nameof (startOfWeek), startOfWeek.ToString ("dd/MM/yyyy"), nameof (endOfWeek), endOfWeek.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsCountByAccountNumberAndWeek for date: {date:dd/MM/yyyy} by account number: {accountNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsCountByAccountNumberAndWeekAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -948,7 +1171,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsCountByAccountNumberAndMonth begins at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by account number: {accountNumber}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsCountByAccountNumberAndMonthAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var count = await _context.Transactions
 					.AsNoTracking ()
@@ -956,13 +1180,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<TransactionResponse>.CountSuccessful (null, count, "Transaction");
-				_logger.LogInformation ($"GetTransactionsCountByAccountNumberAndMonth ends at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by account number: {accountNumber}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsCountByAccountNumberAndMonthAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsCountByAccountNumberAndMonth for date: {date:dd/MM/yyyy} by account number: {accountNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsCountByAccountNumberAndMonthAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -970,7 +1199,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsCountByAccountNumberAndYear begins at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by account number: {accountNumber}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsCountByAccountNumberAndYearAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var count = await _context.Transactions
 					.AsNoTracking ()
@@ -978,13 +1208,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<TransactionResponse>.CountSuccessful (null, count, "Transaction");
-				_logger.LogInformation ($"GetTransactionsCountByAccountNumberAndYear ends at {DateTime.UtcNow.AddHours (1)} for date: {date:dd/MM/yyyy} by account number: {accountNumber}");
+
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsCountByAccountNumberAndYearAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (closingLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsCountByAccountNumberAndYear for date: {date:dd/MM/yyyy} by account number: {accountNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsCountByAccountNumberAndYearAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -992,7 +1227,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsByAccountNumberAndCustomDate for account number: {accountNumber}, fromDate: {fromDate}, and toDate: {toDate} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsByAccountNumberAndCustomDateAsync), nameof (accountNumber), accountNumber, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -1005,9 +1241,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetTransactionsByAccountNumberAndCustomDate for account number: {accountNumber}, fromDate: {fromDate}, and toDate: {toDate} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByAccountNumberAndCustomDateAsync), nameof (accountNumber), accountNumber, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
@@ -1016,13 +1255,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetTransactionsByAccountNumberAndCustomDate for account number: {accountNumber}, fromDate: {fromDate}, and toDate: {toDate} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByAccountNumberAndCustomDateAsync), nameof (accountNumber), accountNumber, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsByAccountNumberAndCustomDate for account number: {accountNumber}, fromDate: {fromDate}, and toDate: {toDate} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsByAccountNumberAndCustomDateAsync), nameof (accountNumber), accountNumber, nameof (fromDate), fromDate.ToString ("dd/MM/yyyy"), nameof (toDate), toDate.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
 
@@ -1030,7 +1274,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionByAccountNumberAndDate for account number: {accountNumber} and date: {date} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionByAccountNumberAndDateAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -1043,9 +1288,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetTransactionByAccountNumberAndDate for account number: {accountNumber} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionByAccountNumberAndDateAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
@@ -1054,13 +1302,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetTransactionByAccountNumberAndDate for account number: {accountNumber} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionByAccountNumberAndDateAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionByAccountNumberAndDate for account number: {accountNumber} and date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionByAccountNumberAndDateAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
 
@@ -1068,10 +1321,11 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsByAccountNumberAndWeek for account number: {accountNumber} and date: {date} begins at {DateTime.UtcNow.AddHours (1)}");
-
 				DateTime startOfWeek = date.AddDays (-1 * (int)date.DayOfWeek);
 				DateTime endOfWeek = startOfWeek.AddDays (7);
+
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsByAccountNumberAndWeekAsync), nameof (accountNumber), accountNumber, nameof (startOfWeek), startOfWeek.ToString ("dd/MM/yyyy"), nameof (endOfWeek), endOfWeek.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -1084,9 +1338,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetTransactionsByAccountNumberAndWeek for account number: {accountNumber} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByAccountNumberAndWeekAsync), nameof (accountNumber), accountNumber, nameof (startOfWeek), startOfWeek.ToString ("dd/MM/yyyy"), nameof (endOfWeek), endOfWeek.ToString ("dd/MM/yyyy"), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
@@ -1095,13 +1352,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetTransactionsByAccountNumberAndWeek for account number: {accountNumber} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByAccountNumberAndWeekAsync), nameof (accountNumber), accountNumber, nameof (startOfWeek), startOfWeek.ToString ("dd/MM/yyyy"), nameof (endOfWeek), endOfWeek.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsByAccountNumberAndWeek for account number: {accountNumber} and date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsByAccountNumberAndWeekAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
 
@@ -1109,7 +1371,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsByAccountNumberAndMonth for account number: {accountNumber} and date: {date} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsByAccountNumberAndMonthAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -1122,9 +1385,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetTransactionsByAccountNumberAndMonth for account number: {accountNumber} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByAccountNumberAndMonthAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
@@ -1133,13 +1399,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetTransactionsByAccountNumberAndMonth for account number: {accountNumber} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByAccountNumberAndMonthAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsByAccountNumberAndMonth for account number: {accountNumber} and date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsByAccountNumberAndMonthAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
 
@@ -1147,7 +1418,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTransactionsByAccountNumberAndYear for account number: {accountNumber} and date: {date} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTransactionsByAccountNumberAndYearAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"));
+				_logger.LogInformation (openingLog);
 
 				var result = await _context.Transactions
 					.AsNoTracking ()
@@ -1160,9 +1432,12 @@ namespace Persistence.Repositories
 
 				if (result.Count < 1)
 				{
-					var badResponse = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
-					_logger.LogInformation ($"GetTransactionsByAccountNumberAndYear for account number: {accountNumber} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {badResponse.Remark} with count: {badResponse.TotalCount}");
-					return badResponse;
+					var badRequest = RequestResponse<List<TransactionResponse>>.NotFound (null, "Transactions");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByAccountNumberAndYearAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
 				}
 
 				var count = await _context.Transactions
@@ -1171,13 +1446,18 @@ namespace Persistence.Repositories
 					.LongCountAsync (cancellationToken);
 
 				var response = RequestResponse<List<TransactionResponse>>.SearchSuccessful (result, count, "Transactions");
-				_logger.LogInformation ($"GetTransactionsByAccountNumberAndYear for account number: {accountNumber} and date: {date} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTransactionsByAccountNumberAndYearAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTransactionsByAccountNumberAndYear for account number: {accountNumber} and date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTransactionsByAccountNumberAndYearAsync), nameof (accountNumber), accountNumber, nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<List<TransactionResponse>>.Error (null);
 			}
 		}
 
@@ -1185,7 +1465,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTotalTransactionWithdrawalByAccountNumber for account number: {accountNumber} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTotalTransactionWithdrawalByAccountNumberAsync), nameof (accountNumber), accountNumber);
+				_logger.LogInformation (openingLog);
 
 				var sum = await _context.Transactions
 					.AsNoTracking ()
@@ -1196,13 +1477,18 @@ namespace Persistence.Repositories
 				var result = new TransactionResponse { Amount = sum };
 
 				var response = RequestResponse<TransactionResponse>.SearchSuccessful (result, 1, "Transactions");
-				_logger.LogInformation ($"GetTotalTransactionWithdrawalByAccountNumber for account number: {accountNumber} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTotalTransactionWithdrawalByAccountNumberAsync), nameof (accountNumber), accountNumber, response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTotalTransactionWithdrawalByAccountNumber for account number: {accountNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTotalTransactionWithdrawalByAccountNumberAsync), nameof (accountNumber), accountNumber, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 
@@ -1210,7 +1496,8 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				_logger.LogInformation ($"GetTotalTransactionDepositByAccountNumber for account number: {accountNumber} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetTotalTransactionDepositByAccountNumberAsync), nameof (accountNumber), accountNumber);
+				_logger.LogInformation (openingLog);
 
 				var sum = await _context.Transactions
 					.AsNoTracking ()
@@ -1221,13 +1508,18 @@ namespace Persistence.Repositories
 				var result = new TransactionResponse { Amount = sum };
 
 				var response = RequestResponse<TransactionResponse>.SearchSuccessful (result, 1, "Transactions");
-				_logger.LogInformation ($"GetTotalTransactionDepositByAccountNumber for account number: {accountNumber} ends at {DateTime.UtcNow.AddHours (1)} with remark: {response.Remark} with count: {response.TotalCount}");
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetTotalTransactionDepositByAccountNumberAsync), nameof (accountNumber), accountNumber, response.Remark);
+				_logger.LogInformation (conclusionLog);
+
 				return response;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError ($"GetTotalTransactionDepositByAccountNumber for account number: {accountNumber} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-				throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetTotalTransactionDepositByAccountNumberAsync), nameof (accountNumber), accountNumber, ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<TransactionResponse>.Error (null);
 			}
 		}
 	}

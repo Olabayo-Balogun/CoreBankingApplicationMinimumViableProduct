@@ -93,7 +93,7 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				string openingLog = Utility.GenerateMethodInitiationLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId.ToString (), nameof (request.DeletedBy), request.DeletedBy);
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId, nameof (request.DeletedBy), request.DeletedBy);
 				_logger.LogInformation (openingLog);
 
 				var branchCheck = await _context.Branches.Where (x => x.PublicId == request.PublicId && x.IsDeleted == false).FirstOrDefaultAsync (request.CancellationToken);
@@ -101,7 +101,7 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<BranchResponse>.NotFound (null, "Branch");
 
-					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId.ToString (), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId, nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
 					_logger.LogInformation (closingLog);
 
 					return badRequest;
@@ -121,7 +121,7 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<BranchResponse>.AuditLogFailed (null);
 
-					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId.ToString (), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId, nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
 					_logger.LogInformation (closingLog);
 
 					return badRequest;
@@ -135,14 +135,14 @@ namespace Persistence.Repositories
 
 				var result = RequestResponse<BranchResponse>.Deleted (null, 1, "Branch");
 
-				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId.ToString (), nameof (request.DeletedBy), request.DeletedBy, result.Remark);
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId, nameof (request.DeletedBy), request.DeletedBy, result.Remark);
 				_logger.LogInformation (conclusionLog);
 
 				return result;
 			}
 			catch (Exception ex)
 			{
-				string errorLog = Utility.GenerateMethodExceptionLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId.ToString (), nameof (request.DeletedBy), request.DeletedBy, ex.Message);
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (DeleteBranchAsync), nameof (request.PublicId), request.PublicId, nameof (request.DeletedBy), request.DeletedBy, ex.Message);
 				_logger.LogError (errorLog);
 
 				return RequestResponse<BranchResponse>.Error (null);
@@ -153,7 +153,7 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				string openingLog = Utility.GenerateMethodInitiationLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id.ToString (), nameof (request.LastModifiedBy), request.LastModifiedBy);
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id, nameof (request.LastModifiedBy), request.LastModifiedBy);
 				_logger.LogInformation (openingLog);
 
 				var branchCheck = await _context.Branches.Where (x => x.PublicId == request.Id && x.IsDeleted == false).FirstOrDefaultAsync (request.CancellationToken);
@@ -161,7 +161,7 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<BranchResponse>.NotFound (null, "Branch");
 
-					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id.ToString (), nameof (request.LastModifiedBy), request.LastModifiedBy, badRequest.Remark);
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id, nameof (request.LastModifiedBy), request.LastModifiedBy, badRequest.Remark);
 					_logger.LogInformation (closingLog);
 
 					return badRequest;
@@ -181,7 +181,7 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<BranchResponse>.AuditLogFailed (null);
 
-					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id.ToString (), nameof (request.LastModifiedBy), request.LastModifiedBy, badRequest.Remark);
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id, nameof (request.LastModifiedBy), request.LastModifiedBy, badRequest.Remark);
 					_logger.LogInformation (closingLog);
 
 					return badRequest;
@@ -196,14 +196,14 @@ namespace Persistence.Repositories
 
 				var result = RequestResponse<BranchResponse>.Deleted (null, 1, "Branch");
 
-				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id.ToString (), nameof (request.LastModifiedBy), request.LastModifiedBy, result.Remark);
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id, nameof (request.LastModifiedBy), request.LastModifiedBy, result.Remark);
 				_logger.LogInformation (conclusionLog);
 
 				return result;
 			}
 			catch (Exception ex)
 			{
-				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id.ToString (), nameof (request.LastModifiedBy), request.LastModifiedBy, ex.Message);
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CloseBranchAsync), nameof (request.Id), request.Id, nameof (request.LastModifiedBy), request.LastModifiedBy, ex.Message);
 				_logger.LogError (errorLog);
 
 				return RequestResponse<BranchResponse>.Error (null);
@@ -214,7 +214,7 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBranchByPublicIdAsync), nameof (id), id.ToString ());
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBranchByPublicIdAsync), nameof (id), id);
 				_logger.LogInformation (openingLog);
 
 				var result = await _context.Branches
@@ -227,7 +227,7 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<BranchResponse>.NotFound (null, "Branch");
 
-					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchByPublicIdAsync), nameof (id), id.ToString (), badRequest.Remark);
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchByPublicIdAsync), nameof (id), id, badRequest.Remark);
 					_logger.LogInformation (closingLog);
 
 					return badRequest;
@@ -235,13 +235,13 @@ namespace Persistence.Repositories
 
 				var response = RequestResponse<BranchResponse>.SearchSuccessful (result, 1, "Branch");
 
-				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchByPublicIdAsync), nameof (id), id.ToString (), response.Remark);
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchByPublicIdAsync), nameof (id), id, response.Remark);
 				_logger.LogInformation (conclusionLog);
 				return response;
 			}
 			catch (Exception ex)
 			{
-				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBranchByPublicIdAsync), nameof (id), id.ToString (), ex.Message);
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBranchByPublicIdAsync), nameof (id), id, ex.Message);
 				_logger.LogError (errorLog);
 
 				return RequestResponse<BranchResponse>.Error (null);
@@ -252,7 +252,7 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBranchesByUserIdAsync), nameof (id), id.ToString ());
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBranchesByUserIdAsync), nameof (id), id);
 				_logger.LogInformation (openingLog);
 
 				var result = await _context.Branches
@@ -268,7 +268,7 @@ namespace Persistence.Repositories
 				{
 					var badRequest = RequestResponse<List<BranchResponse>>.NotFound (null, "Branch");
 
-					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchesByUserIdAsync), nameof (id), id.ToString (), nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchesByUserIdAsync), nameof (id), id, nameof (result.Count), result.Count.ToString (), badRequest.Remark);
 					_logger.LogInformation (closingLog);
 
 					return badRequest;
@@ -281,14 +281,14 @@ namespace Persistence.Repositories
 
 				var response = RequestResponse<List<BranchResponse>>.SearchSuccessful (result, count, "Branches");
 
-				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchesByUserIdAsync), nameof (id), id.ToString (), nameof (response.TotalCount), result.Count.ToString (), response.Remark);
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchesByUserIdAsync), nameof (id), id, nameof (response.TotalCount), result.Count.ToString (), response.Remark);
 				_logger.LogInformation (conclusionLog);
 
 				return response;
 			}
 			catch (Exception ex)
 			{
-				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBranchesByUserIdAsync), nameof (id), id.ToString (), ex.Message);
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBranchesByUserIdAsync), nameof (id), id, ex.Message);
 				_logger.LogError (errorLog);
 
 				return RequestResponse<List<BranchResponse>>.Error (null);
@@ -326,7 +326,7 @@ namespace Persistence.Repositories
 		{
 			try
 			{
-				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBranchCountByUserIdAsync), nameof (id), id.ToString ());
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBranchCountByUserIdAsync), nameof (id), id);
 				_logger.LogInformation (openingLog);
 
 				long count = await _context.Branches
@@ -336,7 +336,7 @@ namespace Persistence.Repositories
 
 				var response = RequestResponse<BranchResponse>.CountSuccessful (null, count, "Branch");
 
-				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchCountByUserIdAsync), nameof (id), id.ToString (), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBranchCountByUserIdAsync), nameof (id), id, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
 				_logger.LogInformation (closingLog);
 
 				return response;

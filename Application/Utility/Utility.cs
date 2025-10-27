@@ -605,6 +605,14 @@ namespace Application.Utility
 			return result;
 		}
 
+		public static string GenerateMethodInitiationLog (string methodName, string firstParameterName, string firstParameterValue, string secondParameterName, string secondParameterValue, string thirdParameterName, string thirdParameterValue, string fourthParameterName, string fourthParameterValue, string remark)
+		{
+			string result = string.Empty;
+			result = $"{methodName} ends at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue}, {secondParameterName}: {secondParameterValue}, {thirdParameterName}: {thirdParameterValue}, and {fourthParameterName}: {fourthParameterValue}";
+
+			return result;
+		}
+
 		public static string GenerateMethodConclusionLog (string methodName)
 		{
 			string result = string.Empty;
@@ -645,6 +653,14 @@ namespace Application.Utility
 			return result;
 		}
 
+		public static string GenerateMethodConclusionLog (string methodName, string firstParameterName, string firstParameterValue, string secondParameterName, string secondParameterValue, string thirdParameterName, string thirdParameterValue, string fourthParameterName, string fourthParameterValue, string remark)
+		{
+			string result = string.Empty;
+			result = $"{methodName} ends at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue}, {secondParameterName}: {secondParameterValue}, {thirdParameterName}: {thirdParameterValue}, and {fourthParameterName}: {fourthParameterValue} with remark: {remark}";
+
+			return result;
+		}
+
 		public static string GenerateMethodExceptionLog (string methodName, string message)
 		{
 			string result = string.Empty;
@@ -673,6 +689,14 @@ namespace Application.Utility
 		{
 			string result = string.Empty;
 			result = $"{methodName} exception occurred at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue}, {secondParameterName}: {secondParameterValue}, and {thirdParameterName}: {thirdParameterValue} with message: {message}";
+
+			return result;
+		}
+
+		public static string GenerateMethodExceptionLog (string methodName, string firstParameterName, string firstParameterValue, string secondParameterName, string secondParameterValue, string thirdParameterName, string thirdParameterValue, string fourthParameterName, string fourthParameterValue, string message)
+		{
+			string result = string.Empty;
+			result = $"{methodName} ends at {DateTime.UtcNow.AddHours (1)} for {firstParameterName}: {firstParameterValue}, {secondParameterName}: {secondParameterValue}, {thirdParameterName}: {thirdParameterValue}, and {fourthParameterName}: {fourthParameterValue} with message: {message}";
 
 			return result;
 		}
