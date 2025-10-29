@@ -5,19 +5,19 @@ using MediatR;
 
 namespace Application.Models.Users.Command
 {
-	public class LoginCommandHandler : IRequestHandler<LoginCommand, RequestResponse<LoginResponse>>
-	{
-		private readonly IUserRepository _userRepository;
-		public LoginCommandHandler (IUserRepository userRepository)
-		{
-			_userRepository = userRepository;
-		}
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, RequestResponse<LoginResponse>>
+    {
+        private readonly IUserRepository _userRepository;
+        public LoginCommandHandler (IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
 
-		public async Task<RequestResponse<LoginResponse>> Handle (LoginCommand request, CancellationToken cancellationToken)
-		{
-			var result = await _userRepository.LoginAsync (request);
+        public async Task<RequestResponse<LoginResponse>> Handle (LoginCommand request, CancellationToken cancellationToken)
+        {
+            var result = await _userRepository.LoginAsync (request);
 
-			return result;
-		}
-	}
+            return result;
+        }
+    }
 }

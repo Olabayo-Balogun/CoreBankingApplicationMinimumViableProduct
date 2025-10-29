@@ -1,11 +1,11 @@
 ﻿namespace Application.Models.PaymentIntegration.Paystack.Response
 {
-	public class PaystackPaymentVerificationHistoryResponse
-	{
-		public string type { get; set; }
-		public string message { get; set; }
-		public int time { get; set; }
-	}
+    public class PaystackPaymentVerificationHistoryResponse
+    {
+        public string type { get; set; }
+        public string message { get; set; }
+        public int time { get; set; }
+    }
 }
 
 

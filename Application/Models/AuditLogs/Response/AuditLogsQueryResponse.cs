@@ -7,13 +7,13 @@ using Application.Models.Users.Response;
 
 namespace Application.Models.AuditLogs.Response
 {
-	public class AuditLogsQueryResponse
-	{
-		public List<AccountResponse>? AccountLogs { get; set; }
-		public List<BankResponse>? BankLogs { get; set; }
-		public List<BranchResponse>? BranchLogs { get; set; }
-		public List<TransactionResponse>? TransactionLogs { get; set; }
-		public List<UploadResponse>? UploadLogs { get; set; }
-		public List<UserResponse>? UserLogs { get; set; }
-	}
+    public class AuditLogsQueryResponse
+    {
+        public List<AccountResponse>? AccountLogs { get; set; }
+        public List<BankResponse>? BankLogs { get; set; }
+        public List<BranchResponse>? BranchLogs { get; set; }
+        public List<TransactionResponse>? TransactionLogs { get; set; }
+        public List<UploadResponse>? UploadLogs { get; set; }
+        public List<UserResponse>? UserLogs { get; set; }
+    }
 }

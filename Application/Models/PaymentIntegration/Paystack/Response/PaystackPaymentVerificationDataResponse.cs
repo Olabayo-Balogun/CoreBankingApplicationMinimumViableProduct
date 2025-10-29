@@ -2,75 +2,75 @@
 
 namespace Application.Models.PaymentIntegration.Paystack.Response
 {
-	public class PaystackPaymentVerificationDataResponse
-	{
-		[JsonPropertyName ("id")]
-		public long Id { get; set; }
+    public class PaystackPaymentVerificationDataResponse
+    {
+        [JsonPropertyName ("id")]
+        public long Id { get; set; }
 
-		[JsonPropertyName ("domain")]
-		public string? Domain { get; set; }
+        [JsonPropertyName ("domain")]
+        public string? Domain { get; set; }
 
-		[JsonPropertyName ("status")]
-		public string Status { get; set; }
+        [JsonPropertyName ("status")]
+        public string Status { get; set; }
 
-		[JsonPropertyName ("reference")]
-		public string Reference { get; set; }
+        [JsonPropertyName ("reference")]
+        public string Reference { get; set; }
 
-		[JsonPropertyName ("receipt_number")]
-		public object? ReceiptNumber { get; set; }
+        [JsonPropertyName ("receipt_number")]
+        public object? ReceiptNumber { get; set; }
 
-		[JsonPropertyName ("amount")]
-		public int Amount { get; set; }
+        [JsonPropertyName ("amount")]
+        public int Amount { get; set; }
 
-		[JsonPropertyName ("message")]
-		public string Message { get; set; }
+        [JsonPropertyName ("message")]
+        public string Message { get; set; }
 
-		[JsonPropertyName ("gateway_response")]
-		public string? GatewayResponse { get; set; }
+        [JsonPropertyName ("gateway_response")]
+        public string? GatewayResponse { get; set; }
 
-		[JsonPropertyName ("paid_at")]
-		public DateTime? PaidAt { get; set; }
+        [JsonPropertyName ("paid_at")]
+        public DateTime? PaidAt { get; set; }
 
-		[JsonPropertyName ("created_at")]
-		public DateTime? CreatedAt { get; set; }
+        [JsonPropertyName ("created_at")]
+        public DateTime? CreatedAt { get; set; }
 
-		[JsonPropertyName ("channel")]
-		public string Channel { get; set; }
+        [JsonPropertyName ("channel")]
+        public string Channel { get; set; }
 
-		[JsonPropertyName ("currency")]
-		public string Currency { get; set; }
+        [JsonPropertyName ("currency")]
+        public string Currency { get; set; }
 
-		[JsonPropertyName ("ip_address")]
-		public string IpAddress { get; set; }
+        [JsonPropertyName ("ip_address")]
+        public string IpAddress { get; set; }
 
-		[JsonPropertyName ("metadata")]
-		public string? Metadata { get; set; }
+        [JsonPropertyName ("metadata")]
+        public string? Metadata { get; set; }
 
-		[JsonPropertyName ("log")]
-		public PaystackPaymentVerificationLogResponse? Log { get; set; }
+        [JsonPropertyName ("log")]
+        public PaystackPaymentVerificationLogResponse? Log { get; set; }
 
-		[JsonPropertyName ("fees")]
-		public object? Fees { get; set; }
+        [JsonPropertyName ("fees")]
+        public object? Fees { get; set; }
 
-		[JsonPropertyName ("fees_split")]
-		public object? FeesSplit { get; set; }
+        [JsonPropertyName ("fees_split")]
+        public object? FeesSplit { get; set; }
 
-		[JsonPropertyName ("authorization")]
-		public PaystackPaymentVerificationAuthorizationResponse? Authorization { get; set; }
-		[JsonPropertyName ("customer")]
-		public PaystackPaymentVerificationCustomerResponse? Customer { get; set; }
-		public object? Plan { get; set; }
-		public object? Split { get; set; }
-		public object? OrderId { get; set; }
-		public int? RequestedAmount { get; set; }
-		public object? PosTransactionData { get; set; }
-		public object? Source { get; set; }
-		public object? FeesBreakdown { get; set; }
-		public object? Connect { get; set; }
-		public DateTime? TransactionDate { get; set; }
-		public object? PlanObject { get; set; }
-		public object? Subaccount { get; set; }
-	}
+        [JsonPropertyName ("authorization")]
+        public PaystackPaymentVerificationAuthorizationResponse? Authorization { get; set; }
+        [JsonPropertyName ("customer")]
+        public PaystackPaymentVerificationCustomerResponse? Customer { get; set; }
+        public object? Plan { get; set; }
+        public object? Split { get; set; }
+        public object? OrderId { get; set; }
+        public int? RequestedAmount { get; set; }
+        public object? PosTransactionData { get; set; }
+        public object? Source { get; set; }
+        public object? FeesBreakdown { get; set; }
+        public object? Connect { get; set; }
+        public DateTime? TransactionDate { get; set; }
+        public object? PlanObject { get; set; }
+        public object? Subaccount { get; set; }
+    }
 }
 
 //"data": {

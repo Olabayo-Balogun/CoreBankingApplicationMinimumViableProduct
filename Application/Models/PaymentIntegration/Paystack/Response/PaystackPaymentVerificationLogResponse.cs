@@ -1,17 +1,17 @@
 ﻿namespace Application.Models.PaymentIntegration.Paystack.Response
 {
-	public class PaystackPaymentVerificationLogResponse
-	{
-		public int start_time { get; set; }
-		public int time_spent { get; set; }
+    public class PaystackPaymentVerificationLogResponse
+    {
+        public int start_time { get; set; }
+        public int time_spent { get; set; }
 
-		public int attempts { get; set; }
-		public int errors { get; set; }
-		public bool success { get; set; }
-		public bool mobile { get; set; }
-		public List<string> input { get; set; }
-		public List<PaystackPaymentVerificationHistoryResponse> history { get; set; }
-	}
+        public int attempts { get; set; }
+        public int errors { get; set; }
+        public bool success { get; set; }
+        public bool mobile { get; set; }
+        public List<string> input { get; set; }
+        public List<PaystackPaymentVerificationHistoryResponse> history { get; set; }
+    }
 }
 
 //"log": {

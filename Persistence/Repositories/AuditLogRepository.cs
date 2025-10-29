@@ -11,15 +11,8 @@ using Application.Models.Users.Response;
 using Application.Utility;
 
 using AutoMapper;
-using AutoMapper.Internal;
-
-using Azure.Core;
-
-using CloudinaryDotNet;
 
 using Domain.Entities;
-
-using MediatR;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -61,9 +54,9 @@ namespace Persistence.Repositories
                 {
                     var badRequest = RequestResponse<AuditLogsQueryResponse>.Failed (null, 400, "Please enter valid details");
 
-					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateAuditLogAsync), nameof (request.Name), request.Name, nameof (request.CreatedBy), request.CreatedBy, badRequest.Remark);
-					_logger.LogInformation (closingLog);
-				}
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateAuditLogAsync), nameof (request.Name), request.Name, nameof (request.CreatedBy), request.CreatedBy, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+                }
 
                 var payload = new AuditLog
                 {
@@ -112,45 +105,45 @@ namespace Persistence.Repositories
                 }
                 var result = RequestResponse<AuditLogResponse>.Created (response, 1, "Audit log");
 
-				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CreateAuditLogAsync), nameof (request.Name), request.Name, nameof (request.CreatedBy), request.CreatedBy, result.Remark);
-				_logger.LogInformation (conclusionLog);
-				return result;
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CreateAuditLogAsync), nameof (request.Name), request.Name, nameof (request.CreatedBy), request.CreatedBy, result.Remark);
+                _logger.LogInformation (conclusionLog);
+                return result;
             }
             catch (Exception ex)
             {
-				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateAuditLogAsync), nameof (request.Name), request.Name, nameof (request.CreatedBy), request.CreatedBy, ex.Message);
-				_logger.LogError (errorLog);
-				return RequestResponse<AuditLogResponse>.Error (null);
-			}
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateAuditLogAsync), nameof (request.Name), request.Name, nameof (request.CreatedBy), request.CreatedBy, ex.Message);
+                _logger.LogError (errorLog);
+                return RequestResponse<AuditLogResponse>.Error (null);
+            }
         }
 
         public async Task<RequestResponse<AuditLogsQueryResponse>> CreateMultipleAuditLogAsync (List<CreateAuditLogCommand> requests)
         {
             try
             {
-				string initiationLog = Utility.GenerateMethodInitiationLog (nameof (CreateMultipleAuditLogAsync));
-				_logger.LogInformation (initiationLog);
-				if (requests == null)
+                string initiationLog = Utility.GenerateMethodInitiationLog (nameof (CreateMultipleAuditLogAsync));
+                _logger.LogInformation (initiationLog);
+                if (requests == null)
                 {
                     var badRequest = RequestResponse<AuditLogsQueryResponse>.NullPayload (null);
 
-					string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateMultipleAuditLogAsync), badRequest.Remark);
-					_logger.LogInformation (closingLog);
-					return badRequest;
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateMultipleAuditLogAsync), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+                    return badRequest;
                 }
 
                 var payloads = new List<AuditLog> ();
                 foreach (var request in requests)
                 {
-					string openingLog = Utility.GenerateMethodInitiationLog (nameof (CreateMultipleAuditLogAsync), nameof (request.CreatedBy), request.Name, nameof (request.CreatedBy), request.CreatedBy);
-					_logger.LogInformation (openingLog);
+                    string openingLog = Utility.GenerateMethodInitiationLog (nameof (CreateMultipleAuditLogAsync), nameof (request.CreatedBy), request.Name, nameof (request.CreatedBy), request.CreatedBy);
+                    _logger.LogInformation (openingLog);
 
-					if (!request.Name.Equals ("Account", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Bank", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Branch", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Transaction", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Upload", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("User", StringComparison.OrdinalIgnoreCase))
+                    if (!request.Name.Equals ("Account", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Bank", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Branch", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Transaction", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Upload", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("User", StringComparison.OrdinalIgnoreCase))
                     {
                         var badRequest = RequestResponse<AuditLogsQueryResponse>.Failed (null, 400, "Please enter valid details");
 
-						string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateMultipleAuditLogAsync), nameof (request.Name), request.Name, nameof (request.CreatedBy), request.CreatedBy, badRequest.Remark);
-						_logger.LogInformation (closingLog);
+                        string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateMultipleAuditLogAsync), nameof (request.Name), request.Name, nameof (request.CreatedBy), request.CreatedBy, badRequest.Remark);
+                        _logger.LogInformation (closingLog);
 
                         return badRequest;
                     }
@@ -215,23 +208,23 @@ namespace Persistence.Repositories
                 var result = RequestResponse<AuditLogsQueryResponse>.Created (response, payloads.LongCount (), "Audit logs");
 
                 string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (CreateMultipleAuditLogAsync), result.Remark);
-				_logger.LogInformation (conclusionLog);
+                _logger.LogInformation (conclusionLog);
                 return result;
             }
             catch (Exception ex)
             {
-				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateAuditLogAsync), ex.Message);
-				_logger.LogError (errorLog);
-				return RequestResponse<AuditLogsQueryResponse>.Error (null);
-			}
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateAuditLogAsync), ex.Message);
+                _logger.LogError (errorLog);
+                return RequestResponse<AuditLogsQueryResponse>.Error (null);
+            }
         }
 
         public async Task<RequestResponse<AuditLogResponse>> GetAuditLogByIdAsync (string id, CancellationToken cancellationToken)
         {
             try
             {
-				string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAuditLogByIdAsync), nameof (id), id);
-				_logger.LogInformation (openingLog);
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAuditLogByIdAsync), nameof (id), id);
+                _logger.LogInformation (openingLog);
 
                 var response = await _context.AuditLogs
                     .AsNoTracking ()
@@ -242,9 +235,9 @@ namespace Persistence.Repositories
                 {
                     var badRequest = RequestResponse<AuditLogResponse>.NotFound (null, "Audit log");
 
-					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAuditLogByIdAsync), nameof (id), id, badRequest.Remark);
-					_logger.LogInformation (closingLog);
-					return badRequest;
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAuditLogByIdAsync), nameof (id), id, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+                    return badRequest;
                 }
 
                 var payload = new AuditLogResponse ();
@@ -274,25 +267,25 @@ namespace Persistence.Repositories
 
                 var result = RequestResponse<AuditLogResponse>.SearchSuccessful (payload, 1, "Audit log");
 
-				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAuditLogByIdAsync), nameof (id), id, result.Remark);
-				_logger.LogInformation (conclusionLog);
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAuditLogByIdAsync), nameof (id), id, result.Remark);
+                _logger.LogInformation (conclusionLog);
 
                 return result;
             }
             catch (Exception ex)
             {
-				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAuditLogByIdAsync), nameof (id), id, ex.Message);
-				_logger.LogError (errorLog);
-				return RequestResponse<AuditLogResponse>.Error (null);
-			}
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAuditLogByIdAsync), nameof (id), id, ex.Message);
+                _logger.LogError (errorLog);
+                return RequestResponse<AuditLogResponse>.Error (null);
+            }
         }
 
         public async Task<RequestResponse<AuditLogsQueryResponse>> GetAuditLogsAsync (string? userId, string? logName, CancellationToken cancellationToken, int pageNumber, int pageSize)
         {
             try
             {
-				string openingLog = Utility.GenerateMethodInitiationLog(nameof(GetAuditLogsAsync), nameof(userId), userId ?? string.Empty, nameof(logName), logName ?? string.Empty );
-				_logger.LogInformation (openingLog);
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAuditLogsAsync), nameof (userId), userId ?? string.Empty, nameof (logName), logName ?? string.Empty);
+                _logger.LogInformation (openingLog);
 
                 AuditLogsQueryResponse result = new ()
                 {
@@ -369,8 +362,8 @@ namespace Persistence.Repositories
                 {
                     var badResult = RequestResponse<AuditLogsQueryResponse>.NotFound (null, "Audit logs");
 
-					string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAuditLogsAsync), nameof (userId), userId ?? string.Empty, nameof (logName), logName ?? string.Empty, nameof (badResult.TotalCount), badResult.TotalCount.ToString(), badResult.Remark);
-					_logger.LogInformation (closingLog);
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAuditLogsAsync), nameof (userId), userId ?? string.Empty, nameof (logName), logName ?? string.Empty, nameof (badResult.TotalCount), badResult.TotalCount.ToString (), badResult.Remark);
+                    _logger.LogInformation (closingLog);
 
                     return badResult;
                 }
@@ -404,17 +397,17 @@ namespace Persistence.Repositories
 
                 var auditLogResponse = RequestResponse<AuditLogsQueryResponse>.SearchSuccessful (result, count, "Audit logs");
 
-				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAuditLogsAsync), nameof (userId), userId ?? string.Empty, nameof (logName), logName ?? string.Empty, nameof (auditLogResponse.TotalCount), auditLogResponse.TotalCount.ToString (), auditLogResponse.Remark);
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAuditLogsAsync), nameof (userId), userId ?? string.Empty, nameof (logName), logName ?? string.Empty, nameof (auditLogResponse.TotalCount), auditLogResponse.TotalCount.ToString (), auditLogResponse.Remark);
 
-				_logger.LogInformation (conclusionLog);
+                _logger.LogInformation (conclusionLog);
                 return auditLogResponse;
             }
             catch (Exception ex)
             {
-				string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAuditLogsAsync), nameof (userId), userId ?? string.Empty, nameof (logName), logName ?? string.Empty, ex.Message);
-				_logger.LogError (errorLog);
-				return RequestResponse<AuditLogsQueryResponse>.Error (null);
-			}
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAuditLogsAsync), nameof (userId), userId ?? string.Empty, nameof (logName), logName ?? string.Empty, ex.Message);
+                _logger.LogError (errorLog);
+                return RequestResponse<AuditLogsQueryResponse>.Error (null);
+            }
         }
     }
 }

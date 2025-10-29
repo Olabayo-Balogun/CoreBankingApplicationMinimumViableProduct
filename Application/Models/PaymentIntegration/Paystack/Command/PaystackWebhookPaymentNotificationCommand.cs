@@ -1,10 +1,10 @@
 ﻿namespace Application.Models.PaymentIntegration.Paystack.Command
 {
-	public class PaystackWebhookPaymentNotificationCommand
-	{
-		public DateTime sent_at { get; set; }
-		public string channel { get; set; }
-	}
+    public class PaystackWebhookPaymentNotificationCommand
+    {
+        public DateTime sent_at { get; set; }
+        public string channel { get; set; }
+    }
 }
 
 //    "notifications": [

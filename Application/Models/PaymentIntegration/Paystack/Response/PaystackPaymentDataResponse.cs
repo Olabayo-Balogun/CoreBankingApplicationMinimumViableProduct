@@ -1,11 +1,11 @@
 ﻿namespace Application.Models.PaymentIntegration.Paystack.Response
 {
-	public class PaystackPaymentDataResponse
-	{
-		public string authorization_url { get; set; }
-		public string access_code { get; set; }
-		public string reference { get; set; }
-	}
+    public class PaystackPaymentDataResponse
+    {
+        public string authorization_url { get; set; }
+        public string access_code { get; set; }
+        public string reference { get; set; }
+    }
 }
 
 //"data": {

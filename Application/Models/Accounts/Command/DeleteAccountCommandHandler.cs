@@ -5,19 +5,19 @@ using MediatR;
 
 namespace Application.Models.Accounts.Command
 {
-	public class DeleteAccountCommandHandler : IRequest<RequestResponse<AccountResponse>>
-	{
-		private readonly IAccountRepository _accountRepository;
-		public DeleteAccountCommandHandler (IAccountRepository accountRepository)
-		{
-			_accountRepository = accountRepository;
-		}
+    public class DeleteAccountCommandHandler : IRequest<RequestResponse<AccountResponse>>
+    {
+        private readonly IAccountRepository _accountRepository;
+        public DeleteAccountCommandHandler (IAccountRepository accountRepository)
+        {
+            _accountRepository = accountRepository;
+        }
 
-		public async Task<RequestResponse<AccountResponse>> Handle (DeleteAccountCommand request, CancellationToken cancellationToken)
-		{
-			var result = await _accountRepository.DeleteAccountAsync (request);
+        public async Task<RequestResponse<AccountResponse>> Handle (DeleteAccountCommand request, CancellationToken cancellationToken)
+        {
+            var result = await _accountRepository.DeleteAccountAsync (request);
 
-			return result;
-		}
-	}
+            return result;
+        }
+    }
 }

@@ -1,11 +1,11 @@
 ﻿namespace Application.Models.PaymentIntegration.Paystack.Response
 {
-	public class PaystackPaymentResponse
-	{
-		public bool Status { get; set; }
-		public string Message { get; set; }
-		public PaystackPaymentDataResponse? Data { get; set; }
-	}
+    public class PaystackPaymentResponse
+    {
+        public bool Status { get; set; }
+        public string Message { get; set; }
+        public PaystackPaymentDataResponse? Data { get; set; }
+    }
 }
 
 //{

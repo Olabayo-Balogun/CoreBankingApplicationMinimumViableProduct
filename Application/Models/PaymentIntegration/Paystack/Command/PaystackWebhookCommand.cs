@@ -1,10 +1,10 @@
 ﻿namespace Application.Models.PaymentIntegration.Paystack.Command
 {
-	public class PaystackWebhookCommand
-	{
-		public string Event { get; set; }
-		public PaystackWebhookDataCommand Data { get; set; }
-	}
+    public class PaystackWebhookCommand
+    {
+        public string Event { get; set; }
+        public PaystackWebhookDataCommand Data { get; set; }
+    }
 }
 
 //{

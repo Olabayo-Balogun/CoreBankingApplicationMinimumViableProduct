@@ -1,29 +1,29 @@
 ﻿namespace Application.Models.PaymentIntegration.Paystack.Command
 {
-	public class PaystackWebhookDataCommand
-	{
-		public long id { get; set; }
-		public string domain { get; set; }
-		public int Amount { get; set; }
-		public string currency { get; set; }
-		public DateTime? due_date { get; set; }
-		public bool has_invoice { get; set; }
-		public string? invoice_number { get; set; }
-		public string description { get; set; }
-		public string? pdf_url { get; set; }
-		public List<string> line_items { get; set; }
-		public List<string> tax { get; set; }
-		public string request_code { get; set; }
-		public string status { get; set; }
-		public string paid { get; set; }
-		public DateTime paid_at { get; set; }
-		public string? metadata { get; set; }
-		public List<PaystackWebhookPaymentNotificationCommand>? notifications { get; set; }
+    public class PaystackWebhookDataCommand
+    {
+        public long id { get; set; }
+        public string domain { get; set; }
+        public int Amount { get; set; }
+        public string currency { get; set; }
+        public DateTime? due_date { get; set; }
+        public bool has_invoice { get; set; }
+        public string? invoice_number { get; set; }
+        public string description { get; set; }
+        public string? pdf_url { get; set; }
+        public List<string> line_items { get; set; }
+        public List<string> tax { get; set; }
+        public string request_code { get; set; }
+        public string status { get; set; }
+        public string paid { get; set; }
+        public DateTime paid_at { get; set; }
+        public string? metadata { get; set; }
+        public List<PaystackWebhookPaymentNotificationCommand>? notifications { get; set; }
 
-		public string offline_reference { get; set; }
-		public int customer { get; set; }
-		public DateTime created_at { get; set; }
-	}
+        public string offline_reference { get; set; }
+        public int customer { get; set; }
+        public DateTime created_at { get; set; }
+    }
 }
 
 //"data": {

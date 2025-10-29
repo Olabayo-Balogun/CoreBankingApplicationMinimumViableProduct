@@ -4,9 +4,9 @@ using MediatR;
 
 namespace Application.Models.Users.Command
 {
-	public class ForgetPasswordCommand : IRequest<RequestResponse<UserResponse>>
-	{
-		public string Email { get; set; }
-		public CancellationToken CancellationToken { get; set; }
-	}
+    public class ForgetPasswordCommand : IRequest<RequestResponse<UserResponse>>
+    {
+        public string Email { get; set; }
+        public CancellationToken CancellationToken { get; set; }
+    }
 }

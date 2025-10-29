@@ -25,60 +25,60 @@ using Domain.Entities;
 
 namespace Application.Profiles
 {
-	public class MappingProfiles : Profile
-	{
-		public MappingProfiles ()
-		{
-			CreateMap<CreateAuditLogCommand, AuditLog> ().ReverseMap ();
+    public class MappingProfiles : Profile
+    {
+        public MappingProfiles ()
+        {
+            CreateMap<CreateAuditLogCommand, AuditLog> ().ReverseMap ();
 
-			CreateMap<CreateAccountCommand, AccountDto> ().ReverseMap ();
-			CreateMap<UpdateAccountCommand, AccountDto> ().ReverseMap ();
-			CreateMap<AccountResponse, AccountDto> ().ReverseMap ();
-			CreateMap<AccountDto, Account> ().ReverseMap ();
-			CreateMap<Account, AccountResponse> ().ReverseMap ();
+            CreateMap<CreateAccountCommand, AccountDto> ().ReverseMap ();
+            CreateMap<UpdateAccountCommand, AccountDto> ().ReverseMap ();
+            CreateMap<AccountResponse, AccountDto> ().ReverseMap ();
+            CreateMap<AccountDto, Account> ().ReverseMap ();
+            CreateMap<Account, AccountResponse> ().ReverseMap ();
 
-			CreateMap<CreateBankCommand, BankDto> ().ReverseMap ();
-			CreateMap<UpdateBankCommand, BankDto> ().ReverseMap ();
-			CreateMap<BankResponse, BankDto> ().ReverseMap ();
-			CreateMap<BankDto, Bank> ().ReverseMap ();
-			CreateMap<Bank, BankResponse> ().ReverseMap ();
+            CreateMap<CreateBankCommand, BankDto> ().ReverseMap ();
+            CreateMap<UpdateBankCommand, BankDto> ().ReverseMap ();
+            CreateMap<BankResponse, BankDto> ().ReverseMap ();
+            CreateMap<BankDto, Bank> ().ReverseMap ();
+            CreateMap<Bank, BankResponse> ().ReverseMap ();
 
-			CreateMap<CreateBranchCommand, BranchDto> ().ReverseMap ();
-			CreateMap<UpdateBranchCommand, BranchDto> ().ReverseMap ();
-			CreateMap<BranchResponse, BranchDto> ().ReverseMap ();
-			CreateMap<BranchDto, Branch> ().ReverseMap ();
-			CreateMap<Branch, BranchResponse> ().ReverseMap ();
+            CreateMap<CreateBranchCommand, BranchDto> ().ReverseMap ();
+            CreateMap<UpdateBranchCommand, BranchDto> ().ReverseMap ();
+            CreateMap<BranchResponse, BranchDto> ().ReverseMap ();
+            CreateMap<BranchDto, Branch> ().ReverseMap ();
+            CreateMap<Branch, BranchResponse> ().ReverseMap ();
 
-			CreateMap<EmailLogDto, EmailLog> ().ReverseMap ();
-			CreateMap<CreateEmailLogCommand, EmailLogDto> ().ReverseMap ();
-			CreateMap<EmailLogResponse, EmailLogDto> ().ReverseMap ();
-			CreateMap<EmailLog, EmailLogResponse> ().ReverseMap ();
+            CreateMap<EmailLogDto, EmailLog> ().ReverseMap ();
+            CreateMap<CreateEmailLogCommand, EmailLogDto> ().ReverseMap ();
+            CreateMap<EmailLogResponse, EmailLogDto> ().ReverseMap ();
+            CreateMap<EmailLog, EmailLogResponse> ().ReverseMap ();
 
-			CreateMap<EmailRequestDto, EmailRequest> ().ReverseMap ();
-			CreateMap<CreateEmailCommand, EmailRequestDto> ().ReverseMap ();
-			CreateMap<EmailRequestResponse, EmailRequestDto> ().ReverseMap ();
-			CreateMap<EmailRequest, EmailRequestResponse> ().ReverseMap ();
+            CreateMap<EmailRequestDto, EmailRequest> ().ReverseMap ();
+            CreateMap<CreateEmailCommand, EmailRequestDto> ().ReverseMap ();
+            CreateMap<EmailRequestResponse, EmailRequestDto> ().ReverseMap ();
+            CreateMap<EmailRequest, EmailRequestResponse> ().ReverseMap ();
 
-			CreateMap<EmailTemplateDto, EmailTemplate> ().ReverseMap ();
-			CreateMap<CreateEmailTemplateCommand, EmailTemplateDto> ().ReverseMap ();
-			CreateMap<EmailTemplateResponse, EmailTemplateDto> ().ReverseMap ();
-			CreateMap<EmailTemplate, EmailTemplateResponse> ().ReverseMap ();
+            CreateMap<EmailTemplateDto, EmailTemplate> ().ReverseMap ();
+            CreateMap<CreateEmailTemplateCommand, EmailTemplateDto> ().ReverseMap ();
+            CreateMap<EmailTemplateResponse, EmailTemplateDto> ().ReverseMap ();
+            CreateMap<EmailTemplate, EmailTemplateResponse> ().ReverseMap ();
 
-			CreateMap<DepositCommand, TransactionDto> ().ReverseMap ();
-			CreateMap<WithdrawCommand, TransactionDto> ().ReverseMap ();
-			CreateMap<TransactionDto, Transaction> ().ReverseMap ();
-			CreateMap<Transaction, TransactionResponse> ().ReverseMap ();
+            CreateMap<DepositCommand, TransactionDto> ().ReverseMap ();
+            CreateMap<WithdrawCommand, TransactionDto> ().ReverseMap ();
+            CreateMap<TransactionDto, Transaction> ().ReverseMap ();
+            CreateMap<Transaction, TransactionResponse> ().ReverseMap ();
 
-			CreateMap<UploadDto, Upload> ().ReverseMap ();
-			CreateMap<CreateUploadCommand, UploadDto> ().ReverseMap ();
-			CreateMap<UpdateUploadCommand, UploadDto> ().ReverseMap ();
-			CreateMap<Upload, UploadResponse> ().ReverseMap ();
+            CreateMap<UploadDto, Upload> ().ReverseMap ();
+            CreateMap<CreateUploadCommand, UploadDto> ().ReverseMap ();
+            CreateMap<UpdateUploadCommand, UploadDto> ().ReverseMap ();
+            CreateMap<Upload, UploadResponse> ().ReverseMap ();
 
-			CreateMap<UserDto, User> ().ReverseMap ();
-			CreateMap<RegistrationCommand, UserDto> ().ReverseMap ();
-			CreateMap<UserResponse, UserDto> ().ReverseMap ();
-			CreateMap<User, UserResponse> ().ReverseMap ();
-			CreateMap<User, LoginResponse> ().ReverseMap ();
-		}
-	}
+            CreateMap<UserDto, User> ().ReverseMap ();
+            CreateMap<RegistrationCommand, UserDto> ().ReverseMap ();
+            CreateMap<UserResponse, UserDto> ().ReverseMap ();
+            CreateMap<User, UserResponse> ().ReverseMap ();
+            CreateMap<User, LoginResponse> ().ReverseMap ();
+        }
+    }
 }
