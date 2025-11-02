@@ -77,7 +77,6 @@ namespace Persistence.Repositories
                 payload.PublicId = Guid.NewGuid ().ToString ();
 
                 await _context.AuditLogs.AddAsync (payload, request.CancellationToken);
-                await _context.SaveChangesAsync (request.CancellationToken);
 
                 var response = new AuditLogResponse ();
                 switch (payload.Name)
@@ -166,7 +165,6 @@ namespace Persistence.Repositories
                 }
 
                 await _context.AuditLogs.AddRangeAsync (payloads, requests.First ().CancellationToken);
-                await _context.SaveChangesAsync (requests.First ().CancellationToken);
 
                 var response = new AuditLogsQueryResponse
                 {

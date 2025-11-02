@@ -77,7 +77,7 @@ namespace Test.Repositories
         public async Task DeleteUserAsync_UserNotAdmin_ReturnsUnauthorized ()
         {
             using var context = CreateDbContext ();
-            context.Users.Add (new User { PublicId = "user1", IsDeleted = false, UserRole = "User", Email = "example@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = "user1", IsDeleted = false, UserRole = UserRoles.User, Email = "example@gmail.com", Password = "Password1!" });
             await context.SaveChangesAsync ();
 
             var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -95,7 +95,7 @@ namespace Test.Repositories
         public async Task DeleteUserAsync_AdminUser_DeletesSuccessfully ()
         {
             using var context = CreateDbContext ();
-            context.Users.Add (new User { PublicId = "admin1", IsDeleted = false, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = "admin1", IsDeleted = false, UserRole = UserRoles.Admin, Email = "example@gmail.com", Password = "Password1!" });
             await context.SaveChangesAsync ();
 
             _auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
@@ -116,7 +116,7 @@ namespace Test.Repositories
         public async Task DeleteMultipleUserAsync_OneUserNotFound_ReturnsNotFound ()
         {
             using var context = CreateDbContext ();
-            context.Users.Add (new User { PublicId = "admin1", IsDeleted = false, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = "admin1", IsDeleted = false, UserRole = UserRoles.Admin, Email = "example@gmail.com", Password = "Password1!" });
             await context.SaveChangesAsync ();
 
             var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -267,13 +267,13 @@ namespace Test.Repositories
         public async Task GetAllUserByRoleAsync_DeletedUsersExist_ReturnsSuccess ()
         {
             using var context = CreateDbContext ();
-            context.Users.Add (new User { PublicId = "user1", IsDeleted = true, UserRole = "Admin", DateDeleted = DateTime.UtcNow, Email = "example@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = "user1", IsDeleted = true, UserRole = UserRoles.Admin, DateDeleted = DateTime.UtcNow, Email = "example@gmail.com", Password = "Password1!" });
             await context.SaveChangesAsync ();
 
             var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
                 _emailTemplateServiceMock.Object, _emailRequestServiceMock.Object, _auditLogRepoMock.Object);
 
-            var result = await repo.GetAllUserByRoleAsync ("Admin", true, CancellationToken.None, 1, 10);
+            var result = await repo.GetAllUserByRoleAsync (UserRoles.Admin, true, CancellationToken.None, 1, 10);
 
             Assert.True (result.IsSuccessful);
             Assert.Equal ("Users retrieved successfully", result.Remark);
@@ -284,7 +284,7 @@ namespace Test.Repositories
         public async Task GetAllUserByRoleAsync_ActiveUsersExist_ReturnsSuccess ()
         {
             using var context = CreateDbContext ();
-            context.Users.Add (new User { PublicId = "user2", IsDeleted = false, UserRole = "User", DateCreated = DateTime.UtcNow, Email = "example@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = "user2", IsDeleted = false, UserRole = UserRoles.User, DateCreated = DateTime.UtcNow, Email = "example@gmail.com", Password = "Password1!" });
             await context.SaveChangesAsync ();
 
             var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
@@ -384,13 +384,13 @@ namespace Test.Repositories
         public async Task GetCountOfUserByRoleAsync_UsersExist_ReturnsCorrectCount ()
         {
             using var context = CreateDbContext ();
-            context.Users.Add (new User { PublicId = "user1", IsDeleted = false, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = "user1", IsDeleted = false, UserRole = UserRoles.Admin, Email = "example@gmail.com", Password = "Password1!" });
             await context.SaveChangesAsync ();
 
             var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
                 _emailTemplateServiceMock.Object, _emailRequestServiceMock.Object, _auditLogRepoMock.Object);
 
-            var result = await repo.GetCountOfUserByRoleAsync ("Admin", CancellationToken.None);
+            var result = await repo.GetCountOfUserByRoleAsync (UserRoles.Admin, CancellationToken.None);
 
             Assert.True (result.IsSuccessful);
             Assert.Equal (1, result.TotalCount);
@@ -839,7 +839,7 @@ namespace Test.Repositories
         {
             using var context = CreateDbContext ();
             context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Password = "Password1!", Email = "Password2@gmail.com", UserRole = UserRoles.User });
-            context.Users.Add (new User { PublicId = "user2", IsDeleted = false, UserRole = "User", Password = "Password1!", Email = "Password1!" });
+            context.Users.Add (new User { PublicId = "user2", IsDeleted = false, UserRole = UserRoles.User, Password = "Password1!", Email = "Password1!" });
             await context.SaveChangesAsync ();
 
             var dto = new UserDto { PublicId = "user1", LastModifiedBy = "user2", Email = "new@example.com", CancellationToken = CancellationToken.None };
@@ -859,7 +859,7 @@ namespace Test.Repositories
             using var context = CreateDbContext ();
             context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Email = "old@example.com", Password = "Password1!", UserRole = UserRoles.User });
             context.Users.Add (new User { PublicId = "user2", IsDeleted = false, Email = "new@example.com", EmailConfirmed = true, Password = "Password1!", UserRole = UserRoles.User });
-            context.Users.Add (new User { PublicId = "admin", IsDeleted = false, UserRole = "Admin", Password = "Password1!", Email = "example@gmail.com" });
+            context.Users.Add (new User { PublicId = "admin", IsDeleted = false, UserRole = UserRoles.Admin, Password = "Password1!", Email = "example@gmail.com" });
             await context.SaveChangesAsync ();
 
             var dto = new UserDto
@@ -884,7 +884,7 @@ namespace Test.Repositories
         {
             using var context = CreateDbContext ();
             context.Users.Add (new User { PublicId = "user1", IsDeleted = false, Email = "old@example.com", Password = "Password1!", UserRole = UserRoles.User });
-            context.Users.Add (new User { PublicId = "admin", IsDeleted = false, UserRole = "Admin", Password = "Password1!", Email = "example@gmail.com" });
+            context.Users.Add (new User { PublicId = "admin", IsDeleted = false, UserRole = UserRoles.Admin, Password = "Password1!", Email = "example@gmail.com" });
             await context.SaveChangesAsync ();
 
             _auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
@@ -921,7 +921,7 @@ namespace Test.Repositories
         public async Task UpdateUserRoleAsync_UserNotFound_ReturnsNotFound ()
         {
             using var context = CreateDbContext ();
-            var command = new UpdateUserRoleCommand { UserId = "nonexistent", LastModifiedBy = "admin", UserRole = "Staff", CancellationToken = CancellationToken.None };
+            var command = new UpdateUserRoleCommand { UserId = "nonexistent", LastModifiedBy = "admin", UserRole = UserRoles.Staff, CancellationToken = CancellationToken.None };
 
             var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
                 _emailTemplateServiceMock.Object, _emailRequestServiceMock.Object, _auditLogRepoMock.Object);
@@ -942,7 +942,7 @@ namespace Test.Repositories
             _auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
                 .ReturnsAsync (RequestResponse<AuditLogResponse>.AuditLogFailed (null));
 
-            var command = new UpdateUserRoleCommand { UserId = "user1", LastModifiedBy = "admin", UserRole = "Staff", CancellationToken = CancellationToken.None };
+            var command = new UpdateUserRoleCommand { UserId = "user1", LastModifiedBy = "admin", UserRole = UserRoles.Staff, CancellationToken = CancellationToken.None };
 
             var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
                 _emailTemplateServiceMock.Object, _emailRequestServiceMock.Object, _auditLogRepoMock.Object);
@@ -957,13 +957,13 @@ namespace Test.Repositories
         public async Task UpdateUserRoleAsync_ValidUpdate_ReturnsSuccess ()
         {
             using var context = CreateDbContext ();
-            context.Users.Add (new User { PublicId = "user1", IsDeleted = false, UserRole = "User", Email = "example@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = "user1", IsDeleted = false, UserRole = UserRoles.User, Email = "example@gmail.com", Password = "Password1!" });
             await context.SaveChangesAsync ();
 
             _auditLogRepoMock.Setup (x => x.CreateAuditLogAsync (It.IsAny<CreateAuditLogCommand> ()))
                 .ReturnsAsync (RequestResponse<AuditLogResponse>.Success (new AuditLogResponse (), 1, ""));
 
-            var command = new UpdateUserRoleCommand { UserId = "user1", LastModifiedBy = "admin", UserRole = "Admin", CancellationToken = CancellationToken.None };
+            var command = new UpdateUserRoleCommand { UserId = "user1", LastModifiedBy = "admin", UserRole = UserRoles.Admin, CancellationToken = CancellationToken.None };
 
             var repo = new UserRepository (context, _mapper, _appSettings, _loggerMock.Object,
                 _emailTemplateServiceMock.Object, _emailRequestServiceMock.Object, _auditLogRepoMock.Object);

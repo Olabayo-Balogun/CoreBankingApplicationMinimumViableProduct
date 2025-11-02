@@ -86,7 +86,6 @@ namespace Persistence.Repositories
                 check.DeletedBy = request.DeletedBy;
                 check.DateDeleted = DateTime.UtcNow.AddHours (1);
 
-                _context.EmailTemplates.Update (check);
                 await _context.SaveChangesAsync ();
 
                 var result = RequestResponse<EmailTemplateResponse>.Deleted (null, 1, "Email template");
@@ -146,7 +145,6 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                _context.EmailTemplates.UpdateRange (emailTemplates);
                 await _context.SaveChangesAsync (request.CancellationToken);
 
                 var result = RequestResponse<EmailTemplateResponse>.Deleted (null, emailTemplates.Count, "Email templates");
@@ -448,7 +446,6 @@ namespace Persistence.Repositories
                 updateTemplate.LastModifiedBy = emailTemplate.LastModifiedBy;
                 updateTemplate.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 
-                _context.EmailTemplates.Update (updateTemplate);
                 await _context.SaveChangesAsync ();
 
                 var result = _mapper.Map<EmailTemplateResponse> (updateTemplate);

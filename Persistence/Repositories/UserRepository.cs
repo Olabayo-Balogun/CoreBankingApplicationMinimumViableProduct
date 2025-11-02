@@ -54,7 +54,9 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"DeleteMultipleUser begins at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy}");
+                string initiationLog = Utility.GenerateMethodInitiationLog (nameof (DeleteMultipleUserAsync), nameof (request.DeletedBy), request.DeletedBy);
+                _logger.LogInformation (initiationLog);
+
                 List<CreateAuditLogCommand> auditLogs = [];
                 List<Domain.Entities.User> users = [];
 
@@ -64,7 +66,10 @@ namespace Persistence.Repositories
                     if (userCheck == null)
                     {
                         var badRequest = RequestResponse<UserResponse>.NotFound (null, "Users");
-                        _logger.LogInformation ($"DeleteMultipleUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy} with remark: {badRequest.Remark}");
+
+                        string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteMultipleUserAsync), nameof (id), id, nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+                        _logger.LogInformation (closingLog);
+
                         return badRequest;
                     }
 
@@ -72,14 +77,20 @@ namespace Persistence.Repositories
                     if (permissionCheck == null)
                     {
                         var badRequest = RequestResponse<UserResponse>.Unauthorized (null, "Cannot verify user identity");
-                        _logger.LogInformation ($"DeleteUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy} with remark: {badRequest.Remark}");
+
+                        string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteMultipleUserAsync), nameof (id), id, nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+                        _logger.LogInformation (closingLog);
+
                         return badRequest;
                     }
 
-                    if (!permissionCheck.Equals ("Admin", StringComparison.OrdinalIgnoreCase) && request.DeletedBy.Trim () != id.Trim ())
+                    if (!permissionCheck.Equals (UserRoles.Admin, StringComparison.OrdinalIgnoreCase) && request.DeletedBy.Trim () != id.Trim ())
                     {
                         var badRequest = RequestResponse<UserResponse>.Unauthorized (null, $"Unauthorized to delete user with ID: {id}");
-                        _logger.LogInformation ($"DeleteUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy} with remark: {badRequest.Remark}");
+
+                        string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteMultipleUserAsync), nameof (id), id, nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+                        _logger.LogInformation (closingLog);
+
                         return badRequest;
                     }
 
@@ -105,21 +116,28 @@ namespace Persistence.Repositories
                 if (createAuditLog.IsSuccessful == false)
                 {
                     var badRequest = RequestResponse<UserResponse>.AuditLogFailed (null);
-                    _logger.LogInformation ($"DeleteMultipleUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteMultipleUserAsync), nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
-                _context.UpdateRange (users);
                 await _context.SaveChangesAsync (request.CancellationToken);
 
                 var result = RequestResponse<UserResponse>.Deleted (null, users.Count, "Users");
-                _logger.LogInformation ($"DeleteMultipleUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy} with remark: {result.Remark}");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (DeleteMultipleUserAsync), result.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"DeleteMultipleUser by UserPublicId: {request.DeletedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (DeleteMultipleUserAsync), ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -127,12 +145,17 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"DeleteUser begins at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (DeleteUserAsync), nameof (request.UserId), request.UserId, nameof (request.DeletedBy), request.DeletedBy);
+                _logger.LogInformation (openingLog);
+
                 var userCheck = await _context.Users.Where (x => x.PublicId == request.DeletedBy && x.IsDeleted == false).FirstOrDefaultAsync ();
                 if (userCheck == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"DeleteUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteUserAsync), nameof (request.UserId), request.UserId, nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -140,14 +163,20 @@ namespace Persistence.Repositories
                 if (permissionCheck == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.Unauthorized (null, "Cannot verify user identity");
-                    _logger.LogInformation ($"DeleteUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteUserAsync), nameof (request.UserId), request.UserId, nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
-                if (!permissionCheck.Equals ("Admin", StringComparison.OrdinalIgnoreCase))
+                if (!permissionCheck.Equals (UserRoles.Admin, StringComparison.OrdinalIgnoreCase))
                 {
                     var badRequest = RequestResponse<UserResponse>.Unauthorized (null, $"Unauthorized to delete user");
-                    _logger.LogInformation ($"DeleteUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteUserAsync), nameof (request.UserId), request.UserId, nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -159,255 +188,37 @@ namespace Persistence.Repositories
                     Payload = JsonConvert.SerializeObject (userCheck)
                 };
 
+                userCheck.IsDeleted = true;
+                userCheck.DeletedBy = request.DeletedBy;
+                userCheck.DateDeleted = DateTime.UtcNow.AddHours (1);
+
                 RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequestViewModel);
 
                 if (createAuditLog.IsSuccessful == false)
                 {
                     var badRequest = RequestResponse<UserResponse>.AuditLogFailed (null);
-                    _logger.LogInformation ($"DeleteUser successfully ends at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (DeleteUserAsync), nameof (request.UserId), request.UserId, nameof (request.DeletedBy), request.DeletedBy, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
-                userCheck.IsDeleted = true;
-                userCheck.DeletedBy = request.DeletedBy;
-                userCheck.DateDeleted = DateTime.UtcNow.AddHours (1);
-
-                _context.Update (userCheck);
                 _context.SaveChanges ();
 
                 var result = RequestResponse<UserResponse>.Deleted (null, 1, "User");
-                _logger.LogInformation ($"DeleteUser successfully ends at {DateTime.UtcNow.AddHours (1)} by userId: {request.DeletedBy} with remark: {result.Remark}");
+
+                string conlcusionLog = Utility.GenerateMethodConclusionLog (nameof (DeleteUserAsync), nameof (request.UserId), request.UserId, nameof (request.DeletedBy), request.DeletedBy, result.Remark);
+                _logger.LogInformation (conlcusionLog);
+
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"DeleteUser by UserPublicId: {request.DeletedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
-            }
-        }
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (DeleteUserAsync), ex.Message);
+                _logger.LogError (errorLog);
 
-        public async Task<RequestResponse<List<UserResponse>>> GetAllDeletedUserByDateAsync (DateTime date, CancellationToken cancellation, int page, int pageSize)
-        {
-            try
-            {
-                _logger.LogInformation ($"GetAllDeletedUserByDate begins at {DateTime.UtcNow.AddHours (1)} for Date: {date}");
-                var result = await _context.Users
-                    .AsNoTracking ()
-                    .Where (x => x.IsDeleted == true && x.DateDeleted != null && x.DateDeleted.Value.Date == date.Date)
-                    .OrderByDescending (x => x.DateDeleted)
-                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
-                    .Skip ((page - 1) * pageSize)
-                    .Take (pageSize)
-                    .ToListAsync ();
-
-                if (result.Count < 1)
-                {
-                    var badResponse = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
-                    _logger.LogInformation ($"GetAllDeletedUserByDate ends at {DateTime.UtcNow.AddHours (1)} for Date: {date} with {badResponse.TotalCount} users retrieved and remark: {badResponse.Remark}");
-                    return badResponse;
-                }
-
-                var count = await _context.Users
-                .AsNoTracking ()
-                .Where (x => x.IsDeleted == true && x.DateDeleted != null && x.DateDeleted.Value.Date == date.Date).LongCountAsync (cancellation);
-
-                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
-                _logger.LogInformation ($"GetAllDeletedUserByDate ends at {DateTime.UtcNow.AddHours (1)} for Date: {date} with {response.TotalCount} users retrieved and remark: {response.Remark}");
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError ($"GetAllDeletedUserByDate for Date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
-            }
-        }
-
-        public async Task<RequestResponse<List<UserResponse>>> GetAllDeletedUsersAsync (CancellationToken cancellation, int page, int pageSize)
-        {
-            try
-            {
-                _logger.LogInformation ($"GetAllDeletedUsers begins at {DateTime.UtcNow.AddHours (1)}");
-                var result = await _context.Users
-                    .AsNoTracking ()
-                    .Where (x => x.IsDeleted == true)
-                    .OrderByDescending (x => x.DateDeleted)
-                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
-                    .Skip ((page - 1) * pageSize)
-                    .Take (pageSize)
-                    .ToListAsync (cancellation);
-
-                if (result.Count < 1)
-                {
-                    var badResponse = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
-                    _logger.LogInformation ($"GetAllDeletedUsers ends at {DateTime.UtcNow.AddHours (1)} with {badResponse.TotalCount} users retrieved and remark: {badResponse.Remark}");
-                    return badResponse;
-                }
-
-                var count = await _context.Users
-                .AsNoTracking ()
-                .Where (x => x.IsDeleted == true).LongCountAsync (cancellation);
-
-                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
-                _logger.LogInformation ($"GetAllDeletedUsers ends at {DateTime.UtcNow.AddHours (1)} with {response.TotalCount} users retrieved and remark: {response.Remark}");
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError ($"GetAllDeletedUsers exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
-            }
-        }
-
-        public async Task<RequestResponse<List<UserResponse>>> GetAllUserByDateAsync (DateTime date, CancellationToken cancellation, int page, int pageSize)
-        {
-            try
-            {
-                _logger.LogInformation ($"GetAllUserByDate begins at {DateTime.UtcNow.AddHours (1)} for Date: {date}");
-                var result = await _context.Users
-                    .AsNoTracking ()
-                    .Where (x => x.IsDeleted == false && x.DateCreated.Date == date.Date)
-                    .OrderByDescending (x => x.DateDeleted)
-                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
-                    .Skip ((page - 1) * pageSize)
-                    .Take (pageSize)
-                    .ToListAsync (cancellation);
-
-                if (result.Count < 1)
-                {
-                    var badResponse = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
-                    _logger.LogInformation ($"GetAllUserByDate for Date: {date} ends at {DateTime.UtcNow.AddHours (1)} with {badResponse.TotalCount} users retrieved and remark: {badResponse.Remark}");
-                    return badResponse;
-                }
-
-                var count = await _context.Users
-                .AsNoTracking ()
-                .Where (x => x.IsDeleted == false && x.DateCreated.Date == date.Date).LongCountAsync (cancellation);
-
-                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
-                _logger.LogInformation ($"GetAllUserByDate for Date: {date} ends at {DateTime.UtcNow.AddHours (1)} with {response.TotalCount} users retrieved and remark: {response.Remark}");
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError ($"GetAllUserByDate for Date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
-            }
-        }
-
-        public async Task<RequestResponse<List<UserResponse>>> GetAllUserByCountryAsync (string name, CancellationToken cancellation, int page, int pageSize)
-        {
-            try
-            {
-                _logger.LogInformation ($"GetAllUserByCountry begins at {DateTime.UtcNow.AddHours (1)} for Country: {name}");
-                var result = await _context.Users
-                    .AsNoTracking ()
-                    .Where (x => x.IsDeleted == false && x.CountryOfOrigin == name || x.CountryOfResidence == name)
-                    .OrderByDescending (x => x.DateDeleted)
-                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
-                    .Skip ((page - 1) * pageSize)
-                    .Take (pageSize)
-                    .ToListAsync (cancellation);
-
-                if (result.Count < 1)
-                {
-                    var badResponse = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
-                    _logger.LogInformation ($"GetAllUserByState for Country: {name} ends at {DateTime.UtcNow.AddHours (1)} with {badResponse.TotalCount} users retrieved and remark: {badResponse.Remark}");
-                    return badResponse;
-                }
-
-                var count = await _context.Users
-                .AsNoTracking ()
-                .Where (x => x.IsDeleted == false && x.CountryOfOrigin == name || x.CountryOfResidence == name).LongCountAsync (cancellation);
-
-                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
-                _logger.LogInformation ($"GetAllUserByState for Country: {name} ends at {DateTime.UtcNow.AddHours (1)} with {response.TotalCount} users retrieved and remark: {response.Remark}");
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError ($"GetAllUserByState for Country: {name} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
-            }
-        }
-
-        public async Task<RequestResponse<List<UserResponse>>> GetAllUserByRoleAsync (string role, bool isDeleted, CancellationToken cancellation, int page, int pageSize)
-        {
-            try
-            {
-                _logger.LogInformation ($"GetAllUserByRole begins at {DateTime.UtcNow.AddHours (1)} for role: {role}");
-                var result = isDeleted == true ? await _context.Users
-                    .AsNoTracking ()
-                    .Where (x => x.IsDeleted == true && x.UserRole == role)
-                    .OrderByDescending (x => x.DateDeleted)
-                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
-                    .Skip ((page - 1) * pageSize)
-                    .Take (pageSize)
-                    .ToListAsync (cancellation) : await _context.Users
-                    .AsNoTracking ()
-                    .Where (x => x.IsDeleted == false && x.UserRole == role)
-                    .OrderByDescending (x => x.DateCreated)
-                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
-                    .Skip ((page - 1) * pageSize)
-                    .Take (pageSize)
-                    .ToListAsync (cancellation);
-
-                if (result.Count < 1)
-                {
-                    var badResponse = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
-                    _logger.LogInformation ($"GetAllUserByRole for role: {role} ends at {DateTime.UtcNow.AddHours (1)} with {badResponse.TotalCount} users retrieved and remark: {badResponse.Remark}");
-                    return badResponse;
-                }
-
-                var count = isDeleted == true ? await _context.Users
-                .AsNoTracking ()
-                .Where (x => x.IsDeleted == true && x.UserRole == role).LongCountAsync (cancellation) : await _context.Users
-                .AsNoTracking ()
-                .Where (x => x.IsDeleted == false && x.UserRole == role).LongCountAsync (cancellation);
-
-                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
-                _logger.LogInformation ($"GetAllUserByRole for role: {role} ends at {DateTime.UtcNow.AddHours (1)} with {response.TotalCount} users retrieved and remark: {response.Remark}");
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError ($"GetAllUserByRole for role: {role} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
-            }
-        }
-
-        public async Task<RequestResponse<List<UserResponse>>> GetAllUsersAsync (CancellationToken cancellation, int page, int pageSize)
-        {
-            try
-            {
-                _logger.LogInformation ($"GetAllUser begins at {DateTime.UtcNow.AddHours (1)}");
-                var result = await _context.Users
-                    .AsNoTracking ()
-                    .Where (x => x.IsDeleted == false)
-                    .OrderByDescending (x => x.DateCreated)
-                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
-                    .Skip ((page - 1) * pageSize)
-                    .Take (pageSize)
-                    .ToListAsync (cancellation);
-
-                if (result.Count < 1)
-                {
-                    var badResponse = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
-                    _logger.LogInformation ($"GetAllUser ends at {DateTime.UtcNow.AddHours (1)} with {badResponse.TotalCount} users retrieved and remark: {badResponse.Remark}");
-                    return badResponse;
-                }
-
-                var count = await _context.Users
-                .AsNoTracking ()
-                .Where (x => x.IsDeleted == false).LongCountAsync (cancellation);
-
-                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
-                _logger.LogInformation ($"GetAllUser ends at {DateTime.UtcNow.AddHours (1)} with {response.TotalCount} users retrieved and remark: {response.Remark}");
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError ($"GetAllUser exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -415,20 +226,27 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"GetCountOfCreatedUser begins at {DateTime.UtcNow.AddHours (1)}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetCountOfCreatedUserAsync));
+                _logger.LogInformation (openingLog);
+
                 long count = await _context.Users
                     .AsNoTracking ()
                     .Where (x => x.IsDeleted == false)
                     .LongCountAsync (cancellation);
 
-                var result = RequestResponse<UserResponse>.CountSuccessful (null, count, "Users");
-                _logger.LogInformation ($"GetCountOfCreatedUser ends at {DateTime.UtcNow.AddHours (1)} with remark: {result.Remark}");
-                return result;
+                var response = RequestResponse<UserResponse>.CountSuccessful (null, count, "Users");
+
+                string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetCountOfCreatedUserAsync), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (closingLog);
+
+                return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"GetAllUser exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetCountOfCreatedUserAsync), ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -436,20 +254,27 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"GetCountOfCreatedUserByDate begins at {DateTime.UtcNow.AddHours (1)} for Date: {date}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetCountOfCreatedUserByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"));
+                _logger.LogInformation (openingLog);
+
                 long count = await _context.Users
                     .AsNoTracking ()
                     .Where (x => x.IsDeleted == false && x.DateCreated.Date == date.Date)
                     .LongCountAsync (cancellation);
 
-                var result = RequestResponse<UserResponse>.CountSuccessful (null, count, "Users");
-                _logger.LogInformation ($"GetCountOfCreatedUserByDate ends at {DateTime.UtcNow.AddHours (1)} for Date: {date} with remark: {result.Remark}");
-                return result;
+                var response = RequestResponse<UserResponse>.CountSuccessful (null, count, "Users");
+
+                string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetCountOfCreatedUserByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (closingLog);
+
+                return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"GetCountOfCreatedUserByDate for Date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetCountOfCreatedUserByDateAsync), ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -457,7 +282,9 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"GetCountOfCreatedUserByDate begins at {DateTime.UtcNow.AddHours (1)} for Date: {date}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetCountOfActiveUsersByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"), nameof (period), period);
+                _logger.LogInformation (openingLog);
+
                 long count = 0;
                 switch (period.ToLower ().Trim ())
                 {
@@ -496,14 +323,19 @@ namespace Persistence.Repositories
                         break;
                 }
 
-                var result = RequestResponse<UserResponse>.CountSuccessful (null, count, "Users");
-                _logger.LogInformation ($"GetCountOfCreatedUserByDate ends at {DateTime.UtcNow.AddHours (1)} for Date: {date} with remark: {result.Remark}");
-                return result;
+                var response = RequestResponse<UserResponse>.CountSuccessful (null, count, "Users");
+
+                string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetCountOfActiveUsersByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"), nameof (period), period, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (closingLog);
+
+                return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"GetCountOfCreatedUserByDate for Date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetCountOfActiveUsersByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"), nameof (period), period, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -511,20 +343,27 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"GetCountOfUserByRole begins at {DateTime.UtcNow.AddHours (1)} for role: {role}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetCountOfUserByRoleAsync), nameof (role), role);
+                _logger.LogInformation (openingLog);
+
                 long count = await _context.Users
                     .AsNoTracking ()
                     .Where (x => x.IsDeleted == false && x.UserRole == role)
                     .LongCountAsync (cancellation);
 
-                var result = RequestResponse<UserResponse>.CountSuccessful (null, count, "Users");
-                _logger.LogInformation ($"GetCountOfUserByRole ends at {DateTime.UtcNow.AddHours (1)} for role: {role} with remark: {result.Remark}");
-                return result;
+                var response = RequestResponse<UserResponse>.CountSuccessful (null, count, "Users");
+
+                string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetCountOfUserByRoleAsync), nameof (role), role, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (closingLog);
+
+                return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"GetCountOfUserByRole for role: {role} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetCountOfUserByRoleAsync), nameof (role), role, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -532,20 +371,27 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"GetCountOfDeletedUser begins at {DateTime.UtcNow.AddHours (1)}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetCountOfDeletedUserAsync));
+                _logger.LogInformation (openingLog);
+
                 long count = await _context.Users
                     .AsNoTracking ()
                     .Where (x => x.IsDeleted == true)
                     .LongCountAsync (cancellation);
 
-                var result = RequestResponse<UserResponse>.CountSuccessful (null, count, "Users");
-                _logger.LogInformation ($"GetCountOfDeletedUser ends at {DateTime.UtcNow.AddHours (1)} with remark: {result.Remark}");
-                return result;
+                var response = RequestResponse<UserResponse>.CountSuccessful (null, count, "Users");
+
+                string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetCountOfDeletedUserAsync), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (closingLog);
+
+                return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"GetCountOfDeletedUser exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetCountOfDeletedUserAsync), ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -553,150 +399,36 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"GetCountOfDeletedUsersByDate begins at {DateTime.UtcNow.AddHours (1)} for Date: {date}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetCountOfDeletedUsersByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"));
+                _logger.LogInformation (openingLog);
+
                 long count = await _context.Users
                     .AsNoTracking ()
                     .Where (x => x.IsDeleted == true && x.DateDeleted != null && x.DateDeleted.Value.Date == date)
                     .LongCountAsync (cancellation);
 
-                var result = RequestResponse<UserResponse>.CountSuccessful (null, count, "Users");
-                _logger.LogInformation ($"GetCountOfDeletedUsersByDate ends at {DateTime.UtcNow.AddHours (1)} for Date: {date} with remark: {result.Remark}");
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError ($"GetCountOfDeletedUsersByDate for Date: {date} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
-            }
-        }
+                var response = RequestResponse<UserResponse>.CountSuccessful (null, count, "Users");
 
-        public async Task<RequestResponse<List<UserResponse>>> GetDeletedUsersByUserIdAsync (string userId, CancellationToken cancellation, int page, int pageSize)
-        {
-            try
-            {
-                _logger.LogInformation ($"GetDeletedUsersByUserId begins at {DateTime.UtcNow.AddHours (1)} for deleterId: {userId}");
-                var result = await _context.Users
-                    .AsNoTracking ()
-                    .Where (x => x.IsDeleted == true && x.DeletedBy == userId)
-                    .OrderByDescending (x => x.DateDeleted)
-                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
-                    .Skip ((page - 1) * pageSize)
-                    .Take (pageSize)
-                    .ToListAsync (cancellation);
+                string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetCountOfDeletedUsersByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
 
-                if (result.Count < 1)
-                {
-                    var badResponse = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
-                    _logger.LogInformation ($"GetDeletedUsersByUserId ends at {DateTime.UtcNow.AddHours (1)} for deleterId: {userId} and remark: {badResponse.Remark}");
-                    return badResponse;
-                }
-
-                var count = await _context.Users
-                .AsNoTracking ()
-                .Where (x => x.IsDeleted == true && x.DeletedBy == userId).LongCountAsync (cancellation);
-
-                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
-                _logger.LogInformation ($"GetDeletedUsersByUserId ends at {DateTime.UtcNow.AddHours (1)} for deleterId: {userId} and remark: {response.Remark}");
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"GetDeletedUsersByUserId for deleterId: {userId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetCountOfDeletedUsersByDateAsync), ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
-        }
-
-        public async Task<RequestResponse<List<UserResponse>>> GetLatestCreatedUsersAsync (CancellationToken cancellation, int page, int pageSize)
-        {
-            try
-            {
-                _logger.LogInformation ($"GetLatestCreatedUsers begins at {DateTime.UtcNow.AddHours (1)}");
-                var result = await _context.Users
-                    .AsNoTracking ()
-                    .Where (x => x.IsDeleted == false)
-                    .OrderByDescending (x => x.DateCreated)
-                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
-                    .Skip ((page - 1) * pageSize)
-                    .Take (pageSize)
-                    .ToListAsync (cancellation);
-
-                if (result.Count < 1)
-                {
-                    var badResponse = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
-                    _logger.LogInformation ($"GetLatestCreatedUsers ends at {DateTime.UtcNow.AddHours (1)} with {badResponse.TotalCount} users retrieved and remark: {badResponse.Remark}");
-                    return badResponse;
-                }
-
-                var count = await _context.Users
-                .AsNoTracking ()
-                .Where (x => x.IsDeleted == false).LongCountAsync (cancellation);
-
-                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
-                _logger.LogInformation ($"GetLatestCreatedUsers ends at {DateTime.UtcNow.AddHours (1)} with {response.TotalCount} users retrieved and remark: {response.Remark}");
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError ($"GetLatestCreatedUsers exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
-            }
-        }
-
-        public JwtSecurityToken GetToken (List<Claim> authClaims)
-        {
-            try
-            {
-                _logger.LogInformation ($"GetToken begins at {DateTime.UtcNow.AddHours (1)}");
-
-                var authSigningKey = new SymmetricSecurityKey (Encoding.UTF8.GetBytes (_appSettings.Secret));
-                var token = new JwtSecurityToken (
-                    issuer: _appSettings.ValidIssuer,
-                    audience: _appSettings.ValidAudience,
-                    expires: DateTime.UtcNow.AddMinutes (10),
-                    claims: authClaims,
-                    signingCredentials: new SigningCredentials (authSigningKey, SecurityAlgorithms.HmacSha256)
-                    );
-                _logger.LogInformation ($"GetToken begins at {DateTime.UtcNow.AddHours (1)}");
-                return token;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError ($"GetToken exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
-            }
-
-        }
-
-        public JwtSecurityToken GetLogoutToken (List<Claim> authClaims)
-        {
-            try
-            {
-                _logger.LogInformation ($"GetLogoutToken begins at {DateTime.UtcNow.AddHours (1)}");
-                var authSigningKey = new SymmetricSecurityKey (Encoding.UTF8.GetBytes (_appSettings.Secret));
-
-                var token = new JwtSecurityToken (
-                    issuer: _appSettings.ValidIssuer,
-                    audience: _appSettings.ValidAudience,
-                    expires: DateTime.UtcNow.AddHours (-1),
-                    claims: authClaims,
-                    signingCredentials: new SigningCredentials (authSigningKey, SecurityAlgorithms.HmacSha256)
-                    );
-                _logger.LogInformation ($"GetLogoutToken begins at {DateTime.UtcNow.AddHours (1)}");
-                return token;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError ($"GetLogoutToken exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
-            }
-
         }
 
         public async Task<RequestResponse<UserResponse>> GetUserByIdAsync (string id, CancellationToken cancellation)
         {
             try
             {
-                _logger.LogInformation ($"GetUserById begins at {DateTime.UtcNow.AddHours (1)} for userId: {id}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetUserByIdAsync), nameof (id), id);
+                _logger.LogInformation (openingLog);
+
                 var result = await _context.Users
                     .AsNoTracking ()
                     .Where (x => x.IsDeleted == false && x.PublicId == id)
@@ -706,18 +438,26 @@ namespace Persistence.Repositories
                 if (result == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"GetUserById for userId: {id} ends at {DateTime.UtcNow.AddHours (1)} with {badRequest.TotalCount} users found and remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetUserByIdAsync), nameof (id), id, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 var response = RequestResponse<UserResponse>.SearchSuccessful (result, 1, "User");
-                _logger.LogInformation ($"GetUserById for userId: {id} ends at {DateTime.UtcNow.AddHours (1)} with {response.TotalCount} users found and remark: {response.Remark}");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetUserByIdAsync), nameof (id), id, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"GetUserById for userId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetUserByIdAsync), nameof (id), id, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -725,7 +465,9 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"GetUserByEmailAddress begins at {DateTime.UtcNow.AddHours (1)} for email: {emailAddress}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetUserByEmailAddressAsync), nameof (emailAddress), emailAddress);
+                _logger.LogInformation (openingLog);
+
                 var result = await _context.Users
                     .AsNoTracking ()
                     .Where (x => x.IsDeleted == false && x.Email == emailAddress)
@@ -735,18 +477,26 @@ namespace Persistence.Repositories
                 if (result == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"GetUserByEmailAddress for email: {emailAddress} ends at {DateTime.UtcNow.AddHours (1)} with {badRequest.TotalCount} users found and remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetUserByEmailAddressAsync), nameof (emailAddress), emailAddress, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 var response = RequestResponse<UserResponse>.SearchSuccessful (result, 1, "User");
-                _logger.LogInformation ($"GetUserByEmailAddress for email: {emailAddress} ends at {DateTime.UtcNow.AddHours (1)} with {response.TotalCount} users found and remark: {response.Remark}");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetUserByEmailAddressAsync), nameof (emailAddress), emailAddress, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"GetUserByEmailAddress for email: {emailAddress} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetUserByEmailAddressAsync), nameof (emailAddress), emailAddress, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -754,7 +504,9 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"GetUserLocationByIdAsync begins at {DateTime.UtcNow.AddHours (1)} for userId: {id}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetUserLocationByIdAsync), nameof (id), id);
+                _logger.LogInformation (openingLog);
+
                 var result = await _context.Users
                     .AsNoTracking ()
                     .Where (x => x.IsDeleted == false && x.PublicId == id)
@@ -764,18 +516,26 @@ namespace Persistence.Repositories
                 if (result == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"GetUserLocationByIdAsync for userId: {id} ends at {DateTime.UtcNow.AddHours (1)} with {badRequest.TotalCount} users found and remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetUserLocationByIdAsync), nameof (id), id, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 var response = RequestResponse<UserResponse>.SearchSuccessful (result, 1, "User");
-                _logger.LogInformation ($"GetUserLocationByIdAsync for userId: {id} ends at {DateTime.UtcNow.AddHours (1)} with {response.TotalCount} users found and remark: {response.Remark}");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetUserLocationByIdAsync), nameof (id), id, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"GetUserLocationByIdAsync for userId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetUserLocationByIdAsync), nameof (id), id, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -783,7 +543,8 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"GetUserFullNameById begins at {DateTime.UtcNow.AddHours (1)} for userId: {id}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetUserFullNameByIdAsync), nameof (id), id);
+                _logger.LogInformation (openingLog);
 
                 var result = await _context.Users
                     .AsNoTracking ()
@@ -794,27 +555,35 @@ namespace Persistence.Repositories
                 if (result == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"GetUserFullNameById for userId: {id} ends at {DateTime.UtcNow.AddHours (1)} with {badRequest.TotalCount} users found and remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetUserFullNameByIdAsync), nameof (id), id, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 var response = RequestResponse<UserResponse>.SearchSuccessful (result, 1, "User");
-                _logger.LogInformation ($"GetUserFullNameById for userId: {id} ends at {DateTime.UtcNow.AddHours (1)} with {response.TotalCount} users found and remark: {response.Remark}");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetUserFullNameByIdAsync), nameof (id), id, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"GetUserFullNameById for userId: {id} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetUserFullNameByIdAsync), nameof (id), id, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
-
 
         public async Task<RequestResponse<LoginResponse>> LoginAsync (LoginCommand login)
         {
             try
             {
-                _logger.LogInformation ($"Login begins at {DateTime.UtcNow.AddHours (1)} for user with email: {login.Email}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (LoginAsync), nameof (login.Email), login.Email);
+                _logger.LogInformation (openingLog);
 
                 var email = login.Email.ToLower ().Trim ();
                 var user = await _context.Users
@@ -824,14 +593,19 @@ namespace Persistence.Repositories
                 if (user == null)
                 {
                     var badRequest = RequestResponse<LoginResponse>.Unauthorized (null, "User does not exist");
-                    _logger.LogInformation ($"Login ends at {DateTime.UtcNow.AddHours (1)} for user with email: {login.Email} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (LoginAsync), nameof (login.Email), login.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
                 else if (user.EmailConfirmed == false)
                 {
                     var badRequest = RequestResponse<LoginResponse>.Unauthorized (null, "Please verify your user email");
 
-                    _logger.LogInformation ($"Login ends at {DateTime.UtcNow.AddHours (1)} for user with email: {login.Email} with remark: {badRequest.Remark}");
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (LoginAsync), nameof (login.Email), login.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -841,7 +615,9 @@ namespace Persistence.Repositories
                 {
                     var badRequest = RequestResponse<LoginResponse>.Unauthorized (null, "Email address or password incorrect");
 
-                    _logger.LogInformation ($"Login ends at {DateTime.UtcNow.AddHours (1)} for user with email: {login.Email} with remark: {badRequest.Remark}");
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (LoginAsync), nameof (login.Email), login.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -870,7 +646,6 @@ namespace Persistence.Repositories
                 user.LastLoggedInDate = DateTime.UtcNow.AddHours (1);
                 user.LastModifiedBy = user.PublicId;
 
-                _context.Users.Update (user);
                 await _context.SaveChangesAsync (login.CancellationToken);
 
                 var response = _mapper.Map<LoginResponse> (user);
@@ -879,13 +654,17 @@ namespace Persistence.Repositories
 
                 var result = RequestResponse<LoginResponse>.Success (response, 1, "Login successful");
 
-                _logger.LogInformation ($"Login ends at {DateTime.UtcNow.AddHours (1)} for user with email: {login.Email} with remark: {result.Remark}");
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (LoginAsync), nameof (login.Email), login.Email, nameof (result.TotalCount), result.TotalCount.ToString (), result.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"Login for user with email: {login.Email} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (LoginAsync), nameof (login.Email), login.Email, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<LoginResponse>.Error (null);
             }
 
         }
@@ -894,7 +673,8 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"Logout begins at {DateTime.UtcNow.AddHours (1)} for user with userId: {userId}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (LogoutAsync), nameof (userId), userId);
+                _logger.LogInformation (openingLog);
 
                 var authClaims = new List<Claim>
                 {
@@ -908,14 +688,20 @@ namespace Persistence.Repositories
                 {
                     Token = new JwtSecurityTokenHandler ().WriteToken (logoutToken).ToString ()
                 };
+
                 var result = RequestResponse<LogoutResponse>.Success (response, 1, "Logout successful");
-                _logger.LogInformation ($"Logout ends at {DateTime.UtcNow.AddHours (1)} for user with userId: {userId} with remark: {result.Remark}");
+
+                string closingLog = Utility.GenerateMethodConclusionLog (nameof (LogoutAsync), nameof (userId), userId, nameof (result.TotalCount), result.TotalCount.ToString (), result.Remark);
+                _logger.LogInformation (closingLog);
+
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"Logout for user with userId: {userId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (LogoutAsync), nameof (userId), userId, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<LogoutResponse>.Error (null);
             }
 
         }
@@ -924,11 +710,15 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"Registration begins at {DateTime.UtcNow.AddHours (1)} for user with email: {user.Email}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (RegisterAsync), nameof (user.Email), user.Email);
+                _logger.LogInformation (openingLog);
+
                 if (user == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NullPayload (null);
-                    _logger.LogInformation ($"Registration ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (RegisterAsync), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
 
                     return badRequest;
                 }
@@ -946,7 +736,10 @@ namespace Persistence.Repositories
                 if (userRequest > 0)
                 {
                     var badRequest = RequestResponse<UserResponse>.AlreadyExists (null, userRequest, "User");
-                    _logger.LogInformation ($"Registration ends at {DateTime.UtcNow.AddHours (1)} by user with email: {user.Email} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (RegisterAsync), nameof (user.Email), user.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -1011,9 +804,13 @@ namespace Persistence.Repositories
                 await _context.Users.AddAsync (payload, user.CancellationToken);
                 await _context.SaveChangesAsync (user.CancellationToken);
 
-                _logger.LogInformation ($"Fetching email verification template begins at {DateTime.UtcNow.AddHours (1)} for user with email: {user.Email}");
+                string emailInitiationLog = Utility.GenerateMethodInitiationLog (nameof (_emailTemplateService.GetEmailTemplateByTemplateNameAsync), nameof (user.Email), user.Email);
+                _logger.LogInformation (emailInitiationLog);
+
                 var template = await _emailTemplateService.GetEmailTemplateByTemplateNameAsync ("Registration", user.CancellationToken);
-                _logger.LogInformation ($"Fetching email verification template ends at {DateTime.UtcNow.AddHours (1)} for user with email: {user.Email}");
+
+                string emailConclusionLog = Utility.GenerateMethodConclusionLog (nameof (_emailTemplateService.GetEmailTemplateByTemplateNameAsync), nameof (user.Email), user.Email, nameof (template.TotalCount), template.TotalCount.ToString (), template.Remark);
+                _logger.LogInformation (emailConclusionLog);
 
                 if (template.IsSuccessful == true && template.Data != null)
                 {
@@ -1026,13 +823,18 @@ namespace Persistence.Repositories
 
                 var response = _mapper.Map<UserResponse> (payload);
                 var result = RequestResponse<UserResponse>.Created (response, 1, "User");
-                _logger.LogInformation ($"Registration ends at {DateTime.UtcNow.AddHours (1)} for user with email: {user.Email} with remark: {result.Remark}");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (RegisterAsync), nameof (user.Email), user.Email, nameof (result.TotalCount), result.TotalCount.ToString (), result.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"Registration for user with email: {user.Email} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (RegisterAsync), nameof (user.Email), user.Email, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
 
         }
@@ -1041,11 +843,16 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"UpdateUser begins at {DateTime.UtcNow.AddHours (1)} by userId: {user.LastModifiedBy}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (UpdateUserAsync), nameof (user.LastModifiedBy), user.LastModifiedBy);
+                _logger.LogInformation (openingLog);
+
                 if (user == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NullPayload (null);
-                    _logger.LogInformation ($"UpdateUser ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserAsync), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -1058,7 +865,10 @@ namespace Persistence.Repositories
                 if (updateUserRequest == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"UpdateUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {user.PublicId} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserAsync), nameof (user.LastModifiedBy), user.LastModifiedBy, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -1066,14 +876,20 @@ namespace Persistence.Repositories
                 if (permissionCheck == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.Unauthorized (null, "Cannot verify user identity");
-                    _logger.LogInformation ($"UpdateUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {user.PublicId} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserAsync), nameof (user.LastModifiedBy), user.LastModifiedBy, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
-                if (!permissionCheck.Equals ("Admin", StringComparison.OrdinalIgnoreCase) && user.LastModifiedBy != user.PublicId)
+                if (!permissionCheck.Equals (UserRoles.Admin, StringComparison.OrdinalIgnoreCase) && user.LastModifiedBy != user.PublicId)
                 {
                     var badRequest = RequestResponse<UserResponse>.Unauthorized (null, "Unauthorized to update user");
-                    _logger.LogInformation ($"UpdateUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {user.PublicId} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserAsync), nameof (user.LastModifiedBy), user.LastModifiedBy, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -1084,11 +900,12 @@ namespace Persistence.Repositories
                     if (checkNewEmail > 0)
                     {
                         var badRequest = RequestResponse<UserResponse>.Unauthorized (null, "User email already exists, you cannot update your email address to the email address of an existing user");
-                        _logger.LogInformation ($"UpdateUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {user.PublicId} with remark: {badRequest.Remark}");
+
+                        string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserAsync), nameof (user.LastModifiedBy), user.LastModifiedBy, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                        _logger.LogInformation (closingLog);
+
                         return badRequest;
                     }
-
-                    _logger.LogInformation ($"Fetching email verification template begins at {DateTime.UtcNow.AddHours (1)} for user with email: {user.Email}");
 
                     Guid token = Guid.NewGuid ();
                     string verificationLink = $"{_appSettings.BaseUrl}VerifyEmail?Email={user.Email}&Token={token}";
@@ -1096,8 +913,14 @@ namespace Persistence.Repositories
                     user.EmailConfirmed = false;
                     user.EmailVerificationToken = token.ToString ();
 
+                    string emailInitiationLog = Utility.GenerateMethodInitiationLog (nameof (_emailTemplateService.GetEmailTemplateByTemplateNameAsync), nameof (user.Email), user.Email);
+                    _logger.LogInformation (emailInitiationLog);
+
                     var template = await _emailTemplateService.GetEmailTemplateByTemplateNameAsync ("Registration", user.CancellationToken);
-                    _logger.LogInformation ($"Fetching email verification template ends at {DateTime.UtcNow.AddHours (1)} for user with email: {user.Email}");
+
+                    string emailConclusionLog = Utility.GenerateMethodConclusionLog (nameof (_emailTemplateService.GetEmailTemplateByTemplateNameAsync), nameof (user.Email), user.Email, nameof (template.TotalCount), template.TotalCount.ToString (), template.Remark);
+                    _logger.LogInformation (emailConclusionLog);
+
                     if (template.IsSuccessful == true && template.Data != null)
                     {
                         template.Data.Template = template.Data.Template.Replace ("{userName}", $"{user.FirstName} {user.LastName}");
@@ -1116,15 +939,6 @@ namespace Persistence.Repositories
                     Payload = JsonConvert.SerializeObject (updateUserRequest)
                 };
 
-                RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequestViewModel);
-
-                if (createAuditLog.IsSuccessful == false)
-                {
-                    var badRequest = RequestResponse<UserResponse>.AuditLogFailed (null);
-                    _logger.LogInformation ($"UpdateUser ends at {DateTime.UtcNow.AddHours (1)} by userId: {user.LastModifiedBy} with remark: {badRequest.Remark}");
-                    return badRequest;
-                }
-
                 updateUserRequest.Email = user.Email;
                 updateUserRequest.FirstName = user.FirstName;
                 updateUserRequest.ProfileImage = user.ProfileImage;
@@ -1137,18 +951,34 @@ namespace Persistence.Repositories
                 updateUserRequest.LastModifiedDate = DateTime.UtcNow.AddHours (1);
                 updateUserRequest.CountryOfOrigin = user.CountryOfOrigin;
 
-                _context.Users.Update (updateUserRequest);
+                RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequestViewModel);
+
+                if (createAuditLog.IsSuccessful == false)
+                {
+                    var badRequest = RequestResponse<UserResponse>.AuditLogFailed (null);
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserAsync), nameof (user.LastModifiedBy), user.LastModifiedBy, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
+                    return badRequest;
+                }
+
                 await _context.SaveChangesAsync (user.CancellationToken);
 
                 var result = _mapper.Map<UserResponse> (updateUserRequest);
                 var response = RequestResponse<UserResponse>.Updated (result, 1, "User");
-                _logger.LogInformation ($"UpdateUser for user with userId: {user.LastModifiedBy} ends at {DateTime.UtcNow.AddHours (1)} by userId: {user.LastModifiedBy} with remark: {response.Remark}");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserAsync), nameof (user.LastModifiedBy), user.LastModifiedBy, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"UpdateUser for user with userId: {user.LastModifiedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (UpdateUserAsync), nameof (user.Email), user.Email, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
 
         }
@@ -1157,11 +987,15 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"UpdateUserRole begins at {DateTime.UtcNow.AddHours (1)} by userId: {updateUserResponsibility.LastModifiedBy}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (UpdateUserRoleAsync), nameof (updateUserResponsibility.UserId), updateUserResponsibility.UserId, nameof (updateUserResponsibility.LastModifiedBy), updateUserResponsibility.LastModifiedBy);
+                _logger.LogInformation (openingLog);
+
                 if (updateUserResponsibility == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NullPayload (null);
-                    _logger.LogInformation ($"UpdateUserRole ends at {DateTime.UtcNow.AddHours (1)} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserRoleAsync), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
 
                     return badRequest;
                 }
@@ -1171,7 +1005,10 @@ namespace Persistence.Repositories
                 if (updateUserRequest == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"UpdateUserRole ends at {DateTime.UtcNow.AddHours (1)} by userId: {updateUserResponsibility.LastModifiedBy} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserRoleAsync), nameof (updateUserResponsibility.UserId), updateUserResponsibility.UserId, nameof (updateUserResponsibility.LastModifiedBy), updateUserResponsibility.LastModifiedBy, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -1183,31 +1020,38 @@ namespace Persistence.Repositories
                     Payload = JsonConvert.SerializeObject (updateUserRequest)
                 };
 
+                updateUserRequest.LastModifiedBy = updateUserResponsibility.LastModifiedBy;
+                updateUserRequest.LastModifiedDate = DateTime.UtcNow.AddHours (1);
+                updateUserRequest.UserRole = updateUserResponsibility.UserRole;
+
                 RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequestViewModel);
 
                 if (createAuditLog.IsSuccessful == false)
                 {
                     var badRequest = RequestResponse<UserResponse>.AuditLogFailed (null);
-                    _logger.LogInformation ($"UpdateUserRole ends at {DateTime.UtcNow.AddHours (1)} by userId: {updateUserResponsibility.LastModifiedBy} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserRoleAsync), nameof (updateUserResponsibility.UserId), updateUserResponsibility.UserId, nameof (updateUserResponsibility.LastModifiedBy), updateUserResponsibility.LastModifiedBy, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
-                updateUserRequest.LastModifiedBy = updateUserResponsibility.LastModifiedBy;
-                updateUserRequest.LastModifiedDate = DateTime.UtcNow.AddHours (1);
-                updateUserRequest.UserRole = updateUserResponsibility.UserRole;
-
-                _context.Users.Update (updateUserRequest);
                 await _context.SaveChangesAsync (updateUserResponsibility.CancellationToken);
 
                 var result = _mapper.Map<UserResponse> (updateUserRequest);
                 var response = RequestResponse<UserResponse>.Updated (result, 1, "User");
-                _logger.LogInformation ($"UpdateUserRole ends at {DateTime.UtcNow.AddHours (1)} by userId: {updateUserResponsibility.LastModifiedBy} with remark: {response.Remark}");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserRoleAsync), nameof (updateUserResponsibility.UserId), updateUserResponsibility.UserId, nameof (updateUserResponsibility.LastModifiedBy), updateUserResponsibility.LastModifiedBy, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"UpdateUserRole for user by userId: {updateUserResponsibility.LastModifiedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (UpdateUserRoleAsync), nameof (updateUserResponsibility.UserId), updateUserResponsibility.UserId, nameof (updateUserResponsibility.LastModifiedBy), updateUserResponsibility.LastModifiedBy, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
 
         }
@@ -1216,12 +1060,17 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"UpdateUserProfileImage begins at {DateTime.UtcNow.AddHours (1)} by userId: {userId}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (UpdateUserProfileImageAsync), nameof (userId), userId);
+                _logger.LogInformation (openingLog);
+
                 var updateUserRequest = await _context.Users.Where (x => x.PublicId == userId && x.IsDeleted == false).FirstOrDefaultAsync (cancellation);
                 if (updateUserRequest == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"UpdateUserProfileImage ends at {DateTime.UtcNow.AddHours (1)} by userId: {userId} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserProfileImageAsync), nameof (userId), userId, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -1229,55 +1078,52 @@ namespace Persistence.Repositories
                 {
                     CancellationToken = cancellation,
                     CreatedBy = updateUserRequest.PublicId,
-                    Name = "Country",
+                    Name = "User",
                     Payload = JsonConvert.SerializeObject (updateUserRequest)
                 };
+
+                updateUserRequest.LastModifiedBy = userId;
+                updateUserRequest.LastModifiedDate = DateTime.UtcNow.AddHours (1);
+                updateUserRequest.ProfileImage = profileImage;
 
                 RequestResponse<AuditLogResponse> createAuditLog = await _auditLogRepository.CreateAuditLogAsync (createAuditLogRequestViewModel);
 
                 if (createAuditLog.IsSuccessful == false)
                 {
                     var badRequest = RequestResponse<UserResponse>.AuditLogFailed (null);
-                    _logger.LogInformation ($"UpdateUserProfileImage ends at {DateTime.UtcNow.AddHours (1)} by userId: {userId} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserProfileImageAsync), nameof (userId), userId, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
-                updateUserRequest.LastModifiedBy = userId;
-                updateUserRequest.LastModifiedDate = DateTime.UtcNow.AddHours (1);
-                updateUserRequest.ProfileImage = profileImage;
-
-                _context.Users.Update (updateUserRequest);
                 await _context.SaveChangesAsync (cancellation);
 
                 var result = _mapper.Map<UserResponse> (updateUserRequest);
                 var response = RequestResponse<UserResponse>.Updated (result, 1, "User");
-                _logger.LogInformation ($"UpdateUserProfileImage ends at {DateTime.UtcNow.AddHours (1)} by userId: {userId} with remark: {response.Remark}");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (UpdateUserProfileImageAsync), nameof (userId), userId, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"UpdateUserProfileImage for user with userId: {userId} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (UpdateUserProfileImageAsync), nameof (userId), userId, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
 
-        }
-
-        public string HashPassword (string password)
-        {
-            return BCrypt.Net.BCrypt.HashPassword (password);
-        }
-
-        // Verify a password against its hashed version
-        public bool VerifyPassword (string password, string hashedPassword)
-        {
-            return BCrypt.Net.BCrypt.Verify (password, hashedPassword);
         }
 
         public async Task<RequestResponse<UserResponse>> VerifyUserEmailAsync (EmailVerificationCommand request)
         {
             try
             {
-                _logger.LogInformation ($"VerifyUserEmail begins at {DateTime.UtcNow.AddHours (1)} by user email: {request.Email}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (VerifyUserEmailAsync), nameof (request.Email), request.Email);
+                _logger.LogInformation (openingLog);
 
                 var email = request.Email.ToLower ().Trim ();
                 var user = await _context.Users.Where (x => x.Email == email && x.IsDeleted == false).FirstOrDefaultAsync ();
@@ -1285,41 +1131,51 @@ namespace Persistence.Repositories
                 if (user == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"VerifyUserEmail ends at {DateTime.UtcNow.AddHours (1)} by user email: {request.Email} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (VerifyUserEmailAsync), nameof (request.Email), request.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 if (user.EmailConfirmed == true)
                 {
                     var badRequest = RequestResponse<UserResponse>.Failed (null, 400, "Email is already verified");
-                    _logger.LogInformation ($"VerifyUserEmail ends at {DateTime.UtcNow.AddHours (1)} by user email: {request.Email} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (VerifyUserEmailAsync), nameof (request.Email), request.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 if (user.EmailVerificationToken != request.Token)
                 {
                     var badRequest = RequestResponse<UserResponse>.Unauthorized (null, "Email verification failed due to incorrect token");
-                    _logger.LogInformation ($"VerifyUserEmail ends at {DateTime.UtcNow.AddHours (1)} by user email: {request.Email} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (VerifyUserEmailAsync), nameof (request.Email), request.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
-                // Mark the email as verified
                 user.EmailConfirmed = true;
                 user.EmailVerificationToken = null;
 
-                _context.Users.Update (user);
                 await _context.SaveChangesAsync ();
 
                 var result = _mapper.Map<UserResponse> (user);
                 var response = RequestResponse<UserResponse>.Success (result, 1, "Email is verification successful");
 
-                _logger.LogInformation ($"VerifyUserEmail ends at {DateTime.UtcNow.AddHours (1)} by user email: {request.Email} with remark: {response.Remark}");
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (VerifyUserEmailAsync), nameof (request.Email), request.Email, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"VerifyUserEmail for user with user email: {request.Email} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (VerifyUserEmailAsync), nameof (request.Email), request.Email, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -1327,21 +1183,29 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"ForgotUserPassword begins at {DateTime.UtcNow.AddHours (1)} by user email: {userEmail}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (ForgotPasswordAsync), nameof (userEmail), userEmail);
+                _logger.LogInformation (openingLog);
+
                 var email = userEmail.ToLower ().Trim ();
                 var user = await _context.Users.Where (x => x.Email == email && x.IsDeleted == false).FirstOrDefaultAsync (cancellation);
 
                 if (user == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"ForgotUserPassword ends at {DateTime.UtcNow.AddHours (1)} by user email: {userEmail} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (ForgotPasswordAsync), nameof (userEmail), userEmail, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 if (user.EmailConfirmed == false)
                 {
                     var badRequest = RequestResponse<UserResponse>.Unauthorized (null, "Email is unverified");
-                    _logger.LogInformation ($"ForgotUserPassword ends at {DateTime.UtcNow.AddHours (1)} by user email: {userEmail} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (ForgotPasswordAsync), nameof (userEmail), userEmail, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -1350,14 +1214,16 @@ namespace Persistence.Repositories
 
                 user.PasswordResetToken = token;
 
-                _context.Users.Update (user);
                 await _context.SaveChangesAsync (cancellation);
 
-                _logger.LogInformation ($"Fetching password reset template begins at {DateTime.UtcNow.AddHours (1)} for user with email: {user.Email}");
+                string emailInitiationLog = Utility.GenerateMethodInitiationLog (nameof (_emailTemplateService.GetEmailTemplateByTemplateNameAsync), nameof (user.Email), user.Email);
+                _logger.LogInformation (emailInitiationLog);
 
                 var template = await _emailTemplateService.GetEmailTemplateByTemplateNameAsync ("PasswordReset", cancellation);
 
-                _logger.LogInformation ($"Fetching password reset template ends at {DateTime.UtcNow.AddHours (1)} for user with email: {user.Email}");
+                string emailConclusionLog = Utility.GenerateMethodConclusionLog (nameof (_emailTemplateService.GetEmailTemplateByTemplateNameAsync), nameof (user.Email), user.Email, nameof (template.TotalCount), template.TotalCount.ToString (), template.Remark);
+                _logger.LogInformation (emailConclusionLog);
+
                 if (template.IsSuccessful == true && template.Data != null)
                 {
                     template.Data.Template = template.Data.Template.Replace ("{userName}", $"{user.FirstName} {user.LastName}");
@@ -1369,19 +1235,27 @@ namespace Persistence.Repositories
                     if (emailRequest.IsSuccessful != true)
                     {
                         var badRequest = RequestResponse<UserResponse>.Failed (null, 500, "Password reset failed");
-                        _logger.LogInformation ($"ForgotUserPassword ends at {DateTime.UtcNow.AddHours (1)} by user email: {userEmail} with remark: {badRequest.Remark}");
+
+                        string closingLog = Utility.GenerateMethodConclusionLog (nameof (ForgotPasswordAsync), nameof (userEmail), userEmail, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                        _logger.LogInformation (closingLog);
+
                         return badRequest;
                     }
                 }
 
                 var response = RequestResponse<UserResponse>.Success (new UserResponse (), 1, "Password reset successful");
-                _logger.LogInformation ($"ForgotUserPassword ends at {DateTime.UtcNow.AddHours (1)} by user email: {userEmail} with remark: {response.Remark}");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (ForgotPasswordAsync), nameof (userEmail), userEmail, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"ForgotUserPassword for user with user email: {userEmail} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (ForgotPasswordAsync), nameof (userEmail), userEmail, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -1389,51 +1263,70 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"ChangePassword begins at {DateTime.UtcNow.AddHours (1)} by user email: {request.Email}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (ChangePasswordAsync), nameof (request.Email), request.Email);
+                _logger.LogInformation (openingLog);
+
                 var email = request.Email.ToLower ().Trim ();
                 var user = await _context.Users.Where (x => x.Email == email && x.IsDeleted == false).FirstOrDefaultAsync (request.CancellationToken);
 
                 if (user == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"ChangePassword ends at {DateTime.UtcNow.AddHours (1)} by user email: {request.Email} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (ChangePasswordAsync), nameof (request.Email), request.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 if (user.EmailConfirmed == false)
                 {
                     var badRequest = RequestResponse<UserResponse>.Unauthorized (null, "Email is unverified");
-                    _logger.LogInformation ($"ChangePassword ends at {DateTime.UtcNow.AddHours (1)} by user email: {request.Email} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (ChangePasswordAsync), nameof (request.Email), request.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 if (!request.NewPassword.Equals (request.ConfirmPassword))
                 {
                     var badRequest = RequestResponse<UserResponse>.Failed (null, 400, "Password does not match");
-                    _logger.LogInformation ($"ChangePassword ends at {DateTime.UtcNow.AddHours (1)} by user email: {request.Email} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (ChangePasswordAsync), nameof (request.Email), request.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 if (user.PasswordResetToken != request.Token)
                 {
                     var badRequest = RequestResponse<UserResponse>.Unauthorized (null, "Please input valid token");
-                    _logger.LogInformation ($"ChangePassword ends at {DateTime.UtcNow.AddHours (1)} by user email: {request.Email}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (ChangePasswordAsync), nameof (request.Email), request.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
+
                 user.Password = HashPassword (request.NewPassword);
                 user.PasswordHash = user.Password.GetHashCode ().ToString ();
 
-                _context.Users.Update (user);
                 await _context.SaveChangesAsync (request.CancellationToken);
 
                 var response = RequestResponse<UserResponse>.Success (new UserResponse (), 1, "Password update successful");
-                _logger.LogInformation ($"ChangePassword ends at {DateTime.UtcNow.AddHours (1)} by user email: {request.Email} with remark: {response.Remark}");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (ChangePasswordAsync), nameof (request.Email), request.Email, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"ChangePassword for user with user email: {request.Email} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (ChangePasswordAsync), nameof (request.Email), request.Email, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -1441,27 +1334,38 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"UpdatePassword begins at {DateTime.UtcNow.AddHours (1)} by user ID: {request.LastModifiedBy}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (UpdatePasswordAsync), nameof (request.LastModifiedBy), request.LastModifiedBy);
+                _logger.LogInformation (openingLog);
+
                 var user = await _context.Users.Where (x => x.PublicId == request.LastModifiedBy && x.IsDeleted == false).FirstOrDefaultAsync (request.CancellationToken);
 
                 if (user == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"UpdatePassword ends at {DateTime.UtcNow.AddHours (1)} by user ID: {request.LastModifiedBy} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdatePasswordAsync), nameof (request.LastModifiedBy), request.LastModifiedBy, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 if (user.EmailConfirmed == false)
                 {
                     var badRequest = RequestResponse<UserResponse>.Unauthorized (null, "Email is unverified");
-                    _logger.LogInformation ($"UpdatePassword ends at {DateTime.UtcNow.AddHours (1)} by user ID: {request.LastModifiedBy} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdatePasswordAsync), nameof (request.LastModifiedBy), request.LastModifiedBy, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 if (!request.NewPassword.Equals (request.ConfirmPassword))
                 {
                     var badRequest = RequestResponse<UserResponse>.Failed (null, 400, "Password does not match");
-                    _logger.LogInformation ($"UpdatePassword ends at {DateTime.UtcNow.AddHours (1)} by user ID: {request.LastModifiedBy} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdatePasswordAsync), nameof (request.LastModifiedBy), request.LastModifiedBy, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -1470,7 +1374,9 @@ namespace Persistence.Repositories
                 if (isPasswordMatch == true)
                 {
                     var badRequest = RequestResponse<UserResponse>.Failed (null, 400, "Your old and new password must not match");
-                    _logger.LogInformation ($"UpdatePassword ends at {DateTime.UtcNow.AddHours (1)} by user ID: {request.LastModifiedBy} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdatePasswordAsync), nameof (request.LastModifiedBy), request.LastModifiedBy, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
                     return badRequest;
                 }
 
@@ -1478,18 +1384,21 @@ namespace Persistence.Repositories
                 user.PasswordHash = user.Password.GetHashCode ().ToString ();
                 user.LastModifiedBy = request.LastModifiedBy;
 
-                _context.Users.Update (user);
                 await _context.SaveChangesAsync (request.CancellationToken);
 
-
                 var response = RequestResponse<UserResponse>.Success (new UserResponse (), 1, "Password update successful");
-                _logger.LogInformation ($"UpdatePassword ends at {DateTime.UtcNow.AddHours (1)} by user ID: {request.LastModifiedBy} with remark: {response.Remark}");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (UpdatePasswordAsync), nameof (request.LastModifiedBy), request.LastModifiedBy, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"UpdatePassword for user with user ID: {request.LastModifiedBy} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (UpdatePasswordAsync), nameof (request.LastModifiedBy), request.LastModifiedBy, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
             }
         }
 
@@ -1497,39 +1406,56 @@ namespace Persistence.Repositories
         {
             try
             {
-                _logger.LogInformation ($"ResendEmailVerificationToken begins at {DateTime.UtcNow.AddHours (1)} by Email: {emailAddress}");
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (ResendEmailVerificationTokenAsync), nameof (emailAddress), emailAddress);
+                _logger.LogInformation (openingLog);
 
                 var updateUserRequest = await _context.Users.Where (x => x.Email == emailAddress && x.IsDeleted == false).FirstOrDefaultAsync (cancellationToken);
 
                 if (updateUserRequest == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.NotFound (null, "User");
-                    _logger.LogInformation ($"ResendEmailVerificationToken ends at {DateTime.UtcNow.AddHours (1)} by Email: {emailAddress} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (ResendEmailVerificationTokenAsync), nameof (emailAddress), emailAddress, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 if (updateUserRequest.EmailConfirmed != false)
                 {
                     var badRequest = RequestResponse<UserResponse>.Failed (null, 400, "Email is already verified");
-                    _logger.LogInformation ($"ResendEmailVerificationToken ends at {DateTime.UtcNow.AddHours (1)} by Email: {emailAddress} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (ResendEmailVerificationTokenAsync), nameof (emailAddress), emailAddress, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
-                _logger.LogInformation ($"Fetching email verification template begins at {DateTime.UtcNow.AddHours (1)} for user with email: {updateUserRequest.Email}");
+                string emailInitiationLog = Utility.GenerateMethodInitiationLog (nameof (_emailTemplateService.GetEmailTemplateByTemplateNameAsync), nameof (emailAddress), emailAddress);
+                _logger.LogInformation (emailInitiationLog);
 
                 var template = await _emailTemplateService.GetEmailTemplateByTemplateNameAsync ("Registration", cancellationToken);
-                _logger.LogInformation ($"Fetching email verification template ends at {DateTime.UtcNow.AddHours (1)} for user with email: {updateUserRequest.Email}");
+
+                string emailConclusionLog = Utility.GenerateMethodConclusionLog (nameof (_emailTemplateService.GetEmailTemplateByTemplateNameAsync), nameof (emailAddress), emailAddress, nameof (template.TotalCount), template.TotalCount.ToString (), template.Remark);
+                _logger.LogInformation (emailConclusionLog);
+
                 if (!template.IsSuccessful)
                 {
                     var badRequest = RequestResponse<UserResponse>.Failed (null, 500, "Token resend unsuccessful");
-                    _logger.LogInformation ($"ResendEmailVerificationToken ends at {DateTime.UtcNow.AddHours (1)} by Email: {emailAddress} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (ResendEmailVerificationTokenAsync), nameof (emailAddress), emailAddress, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 if (template.Data == null)
                 {
                     var badRequest = RequestResponse<UserResponse>.Failed (null, 500, "Token resend unsuccessful");
-                    _logger.LogInformation ($"ResendEmailVerificationToken ends at {DateTime.UtcNow.AddHours (1)} by Email: {emailAddress} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (ResendEmailVerificationTokenAsync), nameof (emailAddress), emailAddress, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
@@ -1548,7 +1474,6 @@ namespace Persistence.Repositories
                 updateUserRequest.LastModifiedDate = DateTime.UtcNow.AddHours (1);
                 updateUserRequest.EmailVerificationToken = token.ToString ();
 
-                _context.Users.Update (updateUserRequest);
                 await _context.SaveChangesAsync (cancellationToken);
 
                 var emailRequest = await _emailRequestService.CreateEmailRequestAsync (request);
@@ -1556,20 +1481,466 @@ namespace Persistence.Repositories
                 if (!emailRequest.IsSuccessful)
                 {
                     var badRequest = RequestResponse<UserResponse>.Failed (null, 500, "Token resend unsuccessful");
-                    _logger.LogInformation ($"ResendEmailVerificationToken ends at {DateTime.UtcNow.AddHours (1)} by Email: {emailAddress} with remark: {badRequest.Remark}");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (ResendEmailVerificationTokenAsync), nameof (emailAddress), emailAddress, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 var response = RequestResponse<UserResponse>.Success (new UserResponse (), 1, "Token resend successful");
 
-                _logger.LogInformation ($"ResendEmailVerificationToken ends at {DateTime.UtcNow.AddHours (1)} by Email: {emailAddress} with remark: {response.Remark}");
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (ResendEmailVerificationTokenAsync), nameof (emailAddress), emailAddress, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"ResendEmailVerificationToken for user with Email: {emailAddress} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (ResendEmailVerificationTokenAsync), nameof (emailAddress), emailAddress, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<UserResponse>.Error (null);
+            }
+        }
+
+        public async Task<RequestResponse<List<UserResponse>>> GetDeletedUsersByUserIdAsync (string userId, CancellationToken cancellation, int page, int pageSize)
+        {
+            try
+            {
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetDeletedUsersByUserIdAsync), nameof (userId), userId);
+                _logger.LogInformation (openingLog);
+
+                var result = await _context.Users
+                    .AsNoTracking ()
+                    .Where (x => x.IsDeleted == true && x.DeletedBy == userId)
+                    .OrderByDescending (x => x.DateDeleted)
+                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
+                    .Skip ((page - 1) * pageSize)
+                    .Take (pageSize)
+                    .ToListAsync (cancellation);
+
+                if (result.Count < 1)
+                {
+                    var badRequest = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetDeletedUsersByUserIdAsync), nameof (userId), userId, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
+                    return badRequest;
+                }
+
+                var count = await _context.Users
+                .AsNoTracking ()
+                .Where (x => x.IsDeleted == true && x.DeletedBy == userId).LongCountAsync (cancellation);
+
+                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetDeletedUsersByUserIdAsync), nameof (userId), userId, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetDeletedUsersByUserIdAsync), nameof (userId), userId, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<List<UserResponse>>.Error (null);
+            }
+        }
+
+        public async Task<RequestResponse<List<UserResponse>>> GetLatestCreatedUsersAsync (CancellationToken cancellation, int page, int pageSize)
+        {
+            try
+            {
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetLatestCreatedUsersAsync));
+                _logger.LogInformation (openingLog);
+
+                var result = await _context.Users
+                    .AsNoTracking ()
+                    .Where (x => x.IsDeleted == false)
+                    .OrderByDescending (x => x.DateCreated)
+                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
+                    .Skip ((page - 1) * pageSize)
+                    .Take (pageSize)
+                    .ToListAsync (cancellation);
+
+                if (result.Count < 1)
+                {
+                    var badRequest = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetLatestCreatedUsersAsync), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
+                    return badRequest;
+                }
+
+                var count = await _context.Users
+                .AsNoTracking ()
+                .Where (x => x.IsDeleted == false).LongCountAsync (cancellation);
+
+                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetLatestCreatedUsersAsync), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetLatestCreatedUsersAsync), ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<List<UserResponse>>.Error (null);
+            }
+        }
+
+        public async Task<RequestResponse<List<UserResponse>>> GetAllDeletedUserByDateAsync (DateTime date, CancellationToken cancellation, int page, int pageSize)
+        {
+            try
+            {
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAllDeletedUserByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"));
+                _logger.LogInformation (openingLog);
+
+                var result = await _context.Users
+                    .AsNoTracking ()
+                    .Where (x => x.IsDeleted == true && x.DateDeleted != null && x.DateDeleted.Value.Date == date.Date)
+                    .OrderByDescending (x => x.DateDeleted)
+                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
+                    .Skip ((page - 1) * pageSize)
+                    .Take (pageSize)
+                    .ToListAsync ();
+
+                if (result.Count < 1)
+                {
+                    var badRequest = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAllDeletedUserByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"), nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
+                    return badRequest;
+                }
+
+                var count = await _context.Users
+                .AsNoTracking ()
+                .Where (x => x.IsDeleted == true && x.DateDeleted != null && x.DateDeleted.Value.Date == date.Date).LongCountAsync (cancellation);
+
+                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAllDeletedUserByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"), nameof (result.Count), result.Count.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAllDeletedUserByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<List<UserResponse>>.Error (null);
+            }
+        }
+
+        public async Task<RequestResponse<List<UserResponse>>> GetAllDeletedUsersAsync (CancellationToken cancellation, int page, int pageSize)
+        {
+            try
+            {
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAllDeletedUsersAsync));
+                _logger.LogInformation (openingLog);
+
+                var result = await _context.Users
+                    .AsNoTracking ()
+                    .Where (x => x.IsDeleted == true)
+                    .OrderByDescending (x => x.DateDeleted)
+                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
+                    .Skip ((page - 1) * pageSize)
+                    .Take (pageSize)
+                    .ToListAsync (cancellation);
+
+                if (result.Count < 1)
+                {
+                    var badRequest = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAllDeletedUsersAsync), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
+                    return badRequest;
+                }
+
+                var count = await _context.Users
+                .AsNoTracking ()
+                .Where (x => x.IsDeleted == true).LongCountAsync (cancellation);
+
+                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAllDeletedUsersAsync), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAllDeletedUsersAsync), ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<List<UserResponse>>.Error (null);
+            }
+        }
+
+        public async Task<RequestResponse<List<UserResponse>>> GetAllUserByDateAsync (DateTime date, CancellationToken cancellation, int page, int pageSize)
+        {
+            try
+            {
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAllUserByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"));
+                _logger.LogInformation (openingLog);
+
+                var result = await _context.Users
+                    .AsNoTracking ()
+                    .Where (x => x.IsDeleted == false && x.DateCreated.Date == date.Date)
+                    .OrderByDescending (x => x.DateDeleted)
+                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
+                    .Skip ((page - 1) * pageSize)
+                    .Take (pageSize)
+                    .ToListAsync (cancellation);
+
+                if (result.Count < 1)
+                {
+                    var badRequest = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAllUserByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"), nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
+                    return badRequest;
+                }
+
+                var count = await _context.Users
+                .AsNoTracking ()
+                .Where (x => x.IsDeleted == false && x.DateCreated.Date == date.Date).LongCountAsync (cancellation);
+
+                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAllUserByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"), nameof (result.Count), result.Count.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAllUserByDateAsync), nameof (date), date.ToString ("dd/MM/yyyy"), ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<List<UserResponse>>.Error (null);
+            }
+        }
+
+        public async Task<RequestResponse<List<UserResponse>>> GetAllUserByCountryAsync (string name, CancellationToken cancellation, int page, int pageSize)
+        {
+            try
+            {
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAllUserByCountryAsync), nameof (name), name);
+                _logger.LogInformation (openingLog);
+
+                var result = await _context.Users
+                    .AsNoTracking ()
+                    .Where (x => x.IsDeleted == false && x.CountryOfOrigin == name || x.CountryOfResidence == name)
+                    .OrderByDescending (x => x.DateDeleted)
+                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
+                    .Skip ((page - 1) * pageSize)
+                    .Take (pageSize)
+                    .ToListAsync (cancellation);
+
+                if (result.Count < 1)
+                {
+                    var badRequest = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAllUserByCountryAsync), nameof (name), name, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
+                    return badRequest;
+                }
+
+                var count = await _context.Users
+                .AsNoTracking ()
+                .Where (x => x.IsDeleted == false && x.CountryOfOrigin == name || x.CountryOfResidence == name).LongCountAsync (cancellation);
+
+                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAllUserByCountryAsync), nameof (name), name, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAllUserByCountryAsync), nameof (name), name, ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<List<UserResponse>>.Error (null);
+            }
+        }
+
+        public async Task<RequestResponse<List<UserResponse>>> GetAllUserByRoleAsync (string role, bool isDeleted, CancellationToken cancellation, int page, int pageSize)
+        {
+            try
+            {
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAllUserByRoleAsync), nameof (role), role, nameof (isDeleted), isDeleted.ToString ());
+                _logger.LogInformation (openingLog);
+
+                var result = isDeleted == true ? await _context.Users
+                    .AsNoTracking ()
+                    .Where (x => x.IsDeleted == true && x.UserRole == role)
+                    .OrderByDescending (x => x.DateDeleted)
+                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
+                    .Skip ((page - 1) * pageSize)
+                    .Take (pageSize)
+                    .ToListAsync (cancellation) : await _context.Users
+                    .AsNoTracking ()
+                    .Where (x => x.IsDeleted == false && x.UserRole == role)
+                    .OrderByDescending (x => x.DateCreated)
+                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
+                    .Skip ((page - 1) * pageSize)
+                    .Take (pageSize)
+                    .ToListAsync (cancellation);
+
+                if (result.Count < 1)
+                {
+                    var badRequest = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAllUserByRoleAsync), nameof (role), role, nameof (isDeleted), isDeleted.ToString (), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
+                    return badRequest;
+                }
+
+                var count = isDeleted == true ? await _context.Users
+                .AsNoTracking ()
+                .Where (x => x.IsDeleted == true && x.UserRole == role).LongCountAsync (cancellation) : await _context.Users
+                .AsNoTracking ()
+                .Where (x => x.IsDeleted == false && x.UserRole == role).LongCountAsync (cancellation);
+
+                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAllUserByRoleAsync), nameof (role), role, nameof (isDeleted), isDeleted.ToString (), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAllUserByRoleAsync), nameof (role), role, nameof (isDeleted), isDeleted.ToString (), ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<List<UserResponse>>.Error (null);
+            }
+        }
+
+        public async Task<RequestResponse<List<UserResponse>>> GetAllUsersAsync (CancellationToken cancellation, int page, int pageSize)
+        {
+            try
+            {
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetAllUsersAsync));
+                _logger.LogInformation (openingLog);
+
+                var result = await _context.Users
+                    .AsNoTracking ()
+                    .Where (x => x.IsDeleted == false)
+                    .OrderByDescending (x => x.DateCreated)
+                    .Select (x => new UserResponse { PublicId = x.PublicId, BusinessName = x.BusinessName, BusinessType = x.BusinessType, Bvn = x.Bvn, CountryOfOrigin = x.CountryOfOrigin, CountryOfResidence = x.CountryOfResidence, Nin = x.Nin, DateOfBirth = x.DateOfBirth, Email = x.Email, FirstName = x.FirstName, GroupName = x.GroupName, IdentificationId = x.IdentificationId, IdentificationType = x.IdentificationType, IsIndividual = x.IsIndividual, IsStaff = x.IsStaff, LastName = x.LastName, MiddleName = x.MiddleName, PhoneNumber = x.PhoneNumber, ProfileImage = x.ProfileImage, ProofOfIdentification = x.ProofOfIdentification, StateOfOrigin = x.StateOfOrigin, StateOfResidence = x.StateOfResidence, UserRole = x.UserRole })
+                    .Skip ((page - 1) * pageSize)
+                    .Take (pageSize)
+                    .ToListAsync (cancellation);
+
+                if (result.Count < 1)
+                {
+                    var badRequest = RequestResponse<List<UserResponse>>.NotFound (null, "Users");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetAllUsersAsync), nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
+                    return badRequest;
+                }
+
+                var count = await _context.Users
+                .AsNoTracking ()
+                .Where (x => x.IsDeleted == false).LongCountAsync (cancellation);
+
+                var response = RequestResponse<List<UserResponse>>.SearchSuccessful (result, count, "Users");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetAllUsersAsync), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetAllUsersAsync), ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<List<UserResponse>>.Error (null);
+            }
+        }
+
+        public JwtSecurityToken GetToken (List<Claim> authClaims)
+        {
+            try
+            {
+                var authSigningKey = new SymmetricSecurityKey (Encoding.UTF8.GetBytes (_appSettings.Secret));
+                var token = new JwtSecurityToken (
+                    issuer: _appSettings.ValidIssuer,
+                    audience: _appSettings.ValidAudience,
+                    expires: DateTime.UtcNow.AddMinutes (10),
+                    claims: authClaims,
+                    signingCredentials: new SigningCredentials (authSigningKey, SecurityAlgorithms.HmacSha256)
+                    );
+
+                return token;
+            }
+            catch (Exception ex)
+            {
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetToken), ex.Message);
+                _logger.LogError (errorLog);
+
                 throw;
             }
+
+        }
+
+        public JwtSecurityToken GetLogoutToken (List<Claim> authClaims)
+        {
+            try
+            {
+                var authSigningKey = new SymmetricSecurityKey (Encoding.UTF8.GetBytes (_appSettings.Secret));
+
+                var token = new JwtSecurityToken (
+                    issuer: _appSettings.ValidIssuer,
+                    audience: _appSettings.ValidAudience,
+                    expires: DateTime.UtcNow.AddHours (-1),
+                    claims: authClaims,
+                    signingCredentials: new SigningCredentials (authSigningKey, SecurityAlgorithms.HmacSha256)
+                    );
+
+                return token;
+            }
+            catch (Exception ex)
+            {
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetLogoutToken), ex.Message);
+                _logger.LogError (errorLog);
+
+                throw;
+            }
+
+        }
+
+        public string HashPassword (string password)
+        {
+            return BCrypt.Net.BCrypt.HashPassword (password);
+        }
+
+        public bool VerifyPassword (string password, string hashedPassword)
+        {
+            return BCrypt.Net.BCrypt.Verify (password, hashedPassword);
         }
     }
 }

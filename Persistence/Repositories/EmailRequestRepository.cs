@@ -115,7 +115,6 @@ namespace Persistence.Repositories
                 check.DeletedBy = request.DeletedBy;
                 check.DateDeleted = DateTime.UtcNow.AddHours (1);
 
-                _context.EmailRequests.Update (check);
                 await _context.SaveChangesAsync (request.CancellationToken);
 
                 var result = RequestResponse<EmailRequestResponse>.Deleted (null, 1, "Email request");
@@ -174,7 +173,6 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                _context.EmailRequests.UpdateRange (emailRequests);
                 await _context.SaveChangesAsync (request.CancellationToken);
 
                 var result = RequestResponse<EmailRequestResponse>.Deleted (null, emailRequests.Count, "Email requests");
@@ -440,7 +438,6 @@ namespace Persistence.Repositories
                 updateRequest.LastModifiedBy = emailRequest.LastModifiedBy;
                 updateRequest.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 
-                _context.EmailRequests.Update (updateRequest);
                 await _context.SaveChangesAsync (emailRequest.CancellationToken);
 
                 var result = _mapper.Map<EmailRequestResponse> (updateRequest);

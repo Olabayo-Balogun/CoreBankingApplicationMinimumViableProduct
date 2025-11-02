@@ -127,7 +127,6 @@ namespace Persistence.Repositories
                 bankCheck.DeletedBy = request.DeletedBy;
                 bankCheck.DateDeleted = DateTime.UtcNow.AddHours (1);
 
-                _context.Banks.Update (bankCheck);
                 await _context.SaveChangesAsync ();
 
                 var result = RequestResponse<BankResponse>.Deleted (null, 1, "Bank");
@@ -339,7 +338,6 @@ namespace Persistence.Repositories
                 updateBankRequest.LastModifiedDate = DateTime.UtcNow.AddHours (1);
                 updateBankRequest.LastModifiedBy = bank.LastModifiedBy;
 
-                _context.Banks.Update (updateBankRequest);
                 await _context.SaveChangesAsync (bank.CancellationToken);
 
                 var result = _mapper.Map<BankResponse> (updateBankRequest);

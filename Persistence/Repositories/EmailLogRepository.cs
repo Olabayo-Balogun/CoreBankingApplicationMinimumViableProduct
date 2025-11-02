@@ -187,7 +187,8 @@ namespace Persistence.Repositories
 
                     return badRequest;
                 }
-                _context.EmailLogs.UpdateRange (emailLogs);
+
+
                 await _context.SaveChangesAsync ();
 
                 var result = RequestResponse<EmailLogResponse>.Deleted (null, emailLogs.Count, "Email logs");
@@ -608,8 +609,6 @@ namespace Persistence.Repositories
 
                     return badRequest;
                 }
-
-                _context.EmailLogs.UpdateRange (emailLogs);
 
                 await _context.SaveChangesAsync (requests.First ().CancellationToken);
                 var result = _mapper.Map<List<EmailLogResponse>> (emailLogs);

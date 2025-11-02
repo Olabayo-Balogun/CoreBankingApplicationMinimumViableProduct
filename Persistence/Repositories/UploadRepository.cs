@@ -673,7 +673,7 @@ namespace Persistence.Repositories
                         return badRequest;
                     }
 
-                    if (!userCheck.Equals ("Admin", StringComparison.OrdinalIgnoreCase) && uploadCheck.CreatedBy != request.DeletedBy)
+                    if (!userCheck.Equals (UserRoles.Admin, StringComparison.OrdinalIgnoreCase) && uploadCheck.CreatedBy != request.DeletedBy)
                     {
                         var badRequest = RequestResponse<UploadResponse>.Unauthorized (null, "Unauthorized to delete upload");
 
@@ -746,7 +746,6 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                _context.UpdateRange (uploads);
                 await _context.SaveChangesAsync (request.CancellationToken);
 
                 var result = RequestResponse<UploadResponse>.Deleted (null, uploads.Count, "Uploads");
@@ -1269,7 +1268,7 @@ namespace Persistence.Repositories
                         return badRequest;
                     }
 
-                    if (!userCheck.Equals ("Admin", StringComparison.OrdinalIgnoreCase) && updateUploadRequest.CreatedBy != upload.LastModifiedBy)
+                    if (!userCheck.Equals (UserRoles.Admin, StringComparison.OrdinalIgnoreCase) && updateUploadRequest.CreatedBy != upload.LastModifiedBy)
                     {
                         var badRequest = RequestResponse<List<UploadResponse>>.Unauthorized (null, "Unauthorized to update upload");
 
@@ -1383,7 +1382,6 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                _context.Uploads.UpdateRange (uploadList);
                 await _context.SaveChangesAsync (uploads.First ().CancellationToken);
 
                 var result = _mapper.Map<List<UploadResponse>> (uploadList);

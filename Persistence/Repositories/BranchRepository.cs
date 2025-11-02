@@ -189,7 +189,6 @@ namespace Persistence.Repositories
                 branchCheck.LastModifiedBy = request.LastModifiedBy;
                 branchCheck.DateDeleted = DateTime.UtcNow.AddHours (1);
 
-                _context.Branches.Update (branchCheck);
                 await _context.SaveChangesAsync ();
 
                 var result = RequestResponse<BranchResponse>.Deleted (null, 1, "Branch");

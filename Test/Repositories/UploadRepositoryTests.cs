@@ -11,6 +11,7 @@ using CloudinaryDotNet.Actions;
 
 using Domain.DTO;
 using Domain.Entities;
+using Domain.Enums;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -289,7 +290,7 @@ namespace Test.Repositories
             using var context = CreateDbContext ();
 
             var userId = "admin123";
-            context.Users.Add (new User { PublicId = userId, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = userId, UserRole = UserRoles.Admin, Email = "example@gmail.com", Password = "Password1!" });
 
             var upload = new Upload
             {
@@ -330,7 +331,7 @@ namespace Test.Repositories
             using var context = CreateDbContext ();
             var userId = "admin123";
 
-            context.Users.Add (new User { PublicId = userId, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = userId, UserRole = UserRoles.Admin, Email = "example@gmail.com", Password = "Password1!" });
             context.Uploads.AddRange (
                 new Upload { PublicId = "file1", CreatedBy = userId, IsDeleted = false, RootFilePath = Path.GetTempFileName (), FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg" },
                 new Upload { PublicId = "file2", CreatedBy = userId, IsDeleted = false, RootFilePath = Path.GetTempFileName (), FileFormat = "jpg", FileSize = 100, FilePath = "file1.jpg" }
@@ -429,7 +430,7 @@ namespace Test.Repositories
             using var context = CreateDbContext ();
             var userId = "user456";
 
-            context.Users.Add (new User { PublicId = userId, UserRole = "User", Email = "example@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = userId, UserRole = UserRoles.User, Email = "example@gmail.com", Password = "Password1!" });
             context.Uploads.Add (new Upload
             {
                 PublicId = "file1",
@@ -464,7 +465,7 @@ namespace Test.Repositories
             using var context = CreateDbContext ();
             var userId = "admin123";
 
-            context.Users.Add (new User { PublicId = userId, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = userId, UserRole = UserRoles.Admin, Email = "example@gmail.com", Password = "Password1!" });
             context.Uploads.Add (new Upload
             {
                 PublicId = "file1",
@@ -696,7 +697,7 @@ namespace Test.Repositories
         public async Task UpdateUploadAsync_UnauthorizedUser_ReturnsUnauthorized ()
         {
             using var context = CreateDbContext ();
-            context.Users.Add (new User { PublicId = "user123", UserRole = "User", Email = "user123@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = "user123", UserRole = UserRoles.User, Email = "user123@gmail.com", Password = "Password1!" });
             context.Uploads.Add (new Upload
             {
                 PublicId = "upload123",
@@ -878,7 +879,7 @@ namespace Test.Repositories
         public async Task UpdateMultipleUploadsAsync_UnauthorizedUser_ReturnsUnauthorized ()
         {
             using var context = CreateDbContext ();
-            context.Users.Add (new User { PublicId = "user123", UserRole = "User", Email = "user123@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = "user123", UserRole = UserRoles.User, Email = "user123@gmail.com", Password = "Password1!" });
             context.Uploads.Add (new Upload
             {
                 PublicId = "upload123",
@@ -915,7 +916,7 @@ namespace Test.Repositories
             using var context = CreateDbContext ();
             var userId = "admin123";
 
-            context.Users.Add (new User { PublicId = userId, UserRole = "Admin", Email = "example@gmail.com", Password = "Password1!" });
+            context.Users.Add (new User { PublicId = userId, UserRole = UserRoles.Admin, Email = "example@gmail.com", Password = "Password1!" });
             context.Uploads.Add (new Upload
             {
                 PublicId = "upload123",
