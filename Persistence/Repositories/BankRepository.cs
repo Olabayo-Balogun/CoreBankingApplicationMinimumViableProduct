@@ -185,7 +185,7 @@ namespace Persistence.Repositories
         {
             try
             {
-                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBanksByUserIdAsync), nameof (id), id.ToString ());
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBanksByUserIdAsync), nameof (id), id);
                 _logger.LogInformation (openingLog);
 
                 var result = await _context.Banks
@@ -201,7 +201,7 @@ namespace Persistence.Repositories
                 {
                     var badRequest = RequestResponse<List<BankResponse>>.NotFound (null, "Bank");
 
-                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBanksByUserIdAsync), nameof (id), id.ToString (), nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBanksByUserIdAsync), nameof (id), id, nameof (result.Count), result.Count.ToString (), badRequest.Remark);
                     _logger.LogInformation (closingLog);
 
                     return badRequest;
@@ -214,14 +214,14 @@ namespace Persistence.Repositories
 
                 var response = RequestResponse<List<BankResponse>>.SearchSuccessful (result, count, "Banks");
 
-                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetBanksByUserIdAsync), nameof (id), id.ToString (), nameof (response.TotalCount), result.Count.ToString (), response.Remark);
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetBanksByUserIdAsync), nameof (id), id, nameof (response.TotalCount), result.Count.ToString (), response.Remark);
                 _logger.LogInformation (conclusionLog);
 
                 return response;
             }
             catch (Exception ex)
             {
-                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBanksByUserIdAsync), nameof (id), id.ToString (), ex.Message);
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetBanksByUserIdAsync), nameof (id), id, ex.Message);
                 _logger.LogError (errorLog);
 
                 return RequestResponse<List<BankResponse>>.Error (null);
@@ -259,7 +259,7 @@ namespace Persistence.Repositories
         {
             try
             {
-                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBankCountByUserIdAsync), nameof (id), id.ToString ());
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetBankCountByUserIdAsync), nameof (id), id);
                 _logger.LogInformation (openingLog);
 
                 long count = await _context.Banks
@@ -269,7 +269,7 @@ namespace Persistence.Repositories
 
                 var response = RequestResponse<BankResponse>.CountSuccessful (null, count, "Bank");
 
-                string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBankCountByUserIdAsync), nameof (id), id.ToString (), nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
+                string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetBankCountByUserIdAsync), nameof (id), id, nameof (response.TotalCount), response.TotalCount.ToString (), response.Remark);
                 _logger.LogInformation (closingLog);
 
                 return response;

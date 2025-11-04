@@ -29,17 +29,16 @@ namespace Infrastructure.Services
         {
             try
             {
-                _logger.LogInformation ($"CreateEmailTemplate begins service-level mapping to DTO at {DateTime.UtcNow.AddHours (1)} for UserPublicId: {emailTemplate.UserId} for template name: {emailTemplate.TemplateName}");
                 var payload = _mapper.Map<EmailTemplateDto> (emailTemplate);
                 var response = await _emailTemplateRepository.CreateEmailTemplateAsync (payload);
-                _logger.LogInformation ($"CreateEmailTemplate ends service-level mapping to DTO at {DateTime.UtcNow.AddHours (1)} for UserPublicId: {emailTemplate.UserId} for template name: {emailTemplate.TemplateName}");
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"CreateEmailTemplate error occurred service-level mapping to DTO at {DateTime.UtcNow.AddHours (1)} for UserPublicId: {emailTemplate.UserId} for template name: {emailTemplate.TemplateName} with message: {ex.Message}");
-                throw;
-            }
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateEmailTemplateAsync), nameof (emailTemplate.TemplateName), emailTemplate.TemplateName, ex.Message);
+				_logger.LogError (errorLog);
+				return RequestResponse<EmailTemplateResponse>.Error (null);
+			}
         }
 
         public async Task<RequestResponse<EmailTemplateResponse>> DeleteEmailTemplateAsync (DeleteEmailTemplateCommand request)

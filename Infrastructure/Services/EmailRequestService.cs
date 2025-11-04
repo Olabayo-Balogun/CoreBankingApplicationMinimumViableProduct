@@ -31,42 +31,35 @@ namespace Infrastructure.Services
         {
             try
             {
-                _logger.LogInformation ($"CreateEmailRequest begins service-level mapping to DTO at {DateTime.UtcNow.AddHours (1)} for UserPublicId: {emailRequest.CreatedBy} to recipient: {emailRequest.ToRecipient}");
                 var payload = _mapper.Map<EmailRequestDto> (emailRequest);
 
                 RequestResponse<EmailRequestResponse> response = await _emailRequestRepository.CreateEmailRequestAsync (payload);
-                _logger.LogInformation ($"CreateEmailRequest ends service-level mapping to DTO at {DateTime.UtcNow.AddHours (1)} for UserPublicId: {emailRequest.CreatedBy} to recipient: {emailRequest.ToRecipient}");
 
                 if (response.IsSuccessful && response.Data != null)
                 {
-                    _logger.LogInformation ($"Email logging begins at {DateTime.UtcNow.AddHours (1)} for email request ID: {response.Data.Id} by userId: {emailRequest.CreatedBy}");
                     var emailLog = new CreateEmailLogCommand { IsHtml = response.Data.IsHtml, Message = response.Data.Message, Subject = response.Data.Subject, ToRecipient = response.Data.ToRecipient, CreatedBy = emailRequest.CreatedBy, CancellationToken = emailRequest.CancellationToken, BccRecipient = response.Data.BccRecipient, CcRecipient = response.Data.CcRecipient };
                     var createEmailLogRequest = await _emailLogService.CreateEmailLogAsync (emailLog);
-                    _logger.LogInformation ($"Email logging ends at {DateTime.UtcNow.AddHours (1)} for email request ID: {response.Data.Id} by userId: {emailRequest.CreatedBy}");
                 }
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"CreateEmailRequest error occurred service-level mapping to DTO at {DateTime.UtcNow.AddHours (1)} for UserPublicId: {emailRequest.CreatedBy} to recipient: {emailRequest.ToRecipient} with message: {ex.Message}");
-                throw;
-            }
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateEmailRequestAsync), nameof (emailRequest.CreatedBy), emailRequest.CreatedBy, ex.Message);
+				_logger.LogError (errorLog);
+				return RequestResponse<EmailRequestResponse>.Error (null);
+			}
         }
 
         public async Task<RequestResponse<List<EmailRequestResponse>>> CreateMultipleEmailRequestAsync (List<CreateEmailCommand> emailRequests)
         {
             try
             {
-                _logger.LogInformation ($"CreateEmailRequest begins service-level mapping to DTO at {DateTime.UtcNow.AddHours (1)} for DeletedBy: {emailRequests.First ().CreatedBy}");
                 var payload = _mapper.Map<List<EmailRequestDto>> (emailRequests);
 
                 RequestResponse<List<EmailRequestResponse>> responses = await _emailRequestRepository.CreateMultipleEmailRequestAsync (payload);
-                _logger.LogInformation ($"CreateEmailRequest ends service-level mapping to DTO at {DateTime.UtcNow.AddHours (1)} for DeletedBy: {emailRequests.First ().CreatedBy}");
 
                 if (responses.IsSuccessful && responses.Data != null)
                 {
-                    _logger.LogInformation ($"Email logging begins at {DateTime.UtcNow.AddHours (1)} by userId: {emailRequests.First ().CreatedBy}");
-
                     List<CreateEmailLogCommand> emailLogs = [];
                     foreach (var response in responses.Data)
                     {
@@ -76,15 +69,15 @@ namespace Infrastructure.Services
                     }
 
                     var createEmailLogRequest = await _emailLogService.CreateMultipleEmailLogsAsync (emailLogs);
-                    _logger.LogInformation ($"Email logging ends at {DateTime.UtcNow.AddHours (1)} by userId: {emailRequests.First ().CreatedBy}");
                 }
                 return responses;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"CreateEmailRequest error occurred service-level mapping to DTO at {DateTime.UtcNow.AddHours (1)} for DeletedBy: {emailRequests.First ().CreatedBy} with message: {ex.Message}");
-                throw;
-            }
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateMultipleEmailRequestAsync), ex.Message);
+				_logger.LogError (errorLog);
+				return RequestResponse<List<EmailRequestResponse>>.Error (null);
+			}
         }
         public async Task<RequestResponse<EmailRequestResponse>> DeleteEmailRequestAsync (DeleteEmailCommand request)
         {

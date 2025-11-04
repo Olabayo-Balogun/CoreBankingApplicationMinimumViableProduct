@@ -1,9 +1,15 @@
 ﻿using Application.Interface.Infrastructure;
 using Application.Interface.Persistence;
 using Application.Models;
+using Application.Models.Banks.Response;
 using Application.Models.PaymentIntegration.Paystack.Command;
 using Application.Models.PaymentIntegration.Paystack.Response;
 using Application.Models.Transactions.Command;
+using Application.Utility;
+
+using AutoMapper.Internal;
+
+using Domain.Entities;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -36,7 +42,8 @@ namespace Infrastructure.Services
         {
             try
             {
-                _logger.LogInformation ($"CreatePaystackPaymentRequest for entity with email: {request.Email} and amount: {request.Amount} begins at {DateTime.UtcNow.AddHours (1)}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (CreatePaystackPaymentRequestAsync), nameof (request.Email), request.Email, nameof (request.Amount), request.Amount);
+				_logger.LogInformation (openingLog);
 
                 var baseUrl = _appSettings.PaystackBaseUrl;
                 var endpoint = _appSettings.PaystackTransferEndpoint;
@@ -53,13 +60,15 @@ namespace Infrastructure.Services
 
                 var result = response.Content != null ? JsonConvert.DeserializeObject<PaystackPaymentResponse> (response.Content) : new PaystackPaymentResponse ();
 
-                _logger.LogInformation ($"CreatePaystackPaymentRequest for entity with email: {request.Email} and amount: {request.Amount} ends at {DateTime.UtcNow.AddHours (1)}");
-                return result;
+				string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreatePaystackPaymentRequestAsync), nameof (request.Email), request.Email, nameof (request.Amount), request.Amount, response.StatusCode.ToString());
+				_logger.LogInformation (closingLog);
+				return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"CreatePaystackPaymentRequest for entity with email: {request.Email} and amount: {request.Amount} exception occurred at {DateTime.UtcNow.AddHours (1)} with message: {ex.Message}");
-                throw;
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreatePaystackPaymentRequestAsync), nameof (request.Email), request.Email, nameof (request.Amount), request.Amount, ex.Message);
+				_logger.LogError (errorLog);
+				return new PaystackPaymentResponse { Message = ex.Message, Status = false, Data = null };
             }
         }
 
@@ -67,7 +76,8 @@ namespace Infrastructure.Services
         {
             try
             {
-                _logger.LogInformation ($"VerifyPaystackPaymentRequest begins at {DateTime.UtcNow.AddHours (1)} for payment with reference Id: {paymentReferenceId}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (VerifyPaystackPaymentRequestAsync), nameof (paymentReferenceId), paymentReferenceId);
+				_logger.LogInformation (openingLog);
 
                 var baseUrl = _appSettings.PaystackBaseUrl;
                 var endpoint = _appSettings.PaystackVerificationEndpoint.Replace ("{paymentReferenceId}", paymentReferenceId);
@@ -82,35 +92,45 @@ namespace Infrastructure.Services
 
                 var result = response.Content != null ? JsonConvert.DeserializeObject<PaystackPaymentVerificationResponse> (response.Content) : new PaystackPaymentVerificationResponse ();
 
-                _logger.LogInformation ($"VerifyPaystackPaymentRequest ends at {DateTime.UtcNow.AddHours (1)} for payment with reference Id: {paymentReferenceId}");
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (VerifyPaystackPaymentRequestAsync), nameof (paymentReferenceId), paymentReferenceId, response.StatusCode.ToString());
+				_logger.LogInformation (conclusionLog);
+
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"VerifyPaystackPaymentRequest exception occurred at {DateTime.UtcNow.AddHours (1)} for payment with reference Id: {paymentReferenceId} with message: {ex.Message}");
-                throw;
-            }
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (VerifyPaystackPaymentRequestAsync), nameof (paymentReferenceId), paymentReferenceId, ex.Message);
+				_logger.LogError (errorLog);
+				return new PaystackPaymentVerificationResponse { Message = ex.Message, Status = false, data = null };
+			}
         }
 
         public async Task<RequestResponse<PaymentIntegrationResponse>> PaystackPaymentWebhookRequestAsync (PaystackWebhookCommand request)
         {
             try
             {
-                _logger.LogInformation ($"PaystackPaymentWebhookRequest begins at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount}");
+				string openingLog = Utility.GenerateMethodInitiationLog (nameof (PaystackPaymentWebhookRequestAsync), nameof (request.Data.offline_reference), request.Data.offline_reference, nameof(request.Data.Amount), request.Data.Amount.ToString());
+				_logger.LogInformation (openingLog);
 
                 var check = await _context.Transactions.Where (x => x.PaymentReferenceId == request.Data.offline_reference).FirstOrDefaultAsync ();
                 if (check == null)
                 {
                     var badRequest = RequestResponse<PaymentIntegrationResponse>.NotFound (null, "Payment");
-                    _logger.LogInformation ($"PaystackPaymentWebhookRequest ends at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount} with remark: {badRequest.Remark}");
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (PaystackPaymentWebhookRequestAsync), nameof (request.Data.offline_reference), request.Data.offline_reference, nameof (request.Data.Amount), request.Data.Amount.ToString(), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
                     return badRequest;
                 }
 
                 if (check.IsReconciled == true)
                 {
                     var badRequest = RequestResponse<PaymentIntegrationResponse>.Failed (null, 200, "Payment already confirmed");
-                    _logger.LogInformation ($"PaystackPaymentWebhookRequest ends at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount} with remark: {badRequest.Remark}");
-                    return badRequest;
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (PaystackPaymentWebhookRequestAsync), nameof (request.Data.offline_reference), request.Data.offline_reference, nameof (request.Data.Amount), request.Data.Amount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
                 }
 
                 PaystackPaymentVerificationResponse paymentVerification = await VerifyPaystackPaymentRequestAsync (request.Data.offline_reference);
@@ -118,22 +138,31 @@ namespace Infrastructure.Services
                 if (paymentVerification.data == null)
                 {
                     var badRequest = RequestResponse<PaymentIntegrationResponse>.NotFound (null, "Payment");
-                    _logger.LogInformation ($"PaystackPaymentWebhookRequest ends at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount} with remark: {badRequest.Remark}");
-                    return badRequest;
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (PaystackPaymentWebhookRequestAsync), nameof (request.Data.offline_reference), request.Data.offline_reference, nameof (request.Data.Amount), request.Data.Amount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
                 }
 
                 if (!paymentVerification.data.Status.Equals ("success", StringComparison.OrdinalIgnoreCase))
                 {
                     var badRequest = RequestResponse<PaymentIntegrationResponse>.Failed (null, 400, "Payment not confirmed");
-                    _logger.LogInformation ($"PaystackPaymentWebhookRequest ends at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount} with remark: {badRequest.Remark}");
-                    return badRequest;
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (PaystackPaymentWebhookRequestAsync), nameof (request.Data.offline_reference), request.Data.offline_reference, nameof (request.Data.Amount), request.Data.Amount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
                 }
 
                 if (!request.Data.status.Equals ("success", StringComparison.OrdinalIgnoreCase))
                 {
                     var badRequest = RequestResponse<PaymentIntegrationResponse>.Failed (null, 400, "Payment not confirmed");
-                    _logger.LogInformation ($"PaystackPaymentWebhookRequest ends at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount} with remark: {badRequest.Remark}");
-                    return badRequest;
+
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (PaystackPaymentWebhookRequestAsync), nameof (request.Data.offline_reference), request.Data.offline_reference, nameof (request.Data.Amount), request.Data.Amount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
                 }
 
                 var reconcileTransaction = new ConfirmTransactionCommand
@@ -149,9 +178,11 @@ namespace Infrastructure.Services
                 if (reconcileTransactionRequest.Data == null)
                 {
                     var badRequest = RequestResponse<PaymentIntegrationResponse>.Failed (null, 400, "Payment not confirmed");
-                    _logger.LogInformation ($"PaystackPaymentWebhookRequest ends at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount} with remark: {badRequest.Remark}");
-                    return badRequest;
 
+					string closingLog = Utility.GenerateMethodConclusionLog (nameof (PaystackPaymentWebhookRequestAsync), nameof (request.Data.offline_reference), request.Data.offline_reference, nameof (request.Data.Amount), request.Data.Amount.ToString (), badRequest.Remark);
+					_logger.LogInformation (closingLog);
+
+					return badRequest;
                 }
 
                 var response = new PaymentIntegrationResponse
@@ -163,14 +194,19 @@ namespace Infrastructure.Services
                 };
 
                 var result = RequestResponse<PaymentIntegrationResponse>.Success (response, 1, "Payment request confirmed sucessfully");
-                _logger.LogInformation ($"PaystackPaymentWebhookRequest ends at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount} with remark: {result.Remark}");
-                return result;
+
+				string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (PaystackPaymentWebhookRequestAsync), nameof (request.Data.offline_reference), request.Data.offline_reference, nameof (request.Data.Amount), request.Data.Amount.ToString (), result.Remark);
+				_logger.LogInformation (conclusionLog);
+
+				return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError ($"PaystackPaymentWebhookRequest exception occurred at {DateTime.UtcNow.AddHours (1)} for payment with PaymentReferenceId: {request.Data.offline_reference} and amount: {request.Data.Amount} with message: {ex.Message}");
-                throw;
-            }
+				string errorLog = Utility.GenerateMethodExceptionLog (nameof (PaystackPaymentWebhookRequestAsync), nameof (request.Data.offline_reference), request.Data.offline_reference, nameof (request.Data.Amount), request.Data.Amount.ToString (), ex.Message);
+				_logger.LogError (errorLog);
+
+				return RequestResponse<PaymentIntegrationResponse>.Error (null);
+			}
         }
     }
 }

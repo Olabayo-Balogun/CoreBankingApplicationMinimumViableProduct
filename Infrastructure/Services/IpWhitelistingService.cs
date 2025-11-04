@@ -18,6 +18,7 @@ namespace Infrastructure.Services
             var whitelistedIps = _appSettings.WhitelistedIPAddresses;
             _whitelistedIps = whitelistedIps.Split (',').ToList ();
         }
+
         public bool IsWhitelisted (IPAddress ipAddress)
         {
             return _whitelistedIps.Contains (ipAddress.ToString ());
