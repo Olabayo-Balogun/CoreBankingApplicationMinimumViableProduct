@@ -645,6 +645,7 @@ namespace Persistence.Repositories
 
                 user.LastLoggedInDate = DateTime.UtcNow.AddHours (1);
                 user.LastModifiedBy = user.PublicId;
+                user.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 
                 await _context.SaveChangesAsync (login.CancellationToken);
 
@@ -1177,6 +1178,8 @@ namespace Persistence.Repositories
 
                 user.EmailConfirmed = true;
                 user.EmailVerificationToken = null;
+                user.LastModifiedDate = DateTime.UtcNow.AddHours (1);
+                user.LastModifiedBy = user.PublicId;
 
                 await _context.SaveChangesAsync ();
 
@@ -1230,6 +1233,8 @@ namespace Persistence.Repositories
                 string resetLink = $"{_appSettings.BaseUrl}ChangePassword?email={user.Email}&token={token}";
 
                 user.PasswordResetToken = token;
+                user.LastModifiedDate = DateTime.UtcNow.AddHours (1);
+                user.LastModifiedBy = "SYSTEM";
 
                 await _context.SaveChangesAsync (cancellation);
 
@@ -1328,6 +1333,8 @@ namespace Persistence.Repositories
 
                 user.Password = HashPassword (request.NewPassword);
                 user.PasswordHash = user.Password.GetHashCode ().ToString ();
+                user.LastModifiedDate = DateTime.UtcNow.AddHours (1);
+                user.LastModifiedBy = user.PublicId;
 
                 await _context.SaveChangesAsync (request.CancellationToken);
 
@@ -1400,6 +1407,7 @@ namespace Persistence.Repositories
                 user.Password = HashPassword (request.NewPassword);
                 user.PasswordHash = user.Password.GetHashCode ().ToString ();
                 user.LastModifiedBy = request.LastModifiedBy;
+                user.LastModifiedDate = DateTime.UtcNow.AddHours (1);
 
                 await _context.SaveChangesAsync (request.CancellationToken);
 

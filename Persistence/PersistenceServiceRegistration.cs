@@ -46,6 +46,8 @@ namespace Persistence
             services.AddScoped<IEmailLogRepository, EmailLogRepository> ();
             services.AddScoped<IEmailRequestRepository, EmailRequestRepository> ();
             services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository> ();
+            services.AddScoped<IIndustryRepository, IndustryRepository> ();
+            services.AddScoped<IIndustryFieldRepository, IndustryFieldRepository> ();
             services.AddScoped<ITransactionRepository, TransactionRepository> ();
             services.AddScoped<IUploadRepository, UploadRepository> ();
             services.AddScoped<IUserRepository, UserRepository> ();

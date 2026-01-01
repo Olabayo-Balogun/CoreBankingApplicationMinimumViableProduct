@@ -14,5 +14,6 @@ namespace Domain.DTO
         public string Name { get; set; }
         [StringLength (1000, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
         public string? Description { get; set; }
+        public CancellationToken CancellationToken { get; set; }
     }
 }

@@ -23,5 +23,6 @@ namespace Domain.DTO
         public int Order { get; set; }
         [StringLength (200, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
         public string? ToolTip { get; set; }
+        public CancellationToken CancellationToken { get; set; }
     }
 }

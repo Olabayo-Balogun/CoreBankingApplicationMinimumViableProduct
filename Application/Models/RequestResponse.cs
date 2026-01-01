@@ -44,7 +44,7 @@
 
         public static RequestResponse<T> Deleted (T? data, long totalCount, string remark)
         {
-            return new RequestResponse<T> (true, 200, $"{remark} deleted sucessfully", totalCount, data);
+            return new RequestResponse<T> (true, 200, $"{remark} deleted successfully", totalCount, data);
         }
 
         public static RequestResponse<T> Created (T data, long totalCount, string remark)
