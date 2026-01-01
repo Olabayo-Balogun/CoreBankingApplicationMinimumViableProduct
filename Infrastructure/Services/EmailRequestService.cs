@@ -44,10 +44,10 @@ namespace Infrastructure.Services
             }
             catch (Exception ex)
             {
-				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateEmailRequestAsync), nameof (emailRequest.CreatedBy), emailRequest.CreatedBy, ex.Message);
-				_logger.LogError (errorLog);
-				return RequestResponse<EmailRequestResponse>.Error (null);
-			}
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateEmailRequestAsync), nameof (emailRequest.CreatedBy), emailRequest.CreatedBy, ex.Message);
+                _logger.LogError (errorLog);
+                return RequestResponse<EmailRequestResponse>.Error (null);
+            }
         }
 
         public async Task<RequestResponse<List<EmailRequestResponse>>> CreateMultipleEmailRequestAsync (List<CreateEmailCommand> emailRequests)
@@ -74,10 +74,10 @@ namespace Infrastructure.Services
             }
             catch (Exception ex)
             {
-				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateMultipleEmailRequestAsync), ex.Message);
-				_logger.LogError (errorLog);
-				return RequestResponse<List<EmailRequestResponse>>.Error (null);
-			}
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateMultipleEmailRequestAsync), ex.Message);
+                _logger.LogError (errorLog);
+                return RequestResponse<List<EmailRequestResponse>>.Error (null);
+            }
         }
         public async Task<RequestResponse<EmailRequestResponse>> DeleteEmailRequestAsync (DeleteEmailCommand request)
         {

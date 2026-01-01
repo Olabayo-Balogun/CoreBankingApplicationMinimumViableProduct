@@ -1,15 +1,9 @@
-﻿using Application.Models.Industry.Response;
-using Application.Models.IndustryField.Response;
+﻿using Application.Models.IndustryField.Response;
 
 using MediatR;
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Application.Models.IndustryField.Command
 {

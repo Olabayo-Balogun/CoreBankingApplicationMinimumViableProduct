@@ -4,8 +4,6 @@ using Application.Models;
 using Application.Models.EmailLogs.Command;
 using Application.Utility;
 
-using Domain.Entities;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -30,8 +28,8 @@ namespace Infrastructure.Services
         {
             try
             {
-				string openingLog = Utility.GenerateMethodInitiationLog (nameof (SendUnsentEmailsAsync));
-				_logger.LogInformation (openingLog);
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (SendUnsentEmailsAsync));
+                _logger.LogInformation (openingLog);
 
                 CancellationToken cancellationToken = new ();
                 var emailLogs = await _emailLogRepository.GetEmailLogBySentStatusAsync (false, cancellationToken, 1, _appSettings.EmailBatchSizeLimit);
@@ -146,9 +144,9 @@ namespace Infrastructure.Services
                     }
 
                     var updateEmailLog = await _emailLogRepository.UpdateMultipleEmailLogSentStatusAsync (updateEmails);
-					string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (SendUnsentEmailsAsync));
-					_logger.LogInformation (conclusionLog);
-				}
+                    string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (SendUnsentEmailsAsync));
+                    _logger.LogInformation (conclusionLog);
+                }
                 else
                 {
                     _logger.LogInformation ($"SendUnsentEmails ends at {DateTimeOffset.Now} with no email logs retrieved");
@@ -156,8 +154,8 @@ namespace Infrastructure.Services
             }
             catch (Exception ex)
             {
-				string errorLog = Utility.GenerateMethodExceptionLog (nameof (SendUnsentEmailsAsync), ex.Message);
-				_logger.LogError (errorLog);
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (SendUnsentEmailsAsync), ex.Message);
+                _logger.LogError (errorLog);
             }
         }
     }

@@ -33,6 +33,18 @@ namespace Application.Models.IndustryField.Queries
                 var result = await _industryFieldRepository.GetIndustryFieldByNameAsync (request.Name, request.CancellationToken);
                 return result;
             }
+            else if (request.UserId != null)
+            {
+                ValidateQueryParameterAndPaginationResponse validateQueryAndPagination = Utility.Utility
+                .ValidateQueryParameter (request.UserId, null);
+                if (!validateQueryAndPagination.IsValid)
+                {
+                    return RequestResponse<IndustryFieldResponse>.Failed (null, 400, validateQueryAndPagination.Remark);
+                }
+                request.UserId = validateQueryAndPagination.DecodedString;
+                var result = await _industryFieldRepository.GetIndustryFieldCountByUserIdAsync (request.UserId, request.CancellationToken);
+                return result;
+            }
             else
             {
                 var result = await _industryFieldRepository.GetIndustryFieldCountAsync (request.CancellationToken);

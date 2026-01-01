@@ -1,14 +1,7 @@
 ﻿using Application.Interface.Persistence;
-using Application.Models.Accounts.Response;
 using Application.Models.IndustryField.Response;
 
 using MediatR;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Models.IndustryField.Queries
 {

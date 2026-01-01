@@ -309,7 +309,7 @@ namespace Persistence.Repositories
 
                 long count = await _context.Industries
                     .AsNoTracking ()
-                    .Where (x => x.CreatedBy == id)
+                    .Where (x => x.CreatedBy == id && x.IsDeleted == false)
                     .LongCountAsync (cancellationToken);
 
                 var response = RequestResponse<IndustryResponse>.CountSuccessful (null, count, "Industry");

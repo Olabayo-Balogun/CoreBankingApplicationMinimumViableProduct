@@ -744,7 +744,7 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                if(user.BusinessName != null && !user.IndustryId.HasValue)
+                if (user.BusinessName != null && !user.IndustryId.HasValue)
                 {
                     var badRequest = RequestResponse<UserResponse>.Failed (null, 400, "Industry Id is required for business registration");
                     string closingLog = Utility.GenerateMethodConclusionLog (nameof (RegisterAsync), nameof (user.Email), user.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
@@ -752,7 +752,7 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                long industryIdCount = user.IndustryId.GetValueOrDefault() > 0 ? await _context.Industries.AsNoTracking ().Where(x => x.IsDeleted == false && x.Id == user.IndustryId.GetValueOrDefault()).LongCountAsync() : 0;
+                long industryIdCount = user.IndustryId.GetValueOrDefault () > 0 ? await _context.Industries.AsNoTracking ().Where (x => x.IsDeleted == false && x.Id == user.IndustryId.GetValueOrDefault ()).LongCountAsync () : 0;
 
                 if (user.IndustryId.HasValue && industryIdCount < 1)
                 {

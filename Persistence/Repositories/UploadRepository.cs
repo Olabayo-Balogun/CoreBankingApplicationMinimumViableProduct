@@ -264,7 +264,7 @@ namespace Persistence.Repositories
                     var uploadsFolder = Path.Combine (AppDomain.CurrentDomain.BaseDirectory, "Uploads");
                     Directory.CreateDirectory (uploadsFolder);
 
-                    var uniqueFileName = $"{Guid.NewGuid ().ToString ()}_{upload.UploadFile.FileName}";
+                    var uniqueFileName = $"{Guid.NewGuid ()}_{upload.UploadFile.FileName}";
                     rootFilePath = Path.Combine (uploadsFolder, uniqueFileName);
 
                     using (var stream = new FileStream (rootFilePath, FileMode.Create))

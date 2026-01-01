@@ -35,10 +35,10 @@ namespace Infrastructure.Services
             }
             catch (Exception ex)
             {
-				string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateEmailTemplateAsync), nameof (emailTemplate.TemplateName), emailTemplate.TemplateName, ex.Message);
-				_logger.LogError (errorLog);
-				return RequestResponse<EmailTemplateResponse>.Error (null);
-			}
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (CreateEmailTemplateAsync), nameof (emailTemplate.TemplateName), emailTemplate.TemplateName, ex.Message);
+                _logger.LogError (errorLog);
+                return RequestResponse<EmailTemplateResponse>.Error (null);
+            }
         }
 
         public async Task<RequestResponse<EmailTemplateResponse>> DeleteEmailTemplateAsync (DeleteEmailTemplateCommand request)

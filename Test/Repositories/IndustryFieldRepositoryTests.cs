@@ -500,7 +500,11 @@ namespace Test.Repositories
 
             var repo = new IndustryFieldRepository (context, _mapper, _loggerMock.Object, _auditLogRepoMock.Object);
 
-            var dto = new IndustryFieldDto { Id = 999, LastModifiedBy = "user1", CancellationToken = CancellationToken.None,
+            var dto = new IndustryFieldDto
+            {
+                Id = 999,
+                LastModifiedBy = "user1",
+                CancellationToken = CancellationToken.None,
                 IndustryId = 1,
                 DataType = "String",
                 IsRequired = true,

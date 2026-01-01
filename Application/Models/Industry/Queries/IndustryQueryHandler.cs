@@ -1,14 +1,7 @@
 ﻿using Application.Interface.Persistence;
-using Application.Models.Industry.Queries;
 using Application.Models.Industry.Response;
 
 using MediatR;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Models.Industry.Queries
 {
@@ -38,6 +31,18 @@ namespace Application.Models.Industry.Queries
                 }
                 request.Name = validateQueryAndPagination.DecodedString;
                 var result = await _industryRepository.GetIndustryByNameAsync (request.Name, request.CancellationToken);
+                return result;
+            }
+            else if (request.UserId != null)
+            {
+                ValidateQueryParameterAndPaginationResponse validateQueryAndPagination = Utility.Utility
+                .ValidateQueryParameter (request.UserId, null);
+                if (!validateQueryAndPagination.IsValid)
+                {
+                    return RequestResponse<IndustryResponse>.Failed (null, 400, validateQueryAndPagination.Remark);
+                }
+                request.UserId = validateQueryAndPagination.DecodedString;
+                var result = await _industryRepository.GetIndustryCountByUserIdAsync (request.UserId, request.CancellationToken);
                 return result;
             }
             else

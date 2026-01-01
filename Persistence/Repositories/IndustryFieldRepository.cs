@@ -16,12 +16,6 @@ using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Persistence.Repositories
 {
     public class IndustryFieldRepository : IIndustryFieldRepository
@@ -55,8 +49,17 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                var industries = await _context.Industries.AsNoTracking ().Where (x => x.IsDeleted == false).Select(x => x.Id).ToListAsync (industryField.CancellationToken);
-                if(industries == null )
+                if (industryField.Order < 1)
+                {
+                    var badRequest = RequestResponse<IndustryFieldResponse>.Failed (null, 400, "An industry field cannot have an order less than one");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateIndustryFieldAsync), nameof (industryField.Name), industryField.Name, nameof (industryField.CreatedBy), industryField.CreatedBy, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+                    return badRequest;
+                }
+
+                var industries = await _context.Industries.AsNoTracking ().Where (x => x.IsDeleted == false).Select (x => x.Id).ToListAsync (industryField.CancellationToken);
+                if (industries == null)
                 {
                     var badRequest = RequestResponse<IndustryFieldResponse>.NotFound (null, "Unable to retrieve industries");
                     string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateIndustryFieldAsync), nameof (industryField.Name), industryField.Name, nameof (industryField.CreatedBy), industryField.CreatedBy, badRequest.Remark);
@@ -64,7 +67,7 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                if(!industries.Contains(industryField.IndustryId))
+                if (!industries.Contains (industryField.IndustryId))
                 {
                     var badRequest = RequestResponse<IndustryFieldResponse>.NotFound (null, "Industry does not exist");
                     string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateIndustryFieldAsync), nameof (industryField.Name), industryField.Name, nameof (industryField.CreatedBy), industryField.CreatedBy, badRequest.Remark);
@@ -72,7 +75,7 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                var industryFields = await _context.IndustryFields.AsNoTracking ().Where (x => x.IsDeleted == false).ToListAsync (industryField.CancellationToken);
+                var industryFields = await _context.IndustryFields.AsNoTracking ().Where (x => x.IsDeleted == false && x.IndustryId == industryField.IndustryId).ToListAsync (industryField.CancellationToken);
 
                 if (industryFields == null)
                 {
@@ -83,7 +86,7 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                if (industryFields.Any (x => x.Name.ToLower() == industryField.Name.Trim().ToLower()))
+                if (industryFields.Any (x => x.Name.ToLower () == industryField.Name.Trim ().ToLower ()))
                 {
                     var badRequest = RequestResponse<IndustryFieldResponse>.AlreadyExists (null, industryFields.Count, "Industry field");
 
@@ -95,6 +98,15 @@ namespace Persistence.Repositories
                 if (industryFields.Any (x => x.Order == industryField.Order))
                 {
                     var badRequest = RequestResponse<IndustryFieldResponse>.Failed (null, 400, "An industry field already exists with the same order");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateIndustryFieldAsync), nameof (industryField.Name), industryField.Name, nameof (industryField.CreatedBy), industryField.CreatedBy, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+                    return badRequest;
+                }
+
+                if (!industryFields.Any (x => x.Order == industryField.Order - 1) && industryField.Order > 1)
+                {
+                    var badRequest = RequestResponse<IndustryFieldResponse>.Failed (null, 400, $"An industry field does not exist for the order {industryField.Order - 1}, please resolve this");
 
                     string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateIndustryFieldAsync), nameof (industryField.Name), industryField.Name, nameof (industryField.CreatedBy), industryField.CreatedBy, badRequest.Remark);
                     _logger.LogInformation (closingLog);
@@ -263,7 +275,7 @@ namespace Persistence.Repositories
             }
             catch (Exception ex)
             {
-                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetIndustryFieldsByIndustryIdAsync), nameof (id), id.ToString(), ex.Message);
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetIndustryFieldsByIndustryIdAsync), nameof (id), id.ToString (), ex.Message);
                 _logger.LogError (errorLog);
 
                 return RequestResponse<List<IndustryFieldResponse>>.Error (null);
@@ -398,7 +410,7 @@ namespace Persistence.Repositories
 
                 long count = await _context.IndustryFields
                     .AsNoTracking ()
-                    .Where (x => x.CreatedBy == id)
+                    .Where (x => x.CreatedBy == id && x.IsDeleted == false)
                     .LongCountAsync (cancellationToken);
 
                 var response = RequestResponse<IndustryFieldResponse>.CountSuccessful (null, count, "Industry field");
@@ -434,6 +446,15 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
+                if (industryField.Order < 1)
+                {
+                    var badRequest = RequestResponse<IndustryFieldResponse>.Failed (null, 400, "An industry field cannot have an order less than one");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateIndustryFieldAsync), nameof (industryField.Name), industryField.Name, nameof (industryField.CreatedBy), industryField.CreatedBy, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+                    return badRequest;
+                }
+
                 var industries = await _context.Industries.AsNoTracking ().Where (x => x.IsDeleted == false).Select (x => x.Id).ToListAsync (industryField.CancellationToken);
                 if (industries == null)
                 {
@@ -451,7 +472,7 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                var industryFields = await _context.IndustryFields.AsNoTracking ().Where (x => x.IsDeleted == false).ToListAsync (industryField.CancellationToken);
+                var industryFields = await _context.IndustryFields.AsNoTracking ().Where (x => x.IsDeleted == false && x.IndustryId == industryField.IndustryId).ToListAsync (industryField.CancellationToken);
 
                 if (industryFields == null)
                 {
@@ -462,7 +483,7 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                if (industryFields.Any (x => x.Name.ToLower () == industryField.Name.Trim ().ToLower ()))
+                if (industryFields.Any (x => x.Name.ToLower () == industryField.Name.Trim ().ToLower () && x.Id != industryField.Id))
                 {
                     var badRequest = RequestResponse<IndustryFieldResponse>.AlreadyExists (null, industryFields.Count, "Industry field");
 
@@ -480,7 +501,7 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                if (industryFields.Any (x => x.Order == industryField.Order && x.Name.ToLower() != industryField.Name.ToLower().Trim()))
+                if (industryFields.Any (x => x.Order == industryField.Order && x.Name.ToLower () != industryField.Name.ToLower ().Trim ()))
                 {
                     var badRequest = RequestResponse<IndustryFieldResponse>.Failed (null, 400, "An industry field already exists with the same order");
 
@@ -488,7 +509,16 @@ namespace Persistence.Repositories
                     _logger.LogInformation (closingLog);
                     return badRequest;
                 }
-                
+
+                if (!industryFields.Any (x => x.Id != industryField.Id && x.Order == industryField.Order - 1) && industryField.Order > 1)
+                {
+                    var badRequest = RequestResponse<IndustryFieldResponse>.Failed (null, 400, $"An industry field does not exist for the order {industryField.Order - 1}, please resolve this");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateIndustryFieldAsync), nameof (industryField.Name), industryField.Name, nameof (industryField.CreatedBy), industryField.CreatedBy, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+                    return badRequest;
+                }
+
                 var updateIndustryFieldRequest = await _context.IndustryFields.Where (x => x.Id == industryField.Id).FirstOrDefaultAsync (industryField.CancellationToken);
 
                 CreateAuditLogCommand createAuditLogRequestViewModel = new ()
