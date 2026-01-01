@@ -147,3 +147,24 @@ For the following endpoints, you **must** include an `Idempotence-Key` header:
 
 ```http
 Idempotence-Key: 3f2504e0-4f89-11d3-9a0c-0305e82c3301
+
+---
+
+## 💾 Response Caching
+
+GET endpoints implement **response caching** to improve performance and reduce database load. Cached responses are stored for **10 minutes (600 seconds)** and vary by query parameters.
+
+### 📌 Cached Endpoints
+
+| Endpoint | Cache Duration | Varies By |
+|----------|---------------|-----------|
+| `GET /api/v1/IndustryFields/industry-field` | 600s | `id`, `userPublicId`, `name` |
+| `GET /api/v1/IndustryFields/industry-fields` | 600s | `industryId`, `id`, `pageNumber`, `pageSize` |
+
+### 🧠 How It Works
+
+- First request fetches data from the database and caches the response.
+- Subsequent requests with the same query parameters return the cached response.
+- Cache automatically expires after 10 minutes.
+
+---
