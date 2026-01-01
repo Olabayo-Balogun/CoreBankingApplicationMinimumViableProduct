@@ -1,13 +1,18 @@
-﻿using System;
+﻿using Application.Models.IndustryField.Response;
+
+using MediatR;
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Application.Models.IndustryField.Command
 {
-    public class DeleteIndustryFieldCommand
+    public class DeleteIndustryFieldCommand : IRequest<RequestResponse<IndustryFieldResponse>>
     {
         /// Id of the industry field
         /// </summary>
@@ -16,8 +21,7 @@ namespace Application.Models.IndustryField.Command
         /// <summary>
         /// Id of the user who is deleting the industry field
         /// </summary>
-        [Required (ErrorMessage = "DeletedBy is required")]
-        [StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+        [JsonIgnore]
         public string DeletedBy { get; set; }
         public CancellationToken CancellationToken { get; set; }
     }

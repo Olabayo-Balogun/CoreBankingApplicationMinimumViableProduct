@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Application.Models.Industry.Response;
+
+using MediatR;
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -7,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Application.Models.Industry.Command
 {
-    public class DeleteIndustryCommand
+    public class DeleteIndustryCommand : IRequest<RequestResponse<IndustryResponse>>
     {
         /// Id of the industry
         /// </summary>
