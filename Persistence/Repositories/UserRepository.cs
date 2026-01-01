@@ -743,7 +743,24 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                string emailDomain = user.Email.Substring (user.Email.Length - 12);
+                if(user.BusinessName != null && !user.IndustryId.HasValue)
+                {
+                    var badRequest = RequestResponse<UserResponse>.Failed (null, 400, "Industry Id is required for business registration");
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (RegisterAsync), nameof (user.Email), user.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+                    return badRequest;
+                }
+
+                long industryIdCount = user.IndustryId.GetValueOrDefault() > 0 ? await _context.Industries.AsNoTracking ().Where(x => x.IsDeleted == false && x.Id == user.IndustryId.GetValueOrDefault()).LongCountAsync() : 0;
+
+                if (user.IndustryId.HasValue && industryIdCount < 1)
+                {
+                    var badRequest = RequestResponse<UserResponse>.NotFound (null, "User industry");
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (RegisterAsync), nameof (user.Email), user.Email, nameof (badRequest.TotalCount), badRequest.TotalCount.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+                    return badRequest;
+                }
+
                 var payload = _mapper.Map<User> (user);
                 Guid token = Guid.NewGuid ();
                 string verificationLink = $"{_appSettings.BaseUrl}VerifyEmail?Email={user.Email}&Token={token}";

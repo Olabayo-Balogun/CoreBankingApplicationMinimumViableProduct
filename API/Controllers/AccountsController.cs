@@ -108,6 +108,7 @@ namespace API.Controllers
                 UserPublicId = userPublicId,
                 CancellationToken = cancellationToken
             };
+
             var result = await _mediator.Send (request);
             return StatusCode (result.StatusCode, result);
         }

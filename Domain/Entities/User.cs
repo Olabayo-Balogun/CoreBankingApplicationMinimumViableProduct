@@ -57,6 +57,12 @@ namespace Domain.Entities
         public string? BusinessType { get; set; }
 
         /// <summary>
+        /// This should helps with information of the industry of the customer if the customer is a business
+        /// </summary>
+        [StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+        public long? IndustryId { get; set; }
+
+        /// <summary>
         /// This should helps with information of their unique identification detail
         /// </summary>
         [StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]

@@ -1,6 +1,8 @@
 ﻿using Application.Models.Accounts.Response;
 using Application.Models.Banks.Response;
 using Application.Models.Branches.Response;
+using Application.Models.Industry.Response;
+using Application.Models.IndustryField.Response;
 using Application.Models.Transactions.Response;
 using Application.Models.Uploads.Response;
 using Application.Models.Users.Response;
@@ -12,6 +14,8 @@ namespace Application.Models.AuditLogs.Response
         public AccountResponse? AccountLog { get; set; }
         public BankResponse? BankLog { get; set; }
         public BranchResponse? BranchLog { get; set; }
+        public IndustryResponse? IndustryLog { get; set; }
+        public IndustryFieldResponse? IndustryFieldLog { get; set; }
         public TransactionResponse? TransactionLog { get; set; }
         public UploadResponse? UploadLog { get; set; }
         public UserResponse? UserLog { get; set; }

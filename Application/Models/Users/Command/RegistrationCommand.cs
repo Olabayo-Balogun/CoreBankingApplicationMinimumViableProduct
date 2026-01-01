@@ -49,6 +49,11 @@ namespace Application.Models.Users.Command
         [StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
         public string IdentificationId { get; set; }
         /// <summary>
+        /// This should helps with information of the industry of the customer if the customer is a business
+        /// </summary>
+        [StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
+        public long? IndustryId { get; set; }
+        /// <summary>
         /// This should helps with information of their identification type eg CAC number, NIN, Driver's license, etc.
         /// </summary>
         [Required (ErrorMessage = "IdentificationType is required")]

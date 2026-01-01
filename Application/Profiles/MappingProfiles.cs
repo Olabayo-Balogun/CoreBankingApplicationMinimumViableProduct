@@ -11,6 +11,10 @@ using Application.Models.EmailRequests.Command;
 using Application.Models.EmailRequests.Response;
 using Application.Models.EmailTemplates.Command;
 using Application.Models.EmailTemplates.Response;
+using Application.Models.Industry.Command;
+using Application.Models.Industry.Response;
+using Application.Models.IndustryField.Command;
+using Application.Models.IndustryField.Response;
 using Application.Models.Transactions.Command;
 using Application.Models.Transactions.Response;
 using Application.Models.Uploads.Command;
@@ -63,6 +67,18 @@ namespace Application.Profiles
             CreateMap<CreateEmailTemplateCommand, EmailTemplateDto> ().ReverseMap ();
             CreateMap<EmailTemplateResponse, EmailTemplateDto> ().ReverseMap ();
             CreateMap<EmailTemplate, EmailTemplateResponse> ().ReverseMap ();
+
+            CreateMap<CreateIndustryCommand, IndustryDto> ().ReverseMap ();
+            CreateMap<UpdateIndustryCommand, IndustryDto> ().ReverseMap ();
+            CreateMap<IndustryResponse, IndustryDto> ().ReverseMap ();
+            CreateMap<IndustryDto, Industry> ().ReverseMap ();
+            CreateMap<Industry, IndustryResponse> ().ReverseMap ();
+
+            CreateMap<CreateIndustryFieldCommand, IndustryFieldDto> ().ReverseMap ();
+            CreateMap<UpdateIndustryFieldCommand, IndustryFieldDto> ().ReverseMap ();
+            CreateMap<IndustryFieldResponse, IndustryFieldDto> ().ReverseMap ();
+            CreateMap<IndustryFieldDto, IndustryField> ().ReverseMap ();
+            CreateMap<IndustryField, IndustryFieldResponse> ().ReverseMap ();
 
             CreateMap<DepositCommand, TransactionDto> ().ReverseMap ();
             CreateMap<WithdrawCommand, TransactionDto> ().ReverseMap ();

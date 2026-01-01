@@ -21,6 +21,8 @@ namespace Persistence
         public DbSet<EmailLog> EmailLogs { get; set; }
         public DbSet<EmailRequest> EmailRequests { get; set; }
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
+        public DbSet<Industry> Industries { get; set; }
+        public DbSet<IndustryField> IndustryFields { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Upload> Uploads { get; set; }
         public DbSet<User> Users { get; set; }

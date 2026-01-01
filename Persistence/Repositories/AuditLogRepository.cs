@@ -5,6 +5,8 @@ using Application.Models.AuditLogs.Command;
 using Application.Models.AuditLogs.Response;
 using Application.Models.Banks.Response;
 using Application.Models.Branches.Response;
+using Application.Models.Industry.Response;
+using Application.Models.IndustryField.Response;
 using Application.Models.Transactions.Response;
 using Application.Models.Uploads.Response;
 using Application.Models.Users.Response;
@@ -50,7 +52,7 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
-                if (!request.Name.Equals ("Account", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Bank", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Branch", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Transaction", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Upload", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("User", StringComparison.OrdinalIgnoreCase))
+                if (!request.Name.Equals ("Account", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Bank", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Branch", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Industry", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("IndustryField", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Transaction", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Upload", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("User", StringComparison.OrdinalIgnoreCase))
                 {
                     var badRequest = RequestResponse<AuditLogsQueryResponse>.Failed (null, 400, "Please enter valid details");
 
@@ -89,6 +91,12 @@ namespace Persistence.Repositories
                         break;
                     case "Branch":
                         response.BranchLog = JsonConvert.DeserializeObject<BranchResponse> (payload.Payload);
+                        break;
+                    case "Industry":
+                        response.IndustryLog = JsonConvert.DeserializeObject<IndustryResponse> (payload.Payload);
+                        break;
+                    case "IndustryField":
+                        response.IndustryFieldLog = JsonConvert.DeserializeObject<IndustryFieldResponse> (payload.Payload);
                         break;
                     case "Transaction":
                         response.TransactionLog = JsonConvert.DeserializeObject<TransactionResponse> (payload.Payload);
@@ -137,7 +145,7 @@ namespace Persistence.Repositories
                     string openingLog = Utility.GenerateMethodInitiationLog (nameof (CreateMultipleAuditLogAsync), nameof (request.CreatedBy), request.Name, nameof (request.CreatedBy), request.CreatedBy);
                     _logger.LogInformation (openingLog);
 
-                    if (!request.Name.Equals ("Account", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Bank", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Branch", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Transaction", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Upload", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("User", StringComparison.OrdinalIgnoreCase))
+                    if (!request.Name.Equals ("Account", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Bank", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Branch", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Industry", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("IndustryField", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Transaction", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("Upload", StringComparison.OrdinalIgnoreCase) && !request.Name.Equals ("User", StringComparison.OrdinalIgnoreCase))
                     {
                         var badRequest = RequestResponse<AuditLogsQueryResponse>.Failed (null, 400, "Please enter valid details");
 
@@ -188,6 +196,12 @@ namespace Persistence.Repositories
                             break;
                         case "Branch":
                             response.BranchLogs.Add (JsonConvert.DeserializeObject<BranchResponse> (payload.Payload));
+                            break;
+                        case "Industry":
+                            response.IndustryLogs.Add (JsonConvert.DeserializeObject<IndustryResponse> (payload.Payload));
+                            break;
+                        case "IndustryField":
+                            response.IndustryFieldLogs.Add (JsonConvert.DeserializeObject<IndustryFieldResponse> (payload.Payload));
                             break;
                         case "Transaction":
                             response.TransactionLogs.Add (JsonConvert.DeserializeObject<TransactionResponse> (payload.Payload));
@@ -250,6 +264,12 @@ namespace Persistence.Repositories
                     case "Branch":
                         payload.BranchLog = JsonConvert.DeserializeObject<BranchResponse> (response.Payload);
                         break;
+                    case "Industry":
+                        payload.IndustryLog = JsonConvert.DeserializeObject<IndustryResponse> (response.Payload);
+                        break;
+                    case "IndustryField":
+                        payload.IndustryFieldLog = JsonConvert.DeserializeObject<IndustryFieldResponse> (response.Payload);
+                        break;
                     case "Transaction":
                         payload.TransactionLog = JsonConvert.DeserializeObject<TransactionResponse> (response.Payload);
                         break;
@@ -290,6 +310,8 @@ namespace Persistence.Repositories
                     AccountLogs = [],
                     BankLogs = [],
                     BranchLogs = [],
+                    IndustryLogs = [],
+                    IndustryFieldLogs = [],
                     TransactionLogs = [],
                     UploadLogs = [],
                     UserLogs = []
@@ -378,6 +400,12 @@ namespace Persistence.Repositories
                             break;
                         case "Branch":
                             result.BranchLogs.Add (JsonConvert.DeserializeObject<BranchResponse> (response.Payload));
+                            break;
+                        case "Industry":
+                            result.IndustryLogs.Add (JsonConvert.DeserializeObject<IndustryResponse> (response.Payload));
+                            break;
+                        case "IndustryField":
+                            result.IndustryFieldLogs.Add (JsonConvert.DeserializeObject<IndustryFieldResponse> (response.Payload));
                             break;
                         case "Transaction":
                             result.TransactionLogs.Add (JsonConvert.DeserializeObject<TransactionResponse> (response.Payload));
