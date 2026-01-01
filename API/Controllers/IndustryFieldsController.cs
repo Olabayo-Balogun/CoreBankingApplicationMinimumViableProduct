@@ -82,6 +82,7 @@ namespace API.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet ("industry-field")]
+        [ResponseCache (Duration = 600, VaryByQueryKeys = new[] { "id", "userPublicId", "name" })]
         [EnableRateLimiting ("GetRequestRateLimit")]
         [ProducesResponseType (type: typeof (RequestResponse<IndustryFieldResponse>), StatusCodes.Status200OK)]
         public async Task<ActionResult<RequestResponse<IndustryFieldResponse>>> GetIndustryField ([FromQuery] long? id, string? userPublicId, string? name, CancellationToken cancellationToken)
@@ -126,6 +127,7 @@ namespace API.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet ("industry-fields")]
+        [ResponseCache (Duration = 600, VaryByQueryKeys = new[] {"industryId", "id", "pageNumber", "pageSize" })]
         [EnableRateLimiting ("GetRequestRateLimit")]
         [ProducesResponseType (type: typeof (RequestResponse<List<IndustryFieldResponse>>), StatusCodes.Status200OK)]
         [ProducesResponseType (type: typeof (RequestResponse<List<IndustryFieldResponse>>), StatusCodes.Status400BadRequest)]
