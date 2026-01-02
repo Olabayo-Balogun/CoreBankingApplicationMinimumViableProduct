@@ -98,6 +98,19 @@ This includes endpoints for:
 - [`PUT /api/v1/IndustryFields/industry-field`](https://cbamvp.runasp.net/scalar/#tag/industryfields/put/api/v1/IndustryFields/industry-field) — Update an industry field (Admin only)  
 - [`DELETE /api/v1/IndustryFields/industry-field`](https://cbamvp.runasp.net/scalar/#tag/industryfields/delete/api/v1/IndustryFields/industry-field) — Delete an industry field (Admin only)  
 
+### 💳 Transaction Operations
+
+- [`POST /api/v1/Transactions/deposit`](https://cbamvp.runasp.net/scalar/#tag/transactions/post/api/v1/Transactions/deposit) — Initiate a deposit (Idempotent; include `Idempotence-Key` header). When using Paystack the response includes `CheckoutUrl`.  
+- [`POST /api/v1/Transactions/withdraw`](https://cbamvp.runasp.net/scalar/#tag/transactions/post/api/v1/Transactions/withdraw) — Request a withdrawal (Idempotent; include `Idempotence-Key` header).  
+- [`PUT /api/v1/Transactions/flag`](https://cbamvp.runasp.net/scalar/#tag/transactions/put/api/v1/Transactions/flag) — Flag suspicious transactions (Admin & Staff).  
+- [`GET /api/v1/Transactions/verify/{id}`](https://cbamvp.runasp.net/scalar/#tag/transactions/get/api/v1/Transactions/verify/{paymentReferenceId}) — Verify a payment by `paymentReferenceId`.  
+- [`GET /api/v1/Transactions/transaction`](https://cbamvp.runasp.net/scalar/#tag/transactions/get/api/v1/Transactions/transaction) — Admin/Staff: query a single transaction or analytics by date/week/month/year/fromDate/toDate/user/account.  
+- [`GET /api/v1/Transactions/transactions`](https://cbamvp.runasp.net/scalar/#tag/transactions/get/api/v1/Transactions/transactions) — List transactions (users see their own; staff/admin may query by user/account/date ranges).
+
+> Notes:
+> - Deposit and withdraw endpoints require `Currency = "NGN"` currently.
+> - Deposit returns `PaymentReferenceId` and (when Paystack is configured) a `CheckoutUrl` for client redirection.
+
 The documentation follows **OpenAPI 3.0.1** and includes model schemas, request/response formats, and error codes.
 
 ---
