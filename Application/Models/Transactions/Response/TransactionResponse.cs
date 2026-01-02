@@ -54,6 +54,7 @@ namespace Application.Models.Transactions.Response
         /// </summary>
         [StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
         public string PaymentService { get; set; }
+        public Dictionary<string, string>? MetaData { get; set; }
         public string? CheckoutUrl { get; set; }
     }
 }

@@ -12,6 +12,7 @@ namespace Application.Models.IndustryField.Command
         /// Id of the industry field
         /// </summary>
         [Required (ErrorMessage = "Id is required")]
+        [Range (1, long.MaxValue, ErrorMessage = "IndustryId must be at least {1}.")]
         public long Id { get; set; }
         [Required (ErrorMessage = "IndustryId is required")]
         public long IndustryId { get; set; }
@@ -24,6 +25,7 @@ namespace Application.Models.IndustryField.Command
         [Required (ErrorMessage = "IsRequired is required")]
         public bool IsRequired { get; set; }
         [Required (ErrorMessage = "Order is required")]
+        [Range (1, int.MaxValue, ErrorMessage = "Order must be at least {1}.")]
         public int Order { get; set; }
         [StringLength (200, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
         public string? ToolTip { get; set; }

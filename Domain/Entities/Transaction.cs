@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace Domain.Entities
 {
@@ -53,5 +54,6 @@ namespace Domain.Entities
         [Required (ErrorMessage = "PaymentService is required")]
         [StringLength (100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 2)]
         public string PaymentService { get; set; }
+        public Dictionary<string, string>? MetaData { get; set; }
     }
 }
