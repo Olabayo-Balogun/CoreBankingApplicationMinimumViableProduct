@@ -58,6 +58,15 @@ namespace Persistence.Repositories
                     return badRequest;
                 }
 
+                if (industryField.IndustryId < 1)
+                {
+                    var badRequest = RequestResponse<IndustryFieldResponse>.Failed (null, 400, "An industry field cannot have an industryID less than one");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateIndustryFieldAsync), nameof (industryField.Name), industryField.Name, nameof (industryField.CreatedBy), industryField.CreatedBy, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+                    return badRequest;
+                }
+
                 var industries = await _context.Industries.AsNoTracking ().Where (x => x.IsDeleted == false).Select (x => x.Id).ToListAsync (industryField.CancellationToken);
                 if (industries == null)
                 {
@@ -451,6 +460,15 @@ namespace Persistence.Repositories
                     var badRequest = RequestResponse<IndustryFieldResponse>.Failed (null, 400, "An industry field cannot have an order less than one");
 
                     string closingLog = Utility.GenerateMethodConclusionLog (nameof (UpdateIndustryFieldAsync), nameof (industryField.Name), industryField.Name, nameof (industryField.CreatedBy), industryField.CreatedBy, badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+                    return badRequest;
+                }
+
+                if (industryField.IndustryId < 1)
+                {
+                    var badRequest = RequestResponse<IndustryFieldResponse>.Failed (null, 400, "An industry field cannot have an industryID less than one");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (CreateIndustryFieldAsync), nameof (industryField.Name), industryField.Name, nameof (industryField.CreatedBy), industryField.CreatedBy, badRequest.Remark);
                     _logger.LogInformation (closingLog);
                     return badRequest;
                 }
