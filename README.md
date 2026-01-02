@@ -8,14 +8,16 @@ A robust backend system built with .NET 8 to manage banking operations including
 
 - 🏦 Account creation and management  
 - 💰 Deposits, withdrawals, and transfers  
-- 📄 Monthly transaction statements  
+- 📄 Monthly transaction statements
+- 🏭 Industry and industry field management    
 - 🔐 Role-based access control (RBAC)  
 - 🔄 CQRS pattern for command/query separation  
 - 🔗 External payment integration (Paystack) 
 - 📊 Structured logging and monitoring  
 - 🧪 Unit testing with xUnit  
 - 🔁 Idempotency support for critical operations  
-- 🚦 Rate limiting to prevent abuse and ensure stability   
+- 🚦 Rate limiting to prevent abuse and ensure stability
+- 💾 Response caching for improved performance    
 
 ---
 
@@ -80,6 +82,22 @@ This includes endpoints for:
 - [`DELETE /api/v1/Accounts/account`](https://cbamvp.runasp.net/scalar/#tag/accounts/delete/api/v1/Accounts/account)  
 - [`GET /api/v1/Accounts/accounts/{id}`](https://cbamvp.runasp.net/scalar/#tag/accounts/get/api/v1/Accounts/accounts/{id})  
 
+### 🏭 Industry Operations
+
+- [`POST /api/v1/Industries/industry`](https://cbamvp.runasp.net/scalar/#tag/industries/post/api/v1/Industries/industry) — Create an industry (Admin only)  
+- [`GET /api/v1/Industries/industry`](https://cbamvp.runasp.net/scalar/#tag/industries/get/api/v1/Industries/industry) — Get industry by ID, user ID, or name  
+- [`GET /api/v1/Industries/industries`](https://cbamvp.runasp.net/scalar/#tag/industries/get/api/v1/Industries/industries) — Get all industries with pagination  
+- [`PUT /api/v1/Industries/industry`](https://cbamvp.runasp.net/scalar/#tag/industries/put/api/v1/Industries/industry) — Update an industry (Admin only)  
+- [`DELETE /api/v1/Industries/industry`](https://cbamvp.runasp.net/scalar/#tag/industries/delete/api/v1/Industries/industry) — Delete an industry (Admin only)  
+
+### 🏷️ Industry Field Operations
+
+- [`POST /api/v1/IndustryFields/industry-field`](https://cbamvp.runasp.net/scalar/#tag/industryfields/post/api/v1/IndustryFields/industry-field) — Create an industry field (Admin only)  
+- [`GET /api/v1/IndustryFields/industry-field`](https://cbamvp.runasp.net/scalar/#tag/industryfields/get/api/v1/IndustryFields/industry-field) — Get industry field by ID, user ID, or name  
+- [`GET /api/v1/IndustryFields/industry-fields`](https://cbamvp.runasp.net/scalar/#tag/industryfields/get/api/v1/IndustryFields/industry-fields) — Get industry fields by industry ID or user ID with pagination  
+- [`PUT /api/v1/IndustryFields/industry-field`](https://cbamvp.runasp.net/scalar/#tag/industryfields/put/api/v1/IndustryFields/industry-field) — Update an industry field (Admin only)  
+- [`DELETE /api/v1/IndustryFields/industry-field`](https://cbamvp.runasp.net/scalar/#tag/industryfields/delete/api/v1/IndustryFields/industry-field) — Delete an industry field (Admin only)  
+
 The documentation follows **OpenAPI 3.0.1** and includes model schemas, request/response formats, and error codes.
 
 ---
@@ -116,6 +134,8 @@ For the following endpoints, you **must** include an `Idempotence-Key` header:
 - `POST /api/v1/Accounts/account`
 - `POST /api/v1/Transactions/deposit`
 - `POST /api/v1/Transactions/withdraw`
+- `POST /api/v1/Industries/industry`
+- `POST /api/v1/IndustryFields/industry-field`
 
 ### 🧠 How It Works
 
@@ -127,3 +147,24 @@ For the following endpoints, you **must** include an `Idempotence-Key` header:
 
 ```http
 Idempotence-Key: 3f2504e0-4f89-11d3-9a0c-0305e82c3301
+
+---
+
+## 💾 Response Caching
+
+GET endpoints implement **response caching** to improve performance and reduce database load. Cached responses are stored for **10 minutes (600 seconds)** and vary by query parameters.
+
+### 📌 Cached Endpoints
+
+| Endpoint | Cache Duration | Varies By |
+|----------|---------------|-----------|
+| `GET /api/v1/IndustryFields/industry-field` | 600s | `id`, `userPublicId`, `name` |
+| `GET /api/v1/IndustryFields/industry-fields` | 600s | `industryId`, `id`, `pageNumber`, `pageSize` |
+
+### 🧠 How It Works
+
+- First request fetches data from the database and caches the response.
+- Subsequent requests with the same query parameters return the cached response.
+- Cache automatically expires after 10 minutes.
+
+---
