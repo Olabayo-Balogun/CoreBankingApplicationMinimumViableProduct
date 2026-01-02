@@ -111,6 +111,25 @@ This includes endpoints for:
 > - Deposit and withdraw endpoints require `Currency = "NGN"` currently.
 > - Deposit returns `PaymentReferenceId` and (when Paystack is configured) a `CheckoutUrl` for client redirection.
 
+### 👥 User Operations
+
+- [`POST /api/v1/Authentication/register`](https://cbamvp.runasp.net/scalar/#tag/authentication/post/api/v1/Authentication/register) — Register a new user (AllowAnonymous). Idempotent: include `Idempotence-Key`.  
+- [`POST /api/v1/Authentication/login`](https://cbamvp.runasp.net/scalar/#tag/authentication/post/api/v1/Authentication/login) — User login (AllowAnonymous). Returns JWT and expiry.  
+- [`POST /api/v1/Authentication/logout`](https://cbamvp.runasp.net/scalar/#tag/authentication/post/api/v1/Authentication/logout) — Logout (Authorize).  
+- [`POST /api/v1/Authentication/verify-email`](https://cbamvp.runasp.net/scalar/#tag/authentication/post/api/v1/Authentication/verify-email) — Verify email with token (AllowAnonymous).  
+- [`POST /api/v1/Authentication/forgot-password`](https://cbamvp.runasp.net/scalar/#tag/authentication/post/api/v1/Authentication/forgot-password) — Request password reset (AllowAnonymous; strict rate limit).  
+- [`POST /api/v1/Authentication/resend-email-verification-token`](https://cbamvp.runasp.net/scalar/#tag/authentication/post/api/v1/Authentication/resend-email-verification-token) — Resend email verification token (AllowAnonymous).  
+- [`PUT /api/v1/Authentication/change-password`](https://cbamvp.runasp.net/scalar/#tag/authentication/put/api/v1/Authentication/change-password) — Change password using reset token (AllowAnonymous).  
+- [`PUT /api/v1/Authentication/update-password`](https://cbamvp.runasp.net/scalar/#tag/authentication/put/api/v1/Authentication/update-password) — Authenticated password update (Authorize).  
+- [`GET /api/v1/Users/user/{id}`](https://cbamvp.runasp.net/scalar/#tag/users/get/api/v1/Users/user/{id}) — Get user by public id (Admin & Staff). Cached.  
+- [`GET /api/v1/Users/users`](https://cbamvp.runasp.net/scalar/#tag/users/get/api/v1/Users/users) — List users (Admin & Staff). Supports filters and pagination.  
+- [`GET /api/v1/Users/count`](https://cbamvp.runasp.net/scalar/#tag/users/get/api/v1/Users/count) — User counts and analytics (Admin only).  
+- [`PUT /api/v1/Users/user`](https://cbamvp.runasp.net/scalar/#tag/users/put/api/v1/Users/user) — Update user profile (Admin only).  
+- [`PUT /api/v1/Users/role`](https://cbamvp.runasp.net/scalar/#tag/users/put/api/v1/Users/role) — Change user role (Admin only).  
+- [`PUT /api/v1/Users/profile-image`](https://cbamvp.runasp.net/scalar/#tag/users/put/api/v1/Users/profile-image) — Update profile image (Authorize).  
+- [`DELETE /api/v1/Users/user`](https://cbamvp.runasp.net/scalar/#tag/users/delete/api/v1/Users/user) — Delete a single user (Admin only).  
+- [`DELETE /api/v1/Users/users`](https://cbamvp.runasp.net/scalar/#tag/users/delete/api/v1/Users/users) — Delete multiple users (Admin only). Payload size is validated.
+
 The documentation follows **OpenAPI 3.0.1** and includes model schemas, request/response formats, and error codes.
 
 ---
