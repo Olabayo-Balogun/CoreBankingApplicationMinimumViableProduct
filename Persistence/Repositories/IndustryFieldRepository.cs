@@ -291,6 +291,51 @@ namespace Persistence.Repositories
             }
         }
 
+        public async Task<RequestResponse<List<IndustryFieldResponse>>> GetAllIndustryFieldsByIndustryIdAsync (long id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                string openingLog = Utility.GenerateMethodInitiationLog (nameof (GetIndustryFieldsByIndustryIdAsync), nameof (id), id.ToString ());
+                _logger.LogInformation (openingLog);
+
+                var result = await _context.IndustryFields
+                    .AsNoTracking ()
+                    .Where (industry => industry.IndustryId == id && industry.IsDeleted == false)
+                    .OrderByDescending (x => x.DateCreated)
+                    .Select (x => new IndustryFieldResponse { Name = x.Name, DataType = x.DataType, Id = x.Id, IndustryId = x.IndustryId, IsRequired = x.IsRequired, Order = x.Order, ToolTip = x.ToolTip })
+                    .ToListAsync (cancellationToken);
+
+                if (result.Count < 1)
+                {
+                    var badRequest = RequestResponse<List<IndustryFieldResponse>>.NotFound (null, "Industry fields");
+
+                    string closingLog = Utility.GenerateMethodConclusionLog (nameof (GetIndustryFieldsByIndustryIdAsync), nameof (id), id.ToString (), nameof (result.Count), result.Count.ToString (), badRequest.Remark);
+                    _logger.LogInformation (closingLog);
+
+                    return badRequest;
+                }
+
+                var count = await _context.IndustryFields
+                    .AsNoTracking ()
+                    .Where (industry => industry.IndustryId == id && industry.IsDeleted == false)
+                    .LongCountAsync ();
+
+                var response = RequestResponse<List<IndustryFieldResponse>>.SearchSuccessful (result, count, "Industry fields");
+
+                string conclusionLog = Utility.GenerateMethodConclusionLog (nameof (GetIndustryFieldsByIndustryIdAsync), nameof (id), id.ToString (), nameof (response.TotalCount), result.Count.ToString (), response.Remark);
+                _logger.LogInformation (conclusionLog);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                string errorLog = Utility.GenerateMethodExceptionLog (nameof (GetIndustryFieldsByIndustryIdAsync), nameof (id), id.ToString (), ex.Message);
+                _logger.LogError (errorLog);
+
+                return RequestResponse<List<IndustryFieldResponse>>.Error (null);
+            }
+        }
+
         public async Task<RequestResponse<List<IndustryFieldResponse>>> GetAllIndustryFieldsAsync (CancellationToken cancellationToken)
         {
             try

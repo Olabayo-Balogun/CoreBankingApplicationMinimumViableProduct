@@ -17,6 +17,7 @@ namespace Application.Interface.Persistence
         Task<RequestResponse<IndustryFieldResponse>> GetIndustryFieldCountAsync (CancellationToken cancellationToken);
         Task<RequestResponse<IndustryFieldResponse>> GetIndustryFieldCountByUserIdAsync (string id, CancellationToken cancellationToken);
         Task<RequestResponse<IndustryFieldResponse>> UpdateIndustryFieldAsync (IndustryFieldDto account);
+        Task<RequestResponse<List<IndustryFieldResponse>>> GetAllIndustryFieldsByIndustryIdAsync (long id, CancellationToken cancellationToken);
         Task<RequestResponse<List<IndustryFieldResponse>>> GetAllIndustryFieldsAsync (CancellationToken cancellationToken);
     }
 }

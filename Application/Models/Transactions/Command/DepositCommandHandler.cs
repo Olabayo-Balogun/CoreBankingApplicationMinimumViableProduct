@@ -1,5 +1,6 @@
 ﻿using Application.Interface.Persistence;
 using Application.Models.Accounts.Response;
+using Application.Models.IndustryField.Response;
 using Application.Models.Transactions.Response;
 using Application.Models.Users.Response;
 
@@ -20,14 +21,16 @@ namespace Application.Models.Transactions.Command
         private readonly ITransactionRepository _transactionRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IIndustryFieldRepository _industryFieldRepository;
         private readonly AppSettings _appSettings;
-        public DepositCommandHandler (IOptions<AppSettings> appsettings, IMapper mapper, ITransactionRepository transactionRepository, IAccountRepository accountRepository, IUserRepository userRepository)
+        public DepositCommandHandler (IOptions<AppSettings> appsettings, IMapper mapper, ITransactionRepository transactionRepository, IAccountRepository accountRepository, IUserRepository userRepository, IIndustryFieldRepository industryFieldRepository)
         {
             _mapper = mapper;
             _transactionRepository = transactionRepository;
             _accountRepository = accountRepository;
             _userRepository = userRepository;
             _appSettings = appsettings.Value;
+            _industryFieldRepository = industryFieldRepository;
         }
 
         public async Task<RequestResponse<TransactionResponse>> Handle (DepositCommand request, CancellationToken cancellationToken)
@@ -83,6 +86,44 @@ namespace Application.Models.Transactions.Command
             else if (accountDetails.Data.AccountType != AccountType.YuanCurrent && accountDetails.Data.AccountType != AccountType.YuanSaving && request.Currency.Equals ("Yuan", StringComparison.OrdinalIgnoreCase))
             {
                 return RequestResponse<TransactionResponse>.Failed (null, 400, "You can only deposit Yuan into this account");
+            }
+
+            RequestResponse<List<IndustryFieldResponse>> industryFields = await _industryFieldRepository.GetAllIndustryFieldsByIndustryIdAsync (userDetails.Data.IndustryId.GetValueOrDefault(), request.CancellationToken);
+            if (!accountDetails.IsSuccessful)
+            {
+                return RequestResponse<TransactionResponse>.NotFound (null, "Industry field");
+            }
+
+            if(request.MetaData != null && industryFields.Data != null)
+            {
+                var validFields = industryFields.Data.ToDictionary (f => f.Name, f => f.DataType, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var field in industryFields.Data)
+                {
+                    if (field.IsRequired)
+                    {
+                        if (!request.MetaData.ContainsKey (field.Name))
+                        {
+                            return RequestResponse<TransactionResponse>.Failed (null, 400, $"The industry field {field.Name} is required for this transaction");
+                        }
+                    }                    
+                }
+
+                // Validate each metadata entry
+                foreach (var meta in request.MetaData)
+                {
+                    // Check if the key exists in industry fields
+                    if (!validFields.TryGetValue (meta.Key, out var expectedDataType))
+                    {
+                        return RequestResponse<TransactionResponse>.Failed (null, 400, $"The metadata key '{meta.Key}' is not a valid industry field");
+                    }
+
+                    // Validate that the value can be converted to the expected data type
+                    if (!Utility.Utility.TryConvertToDataType (meta.Value, expectedDataType, out var conversionError))
+                    {
+                        return RequestResponse<TransactionResponse>.Failed (null, 400, $"The value for '{meta.Key}' cannot be converted to {expectedDataType}: {conversionError}");
+                    }
+                }
             }
 
             var payload = _mapper.Map<TransactionDto> (request);

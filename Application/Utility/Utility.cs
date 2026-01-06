@@ -525,6 +525,51 @@ namespace Application.Utility
             return result;
         }
 
+        public static bool TryConvertToDataType (string value, string dataType, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            if (string.IsNullOrWhiteSpace (value))
+            {
+                errorMessage = "Value cannot be empty";
+                return false;
+            }
+
+            return dataType.ToLowerInvariant () switch
+            {
+                "string" or "text" => true,
+                "int" or "integer" => int.TryParse (value, out _) || SetError (out errorMessage, "Expected an integer value"),
+                "long" => long.TryParse (value, out _) || SetError (out errorMessage, "Expected a long integer value"),
+                "decimal" => decimal.TryParse (value, out _) || SetError (out errorMessage, "Expected a decimal value"),
+                "double" or "float" => double.TryParse (value, out _) || SetError (out errorMessage, "Expected a numeric value"),
+                "bool" or "boolean" => bool.TryParse (value, out _) || SetError (out errorMessage, "Expected true or false"),
+                "date" => DateOnly.TryParse (value, out _) || SetError (out errorMessage, "Expected a valid date (yyyy-MM-dd)"),
+                "datetime" => DateTime.TryParse (value, out _) || SetError (out errorMessage, "Expected a valid date/time"),
+                "guid" => Guid.TryParse (value, out _) || SetError (out errorMessage, "Expected a valid GUID"),
+                "email" => IsValidEmail (value) || SetError (out errorMessage, "Expected a valid email address"),
+                _ => true // Unknown types pass through (or you can return false with an error)
+            };
+
+            static bool SetError (out string error, string message)
+            {
+                error = message;
+                return false;
+            }
+
+            static bool IsValidEmail (string email)
+            {
+                try
+                {
+                    var addr = new System.Net.Mail.MailAddress (email);
+                    return addr.Address == email;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
         public static string GenerateNUBAN (string bankCode, string serialNumber)
         {
             if (serialNumber.Length != 6)
