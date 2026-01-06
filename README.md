@@ -200,3 +200,58 @@ GET endpoints implement **response caching** to improve performance and reduce d
 - Cache automatically expires after 10 minutes.
 
 ---
+
+### MetaData format for transaction commands
+
+For `DepositCommand` and `WithdrawCommand` the `MetaData` payload must be provided as a `Dictionary<string, string>` and follow these rules:
+
+- Type: `Dictionary<string, string>` where each key is the industry field name and each value is the field value encoded as a string.
+- Key matching: Keys must match the `IndustryField.Name` exactly after trimming (case-sensitive). Keys cannot be null or empty after trimming.
+- Required fields: If an `IndustryField` has `IsRequired == true` the corresponding key must be present in `MetaData`.
+- Value conversion: Each string value must be convertible to the `IndustryField.DataType`. Common mappings expected by the API include:
+  - `string` / `text` — any string
+  - `int` / `integer` — e.g. `"123"`
+  - `long` — e.g. `"9223372036854775807"`
+  - `decimal` / `double` / `float` — numeric formats, e.g. `"123.45"`
+  - `bool` / `boolean` — `"true"` or `"false"`
+  - `date` — ISO date or any parseable date string, e.g. `"2025-12-31"`
+  - `datetime` — ISO 8601 or any parseable date/time string, e.g. `"2025-12-31T14:30:00Z"`
+  - `guid` — e.g. `"3f2504e0-4f89-11d3-9a0c-0305e82c3301"`
+  - `email` — a syntactically valid email address
+
+- Limits enforced by the API's request validation:
+  - Maximum entries: 100
+  - Maximum key length: 200 characters (after trimming)
+  - Maximum value length: 1000 characters (after trimming)
+  - Duplicate keys after trimming are not allowed
+
+Example (C#):
+var meta = new Dictionary<string, string>
+{
+    ["CustomerId"] = "12345",
+    ["IsVerified"] = "true",
+    ["SignupDate"] = "2025-12-31"
+};
+
+var deposit = new DepositCommand
+{
+    RecipientAccountNumber = "0123456789",
+    Amount = 1000.00m,
+    Currency = "NGN",
+    MetaData = meta,
+    CreatedBy = "user-guid-here"
+};
+
+var withdraw = new WithdrawCommand
+{
+    AccountNumber = "0123456789",
+    Amount = 500.00m,
+    Currency = "NGN",
+    MetaData = meta,
+    CreatedBy = "user-guid-here"
+};
+
+Notes for integrators:
+- Ensure keys match the exact `IndustryField.Name` used by the bank's industry configuration.
+- Provide values as strings that can be parsed to the expected type on the server side.
+- The API performs trimming and basic validation; sending clean, correctly typed strings minimizes validation failures.
